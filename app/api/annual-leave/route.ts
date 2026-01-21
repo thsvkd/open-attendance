@@ -18,7 +18,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(leaves);
-  } catch (error) {
+  } catch {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

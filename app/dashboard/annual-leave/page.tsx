@@ -20,9 +20,23 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
+interface UserInfo {
+  totalLeaves: number;
+  usedLeaves: number;
+  joinDate: string;
+}
+
+interface LeaveRequest {
+  id: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: string;
+}
+
 export default function AnnualLeavePage() {
-  const [leaves, setLeaves] = useState([]);
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const t = useTranslations('annualLeave');
@@ -57,8 +71,11 @@ export default function AnnualLeavePage() {
       toast.success(t('leaveSuccess'));
       fetchData();
       (e.target as HTMLFormElement).reset();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || t('leaveFailed'));
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message 
+        ? error.response.data.message 
+        : t('leaveFailed');
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -171,7 +188,7 @@ export default function AnnualLeavePage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  leaves.map((leave: any) => (
+                  leaves.map((leave) => (
                     <TableRow key={leave.id}>
                       <TableCell className="text-xs">
                         {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}

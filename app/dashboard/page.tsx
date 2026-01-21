@@ -1,7 +1,6 @@
 import { CheckInCard } from "@/components/dashboard/check-in-card";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
 export default async function DashboardPage() {

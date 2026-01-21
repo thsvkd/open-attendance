@@ -20,8 +20,17 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
+interface LeaveRequest {
+  id: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: string;
+}
+
 export default function LeavesPage() {
-  const [leaves, setLeaves] = useState([]);
+  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const t = useTranslations('earlyLeave');
@@ -52,7 +61,7 @@ export default function LeavesPage() {
       toast.success(t('submitRequest'));
       fetchLeaves();
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
+    } catch {
       toast.error("Failed to submit request");
     } finally {
       setSubmitting(false);
@@ -135,7 +144,7 @@ export default function LeavesPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  leaves.map((leave: any) => (
+                  leaves.map((leave) => (
                     <TableRow key={leave.id}>
                       <TableCell>{t(`types.${leave.type}`)}</TableCell>
                       <TableCell className="text-xs">
