@@ -1,0 +1,75 @@
+{
+  "common": {
+    "welcome": "환영합니다",
+    "logout": "로그아웃",
+    "loading": "로딩 중..."
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "myAttendance": "내 근태",
+    "earlyLeave": "조퇴/결근",
+    "annualLeave": "연차 관리",
+    "adminPanel": "관리자 페이지"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "welcomeBack": "환영합니다"
+  },
+  "earlyLeave": {
+    "title": "조퇴/결근 신청",
+    "description": "근무 중 조퇴 또는 결근을 신청합니다",
+    "requestLeave": "조퇴/결근 신청",
+    "myRequests": "내 신청 내역",
+    "type": "유형",
+    "dates": "날짜",
+    "days": "일수",
+    "status": "상태",
+    "reason": "사유",
+    "reasonPlaceholder": "조퇴/결근 사유",
+    "submitRequest": "신청하기",
+    "noRequests": "신청 내역이 없습니다.",
+    "types": {
+      "SICK": "병가",
+      "OFFICIAL": "공가",
+      "OTHER": "기타"
+    },
+    "statuses": {
+      "PENDING": "대기중",
+      "APPROVED": "승인됨",
+      "REJECTED": "거절됨"
+    },
+    "startDate": "시작일",
+    "endDate": "종료일"
+  },
+  "annualLeave": {
+    "title": "연차 관리",
+    "description": "연차를 신청하고 관리합니다",
+    "requestLeave": "연차 신청",
+    "myRequests": "내 연차 내역",
+    "totalLeaves": "총 연차",
+    "usedLeaves": "사용 일수",
+    "remainingLeaves": "잔여 일수",
+    "days": "일",
+    "type": "유형",
+    "dates": "날짜",
+    "duration": "기간",
+    "status": "상태",
+    "reason": "사유",
+    "reasonPlaceholder": "연차 사용 사유",
+    "submitRequest": "신청하기",
+    "noRequests": "연차 신청 내역이 없습니다.",
+    "statuses": {
+      "PENDING": "대기중",
+      "APPROVED": "승인됨",
+      "REJECTED": "거절됨"
+    },
+    "startDate": "시작일",
+    "endDate": "종료일",
+    "leaveSuccess": "연차 신청이 완료되었습니다",
+    "leaveFailed": "신청에 실패했습니다"
+  },
+  "attendance": {
+    "title": "내 근태",
+    "description": "출석 기록을 확인합니다"
+  }
+}

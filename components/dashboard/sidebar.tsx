@@ -3,43 +3,51 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Clock, CalendarDays, Users, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Clock, CalendarDays, CalendarClock, ShieldCheck } from "lucide-react";
 import { useSession } from "next-auth/react";
-
-const routes = [
-  {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
-    color: "text-sky-500",
-  },
-  {
-    label: "My Attendance",
-    icon: Clock,
-    href: "/dashboard/attendance",
-    color: "text-violet-500",
-  },
-  {
-    label: "Leave Requests",
-    icon: CalendarDays,
-    href: "/dashboard/leaves",
-    color: "text-pink-700",
-  },
-];
-
-const adminRoutes = [
-  {
-    label: "Admin Panel",
-    icon: ShieldCheck,
-    href: "/dashboard/admin",
-    color: "text-orange-700",
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role;
+  const t = useTranslations('nav');
+
+  const routes = [
+    {
+      label: t('dashboard'),
+      icon: LayoutDashboard,
+      href: "/dashboard",
+      color: "text-sky-500",
+    },
+    {
+      label: t('myAttendance'),
+      icon: Clock,
+      href: "/dashboard/attendance",
+      color: "text-violet-500",
+    },
+    {
+      label: t('earlyLeave'),
+      icon: CalendarDays,
+      href: "/dashboard/leaves",
+      color: "text-pink-700",
+    },
+    {
+      label: t('annualLeave'),
+      icon: CalendarClock,
+      href: "/dashboard/annual-leave",
+      color: "text-green-600",
+    },
+  ];
+
+  const adminRoutes = [
+    {
+      label: t('adminPanel'),
+      icon: ShieldCheck,
+      href: "/dashboard/admin",
+      color: "text-orange-700",
+    },
+  ];
 
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-[#111827] text-white">
