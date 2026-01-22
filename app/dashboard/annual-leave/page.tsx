@@ -20,25 +20,35 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
+interface UserInfo {
+  totalLeaves: number;
+  usedLeaves: number;
+  joinDate: string;
+}
+
 interface LeaveRequest {
   id: string;
-  type: string;
   startDate: string;
   endDate: string;
   days: number;
   status: string;
 }
 
-export default function LeavesPage() {
+export default function AnnualLeavePage() {
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const t = useTranslations('earlyLeave');
+  const t = useTranslations('annualLeave');
 
-  const fetchLeaves = async () => {
+  const fetchData = async () => {
     try {
-      const res = await axios.get("/api/leaves");
-      setLeaves(res.data);
+      const [leavesRes, userRes] = await Promise.all([
+        axios.get("/api/annual-leave"),
+        axios.get("/api/annual-leave/balance"),
+      ]);
+      setLeaves(leavesRes.data);
+      setUserInfo(userRes.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,7 +57,7 @@ export default function LeavesPage() {
   };
 
   useEffect(() => {
-    fetchLeaves();
+    fetchData();
   }, []);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,12 +67,15 @@ export default function LeavesPage() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      await axios.post("/api/leaves", data);
-      toast.success(t('submitRequest'));
-      fetchLeaves();
+      await axios.post("/api/annual-leave", data);
+      toast.success(t('leaveSuccess'));
+      fetchData();
       (e.target as HTMLFormElement).reset();
-    } catch {
-      toast.error("Failed to submit request");
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message 
+        ? error.response.data.message 
+        : t('leaveFailed');
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -76,28 +89,62 @@ export default function LeavesPage() {
     );
   }
 
-  return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t('title')}</h2>
-          <p className="text-muted-foreground">{t('description')}</p>
-        </div>
+  const remainingLeaves = userInfo ? userInfo.totalLeaves - userInfo.usedLeaves : 0;
 
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">{t('title')}</h2>
+        <p className="text-muted-foreground">{t('description')}</p>
+      </div>
+
+      {/* Leave Balance Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t('totalLeaves')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {userInfo?.totalLeaves || 0} {t('days')}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t('usedLeaves')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {userInfo?.usedLeaves || 0} {t('days')}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t('remainingLeaves')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {remainingLeaves} {t('days')}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>{t('requestLeave')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="type">{t('type')}</Label>
-                <select name="type" id="type" className="w-full border rounded-md p-2 bg-background">
-                  <option value="SICK">{t('types.SICK')}</option>
-                  <option value="OFFICIAL">{t('types.OFFICIAL')}</option>
-                  <option value="OTHER">{t('types.OTHER')}</option>
-                </select>
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">{t('startDate')}</Label>
@@ -119,9 +166,7 @@ export default function LeavesPage() {
             </form>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>{t('myRequests')}</CardTitle>
@@ -130,27 +175,25 @@ export default function LeavesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('type')}</TableHead>
                   <TableHead>{t('dates')}</TableHead>
-                  <TableHead>{t('days')}</TableHead>
+                  <TableHead>{t('duration')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {leaves.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
                       {t('noRequests')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   leaves.map((leave) => (
                     <TableRow key={leave.id}>
-                      <TableCell>{t(`types.${leave.type}`)}</TableCell>
                       <TableCell className="text-xs">
                         {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
                       </TableCell>
-                      <TableCell>{leave.days}</TableCell>
+                      <TableCell>{leave.days} {t('days')}</TableCell>
                       <TableCell>
                         <Badge variant={leave.status === "APPROVED" ? "default" : leave.status === "PENDING" ? "secondary" : "destructive"}>
                           {t(`statuses.${leave.status}`)}

@@ -12,13 +12,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut, User } from "lucide-react";
+import { LanguageSwitcher } from "./language-switcher";
+import { useTranslations } from 'next-intl';
 
 export function Header() {
   const { data: session } = useSession();
+  const t = useTranslations('common');
 
   return (
     <div className="flex items-center p-4 border-b">
         <div className="ml-auto flex items-center gap-x-4">
+            <LanguageSwitcher />
             <span className="text-sm text-muted-foreground">
                 {session?.user?.name} ({session?.user?.role})
             </span>
@@ -43,7 +47,7 @@ export function Header() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        Log out
+                        {t('logout')}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
