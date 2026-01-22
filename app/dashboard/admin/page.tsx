@@ -42,6 +42,7 @@ export default function AdminPage() {
   const t = useTranslations("admin");
   const tc = useTranslations("common");
   const tl = useTranslations("earlyLeave");
+  const ta = useTranslations("annualLeave");
   const tp = useTranslations("profile");
   const formatter = useFormatter();
 
@@ -191,9 +192,27 @@ export default function AdminPage() {
                           {leave.user.name}
                           <p className="text-xs text-muted-foreground font-normal">{leave.user.email}</p>
                         </TableCell>
-                        <TableCell>{tl(`types.${leave.type}`)}</TableCell>
+                        <TableCell>
+                          <div>
+                            {tl(`types.${leave.type}`)}
+                            {leave.type === "ANNUAL" && leave.leaveType && leave.leaveType !== "FULL_DAY" && (
+                              <p className="text-xs text-muted-foreground">
+                                {ta(`leaveTypes.${leave.leaveType}`)}
+                                {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
+                                  <span className="block">{leave.startTime} - {leave.endTime}</span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-xs">
-                          {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                          {leave.leaveType === "FULL_DAY" || !leave.leaveType ? (
+                            <>
+                              {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                            </>
+                          ) : (
+                            format(new Date(leave.startDate), "MM/dd")
+                          )}
                         </TableCell>
                         <TableCell>{leave.days}</TableCell>
                         <TableCell>

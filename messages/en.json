@@ -78,7 +78,26 @@
     "startDate": "Start Date",
     "endDate": "End Date",
     "leaveSuccess": "Annual leave request submitted",
-    "leaveFailed": "Failed to submit request"
+    "leaveFailed": "Failed to submit request",
+    "leaveType": "Leave Type",
+    "selectLeaveType": "Select leave type",
+    "leaveTypes": {
+      "FULL_DAY": "Full Day",
+      "HALF_DAY": "Half Day",
+      "HALF_DAY_AM": "Half Day - AM",
+      "HALF_DAY_PM": "Half Day - PM",
+      "QUARTER_DAY": "Quarter Day"
+    },
+    "halfDayPeriod": "Select AM/PM",
+    "periodAM": "AM",
+    "periodPM": "PM",
+    "date": "Date",
+    "timeRange": "Time",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "halfDayAM": "AM (09:00 - 13:00)",
+    "halfDayPM": "PM (14:00 - 18:00)",
+    "selectTime": "Select time"
   },
   "attendance": {
     "title": "My Attendance",

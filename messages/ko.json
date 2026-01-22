@@ -78,7 +78,26 @@
     "startDate": "시작일",
     "endDate": "종료일",
     "leaveSuccess": "연차 신청이 완료되었습니다",
-    "leaveFailed": "신청에 실패했습니다"
+    "leaveFailed": "신청에 실패했습니다",
+    "leaveType": "휴가 유형",
+    "selectLeaveType": "휴가 유형 선택",
+    "leaveTypes": {
+      "FULL_DAY": "연차",
+      "HALF_DAY": "반차",
+      "HALF_DAY_AM": "반차 - 오전",
+      "HALF_DAY_PM": "반차 - 오후",
+      "QUARTER_DAY": "반반차"
+    },
+    "halfDayPeriod": "오전/오후 선택",
+    "periodAM": "오전",
+    "periodPM": "오후",
+    "date": "날짜",
+    "timeRange": "시간",
+    "startTime": "시작 시간",
+    "endTime": "종료 시간",
+    "halfDayAM": "오전 (09:00 - 13:00)",
+    "halfDayPM": "오후 (14:00 - 18:00)",
+    "selectTime": "시간 선택"
   },
   "attendance": {
     "title": "내 근태",
@@ -119,7 +138,7 @@
       "members": "직원 관리"
     },
     "leaves": {
-      "title": "휴가 신청 내역",
+      "title": "신청 내역",
       "description": "승인 대기 중인 신청 목록입니다.",
       "noRequests": "대기 중인 신청이 없습니다.",
       "approveSuccess": "승인되었습니다.",

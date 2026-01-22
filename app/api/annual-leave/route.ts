@@ -4,6 +4,22 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { differenceInDays } from "date-fns";
 
+type LeaveType = "FULL_DAY" | "HALF_DAY_AM" | "HALF_DAY_PM" | "QUARTER_DAY";
+
+// Calculate days based on leave type
+function calculateDays(leaveType: LeaveType, startDate: Date, endDate: Date): number {
+  switch (leaveType) {
+    case "HALF_DAY_AM":
+    case "HALF_DAY_PM":
+      return 0.5;
+    case "QUARTER_DAY":
+      return 0.25;
+    case "FULL_DAY":
+    default:
+      return differenceInDays(endDate, startDate) + 1;
+  }
+}
+
 // Get all annual leave requests for the current user
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -11,7 +27,7 @@ export async function GET() {
 
   try {
     const leaves = await db.leaveRequest.findMany({
-      where: { 
+      where: {
         userId: session.user.id,
         type: "ANNUAL"
       },
@@ -29,11 +45,26 @@ export async function POST(req: Request) {
   if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
   try {
-    const { startDate, endDate, reason } = await req.json();
+    const { startDate, endDate, reason, leaveType = "FULL_DAY", startTime, endTime } = await req.json();
 
     const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = differenceInDays(end, start) + 1;
+    // For half-day and quarter-day, endDate is the same as startDate
+    const end = leaveType === "FULL_DAY" && endDate ? new Date(endDate) : start;
+    const days = calculateDays(leaveType as LeaveType, start, end);
+
+    // Validate quarter day time range (must be 2 hours)
+    if (leaveType === "QUARTER_DAY" && startTime && endTime) {
+      const [startHour, startMin] = startTime.split(":").map(Number);
+      const [endHour, endMin] = endTime.split(":").map(Number);
+      const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+
+      if (durationMinutes !== 120) {
+        return NextResponse.json(
+          { message: "Quarter day leave must be exactly 2 hours." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Get user's current leave balance
     const user = await db.user.findUnique({
@@ -58,8 +89,11 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         type: "ANNUAL",
+        leaveType: leaveType as string,
         startDate: start,
         endDate: end,
+        startTime: leaveType === "QUARTER_DAY" ? startTime : null,
+        endTime: leaveType === "QUARTER_DAY" ? endTime : null,
         days,
         reason,
         status: "PENDING",

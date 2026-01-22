@@ -91,10 +91,13 @@ model LeaveRequest {
   id        String      @id @default(cuid())
   userId    String
   type      String      @default("ANNUAL") // ANNUAL, SICK, OFFICIAL, OTHER
-  
+  leaveType String      @default("FULL_DAY") // FULL_DAY, HALF_DAY_AM, HALF_DAY_PM, QUARTER_DAY
+
   startDate DateTime
   endDate   DateTime
-  days      Float       // 사용 일수 (0.5 for half day)
+  startTime String? // For quarter day leave (e.g., "09:00")
+  endTime   String? // For quarter day leave (e.g., "11:00")
+  days      Float       // 사용 일수 (1, 0.5, 0.25)
   
   reason    String?
   status    String      @default("PENDING") // PENDING, APPROVED, REJECTED
