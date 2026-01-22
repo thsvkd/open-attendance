@@ -75,10 +75,10 @@ export const authOptions: NextAuthOptions = {
 
       // On subsequent requests, refresh user data from database using ID
       // This ensures email changes are properly reflected
-      if (token.id) {
+      if (token.id && typeof token.id === 'string') {
         const dbUser = await db.user.findUnique({
           where: {
-            id: token.id as string,
+            id: token.id,
           },
         });
 

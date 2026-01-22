@@ -94,7 +94,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
       } else if (response.status === 403) {
         toast.error(t('incorrectPassword'));
       } else if (response.status === 409) {
-        toast.error(t('emailInUse') || 'Email already in use');
+        toast.error(t('emailInUse'));
       } else {
         toast.error(t('error'));
       }
