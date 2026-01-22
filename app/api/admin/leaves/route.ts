@@ -29,15 +29,33 @@ export async function PATCH(req: Request) {
   try {
     const { id, status } = await req.json();
 
-    const leave = await db.leaveRequest.update({
+    const updatedLeave = await db.leaveRequest.update({
       where: { id },
-      data: { 
+      data: {
         status,
         approvedBy: session.user.id
       },
     });
 
-    return NextResponse.json(leave);
+    // 연차(ANNUAL)인 경우 사용자의 usedLeaves 업데이트
+    if (updatedLeave.type === "ANNUAL") {
+      const approvedLeaves = await db.leaveRequest.findMany({
+        where: {
+          userId: updatedLeave.userId,
+          type: "ANNUAL",
+          status: "APPROVED"
+        }
+      });
+
+      const totalUsed = approvedLeaves.reduce((sum, item) => sum + item.days, 0);
+
+      await db.user.update({
+        where: { id: updatedLeave.userId },
+        data: { usedLeaves: totalUsed }
+      });
+    }
+
+    return NextResponse.json(updatedLeave);
   } catch (error) {
     return new NextResponse("Internal Error", { status: 500 });
   }
