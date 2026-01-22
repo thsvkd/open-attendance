@@ -11,7 +11,6 @@
 
 import { db } from '../lib/db';
 import bcrypt from 'bcryptjs';
-import { signIn } from 'next-auth/react';
 
 interface TestResult {
   scenario: string;
@@ -115,7 +114,7 @@ async function testEmailLoginFlow() {
     const loginUserNew = await db.user.findUnique({
       where: { email: testEmail2 }
     });
-    if (loginUserNew && loginUserNew.password) {
+    if (loginUserNew?.password) {
       const isPasswordValid = await bcrypt.compare(testPassword, loginUserNew.password);
       const scenario6Pass = isPasswordValid && loginUserNew.id === testUser.id;
       console.log(scenario6Pass ? '✅ Login with NEW email would succeed' : '❌ Login with NEW email would fail');
