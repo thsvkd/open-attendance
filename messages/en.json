@@ -128,7 +128,8 @@
     "success": "Profile updated successfully.",
     "error": "An error occurred while updating.",
     "incorrectPassword": "Current password is incorrect.",
-    "passwordRequired": "Please enter your current password to change it."
+    "passwordRequired": "Please enter your current password to change it.",
+    "emailInUse": "Email already in use."
   },
   "admin": {
     "title": "Admin Panel",

@@ -43,7 +43,7 @@ export async function PATCH(req: Request) {
 
   try {
     const body = await req.json();
-    const { name, password, currentPassword } = body;
+    const { name, email, password, currentPassword } = body;
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
@@ -55,6 +55,20 @@ export async function PATCH(req: Request) {
 
     const updateData: any = {};
     if (name) updateData.name = name;
+
+    // Allow email updates with validation
+    if (email && email !== user.email) {
+      // Check if email is already taken by another user
+      const existingUser = await db.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser && existingUser.id !== session.user.id) {
+        return new NextResponse("Email already in use", { status: 409 });
+      }
+
+      updateData.email = email;
+    }
 
     if (password) {
       if (!currentPassword) {

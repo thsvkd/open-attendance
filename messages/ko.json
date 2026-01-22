@@ -128,7 +128,8 @@
     "success": "프로필이 성공적으로 업데이트되었습니다.",
     "error": "업데이트 중 오류가 발생했습니다.",
     "incorrectPassword": "현재 비밀번호가 올바르지 않습니다.",
-    "passwordRequired": "비밀번호 변경을 위해 현재 비밀번호를 입력해주세요."
+    "passwordRequired": "비밀번호 변경을 위해 현재 비밀번호를 입력해주세요.",
+    "emailInUse": "이미 사용 중인 이메일입니다."
   },
   "admin": {
     "title": "관리자 페이지",
