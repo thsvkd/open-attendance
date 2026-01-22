@@ -62,7 +62,7 @@ export default function LeavesPage() {
       fetchLeaves();
       (e.target as HTMLFormElement).reset();
     } catch {
-      toast.error("Failed to submit request");
+      toast.error(t('submitFailed'));
     } finally {
       setSubmitting(false);
     }

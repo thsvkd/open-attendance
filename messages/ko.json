@@ -2,7 +2,10 @@
   "common": {
     "welcome": "환영합니다",
     "logout": "로그아웃",
-    "loading": "로딩 중..."
+    "loading": "로딩 중...",
+    "profile": "프로필",
+    "settings": "설정",
+    "actions": "작업"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -13,7 +16,15 @@
   },
   "dashboard": {
     "title": "대시보드",
-    "welcomeBack": "환영합니다"
+    "welcomeBack": "환영합니다",
+    "todayAttendance": "오늘의 근태",
+    "checkIn": "출근",
+    "checkOut": "퇴근",
+    "checkInSuccess": "출근 처리가 완료되었습니다.",
+    "checkInFailed": "출근 처리에 실패했습니다.",
+    "checkOutSuccess": "퇴근 처리가 완료되었습니다.",
+    "checkOutFailed": "퇴근 처리에 실패했습니다.",
+    "dayComplete": "오늘 근무 종료"
   },
   "earlyLeave": {
     "title": "조퇴/결근 신청",
@@ -29,6 +40,7 @@
     "submitRequest": "신청하기",
     "noRequests": "신청 내역이 없습니다.",
     "types": {
+      "ANNUAL": "연차",
       "SICK": "병가",
       "OFFICIAL": "공가",
       "OTHER": "기타"
@@ -70,6 +82,77 @@
   },
   "attendance": {
     "title": "내 근태",
-    "description": "출석 기록을 확인합니다"
+    "description": "출석 기록을 확인합니다",
+    "history": "근태 기록",
+    "date": "날짜",
+    "checkIn": "출근 시간",
+    "checkOut": "퇴근 시간",
+    "status": "상태",
+    "noRecords": "기록이 없습니다.",
+    "statuses": {
+      "PRESENT": "출석",
+      "ABSENT": "결근",
+      "LEAVE": "휴가",
+      "HOLIDAY": "공휴일"
+    }
+  },
+  "profile": {
+    "title": "프로필 관리",
+    "name": "이름",
+    "email": "이메일",
+    "password": "비밀번호",
+    "currentPassword": "현재 비밀번호",
+    "newPassword": "새 비밀번호 (변경 시 입력)",
+    "role": "권한",
+    "joinDate": "입사일",
+    "update": "정보 수정",
+    "success": "프로필이 성공적으로 업데이트되었습니다.",
+    "error": "업데이트 중 오류가 발생했습니다.",
+    "incorrectPassword": "현재 비밀번호가 올바르지 않습니다.",
+    "passwordRequired": "비밀번호 변경을 위해 현재 비밀번호를 입력해주세요."
+  },
+  "admin": {
+    "title": "관리자 페이지",
+    "description": "직원 및 휴가 신청을 관리합니다.",
+    "tabs": {
+      "leaves": "휴가/조퇴 신청",
+      "members": "직원 관리"
+    },
+    "leaves": {
+      "title": "휴가 신청 내역",
+      "description": "승인 대기 중인 신청 목록입니다.",
+      "noRequests": "대기 중인 신청이 없습니다.",
+      "approveSuccess": "승인되었습니다.",
+      "rejectSuccess": "거절되었습니다.",
+      "actionFailed": "처리에 실패했습니다."
+    },
+    "members": {
+      "title": "직원 목록",
+      "description": "등록된 모든 직원을 관리합니다.",
+      "addMember": "직원 추가",
+      "editMember": "직원 정보 수정",
+      "noMembers": "등록된 직원이 없습니다.",
+      "addSuccess": "직원이 추가되었습니다.",
+      "addFailed": "직원 추가에 실패했습니다.",
+      "updateSuccess": "수정되었습니다.",
+      "updateFailed": "수정에 실패했습니다.",
+      "form": {
+        "details": "직원 정보를 입력하세요.",
+        "name": "이름",
+        "email": "이메일",
+        "password": "비밀번호",
+        "passwordHint": "변경 시에만 입력",
+        "role": "권한",
+        "selectRole": "권한 선택",
+        "joinDate": "입사일",
+        "submitAdd": "직원 생성",
+        "submitEdit": "정보 수정"
+      }
+    },
+    "table": {
+      "employee": "직원",
+      "role": "권한",
+      "joinedAt": "입사일"
+    }
   }
 }

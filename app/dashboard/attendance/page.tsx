@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { useTranslations, useFormatter } from "next-intl";
 
 interface Attendance {
   id: string;
@@ -26,6 +27,8 @@ interface Attendance {
 export default function AttendancePage() {
   const [history, setHistory] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations("attendance");
+  const formatter = useFormatter();
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -52,38 +55,42 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">My Attendance</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t('title')}</h2>
         <p className="text-muted-foreground">
-          View your attendance history for the last 30 days.
+          {t('description')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Attendance History</CardTitle>
+          <CardTitle>{t('history')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Check In</TableHead>
-                <TableHead>Check Out</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('date')}</TableHead>
+                <TableHead>{t('checkIn')}</TableHead>
+                <TableHead>{t('checkOut')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {history.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center">
-                    No records found.
+                    {t('noRecords')}
                   </TableCell>
                 </TableRow>
               ) : (
                 history.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className="font-medium">
-                      {format(new Date(record.date), "PPP")}
+                      {formatter.dateTime(new Date(record.date), {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
                     </TableCell>
                     <TableCell>
                       {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
@@ -93,7 +100,7 @@ export default function AttendancePage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={record.status === "PRESENT" ? "default" : "secondary"}>
-                        {record.status}
+                        {t(`statuses.${record.status}`)}
                       </Badge>
                     </TableCell>
                   </TableRow>

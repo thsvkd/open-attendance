@@ -2,7 +2,10 @@
   "common": {
     "welcome": "Welcome back",
     "logout": "Log out",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "profile": "Profile",
+    "settings": "Settings",
+    "actions": "Actions"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -13,7 +16,15 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcomeBack": "Welcome back"
+    "welcomeBack": "Welcome back",
+    "todayAttendance": "Today's Attendance",
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "checkInSuccess": "Checked in successfully.",
+    "checkInFailed": "Failed to check in.",
+    "checkOutSuccess": "Checked out successfully.",
+    "checkOutFailed": "Failed to check out.",
+    "dayComplete": "Day Complete"
   },
   "earlyLeave": {
     "title": "Early Leave/Absence",
@@ -29,6 +40,7 @@
     "submitRequest": "Submit Request",
     "noRequests": "No requests yet.",
     "types": {
+      "ANNUAL": "Annual Leave",
       "SICK": "Sick Leave",
       "OFFICIAL": "Official Leave",
       "OTHER": "Other"
@@ -70,6 +82,77 @@
   },
   "attendance": {
     "title": "My Attendance",
-    "description": "View your attendance records"
+    "description": "View your attendance records",
+    "history": "Attendance History",
+    "date": "Date",
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "status": "Status",
+    "noRecords": "No records found.",
+    "statuses": {
+      "PRESENT": "Present",
+      "ABSENT": "Absent",
+      "LEAVE": "Leave",
+      "HOLIDAY": "Holiday"
+    }
+  },
+  "profile": {
+    "title": "Profile Management",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password (fill to change)",
+    "role": "Role",
+    "joinDate": "Join Date",
+    "update": "Update Profile",
+    "success": "Profile updated successfully.",
+    "error": "An error occurred while updating.",
+    "incorrectPassword": "Current password is incorrect.",
+    "passwordRequired": "Please enter your current password to change it."
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "description": "Manage employees and leave requests.",
+    "tabs": {
+      "leaves": "Leave Requests",
+      "members": "Employee Management"
+    },
+    "leaves": {
+      "title": "Leave Request History",
+      "description": "List of pending and processed requests.",
+      "noRequests": "No pending requests.",
+      "approveSuccess": "Approved successfully.",
+      "rejectSuccess": "Rejected successfully.",
+      "actionFailed": "Action failed."
+    },
+    "members": {
+      "title": "Employee List",
+      "description": "Manage all registered employees and their information.",
+      "addMember": "Add Member",
+      "editMember": "Edit Member",
+      "noMembers": "No members registered.",
+      "addSuccess": "Member added successfully.",
+      "addFailed": "Failed to add member.",
+      "updateSuccess": "Updated successfully.",
+      "updateFailed": "Failed to update.",
+      "form": {
+        "details": "Enter employee details below.",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "passwordHint": "Fill only to change",
+        "role": "Role",
+        "selectRole": "Select Role",
+        "joinDate": "Join Date",
+        "submitAdd": "Create Member",
+        "submitEdit": "Update Profile"
+      }
+    },
+    "table": {
+      "employee": "Employee",
+      "role": "Role",
+      "joinedAt": "Joined At"
+    }
   }
 }
