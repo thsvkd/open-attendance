@@ -13,11 +13,41 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 cd "$PROJECT_ROOT"
 
+# Try to load NVM if it exists to ensure we use the correct Node/npm version
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh" > /dev/null 2>&1
+  # Use default or first installed version if no version is active or if current is Windows
+  if ! command -v node >/dev/null || ! command -v npm >/dev/null || which node | grep -q "/mnt/c/" || which npm | grep -q "/mnt/c/"; then
+    if nvm use default > /dev/null 2>&1; then
+      : # Success
+    else
+      # Try to find any installed version
+      LATEST_VERSION=$(ls "$NVM_DIR/versions/node" 2>/dev/null | head -n 1)
+      if [ -n "$LATEST_VERSION" ]; then
+        nvm use "$LATEST_VERSION" > /dev/null 2>&1 || true
+      fi
+    fi
+  fi
+fi
+hash -r 2>/dev/null
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# Check if running in WSL and using Windows npm
+if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
+  NPM_PATH=$(which npm 2>/dev/null || true)
+  if [[ "$NPM_PATH" == *"/mnt/c/"* ]] || [[ "$NPM_PATH" == *".cmd" ]] || [[ "$NPM_PATH" == *".exe" ]]; then
+    echo -e "${RED}❌ Error: It seems you are using the Windows version of npm in WSL.${NC}"
+    echo -e "${YELLOW}Please install npm in WSL (sudo apt install npm) or use NVM.${NC}"
+    echo -e "${YELLOW}Current npm path: $NPM_PATH${NC}"
+    exit 1
+  fi
+fi
 
 echo -e "${GREEN}📁 Project directory: $PROJECT_ROOT${NC}"
 
