@@ -52,7 +52,7 @@
 ## ✨ Features
 
 ### 📅 Attendance Management
-- **Automatic Attendance Tracking** - Assumes attendance on all working days (excluding holidays)
+- **Automatic Attendance Recording** - Assumes attendance on all working days (excluding holidays)
 - **Absence Recording** - Record and track absence reasons
 - **Flexible Work Hours** - Support for various work schedules
 
@@ -67,12 +67,6 @@
   - Other leave types
 - **Korean Labor Law Compliance** - Follows Korean annual leave regulations
 - **Leave Balance Dashboard** - Real-time view of leave entitlements
-
-### 📊 Reporting & Analytics
-- **Monthly Reports** - Detailed monthly attendance and leave summaries
-- **Quarterly Reports** - Quarter-wise analysis of attendance patterns
-- **Annual Reports** - Yearly overview of employee attendance
-- **Customizable Views** - Filter and sort data by various criteria
 
 ### 👥 User Management
 - **Role-Based Access Control**:
@@ -118,25 +112,9 @@ Get Open Attendance up and running in minutes!
 
 ### Prerequisites
 
-- **Node.js** 18.x or higher
-- **npm** 9.x or higher
+- **Node.js** 20.x or higher
+- **npm** 10.x or higher
 - **Git**
-
-### One-Command Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/thsvkd/open-attendance.git
-cd open-attendance
-
-# Run the automated setup script
-./scripts/setup.sh
-
-# Start the development server
-./scripts/run.sh
-```
-
-🎉 Open [http://localhost:3000](http://localhost:3000) in your browser!
 
 ---
 
@@ -149,45 +127,31 @@ git clone https://github.com/thsvkd/open-attendance.git
 cd open-attendance
 ```
 
-### Step 2: Install Dependencies
+### Step 2: Run Automated Setup Script
 
 ```bash
-npm install
+./scripts/setup.sh
 ```
 
-### Step 3: Set Up Environment Variables
+This script automatically performs the following tasks:
+- Creates `.env` file and auto-generates `NEXTAUTH_SECRET`
+- Installs dependencies
+- Generates Prisma client
+- Runs database migrations
 
-Copy the example environment file:
+### Step 3: Start Development Server
 
 ```bash
-cp .env.example .env
+./scripts/run.sh
 ```
 
-Edit `.env` with your configuration:
-
-```env
-# Database
-DATABASE_URL="file:./prisma/dev.db"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-super-secret-key-here"
-```
-
-> 💡 **Tip**: Use `openssl rand -base64 32` to generate a secure `NEXTAUTH_SECRET`
-
-### Step 4: Initialize Database
+Or run in production mode:
 
 ```bash
-npx prisma generate
-npx prisma migrate dev
+./scripts/run.sh --prod
 ```
 
-### Step 5: Start Development Server
-
-```bash
-npm run dev
-```
+🎉 Open [http://localhost:3000](http://localhost:3000) in your browser!
 
 ---
 
