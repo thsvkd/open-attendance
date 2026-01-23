@@ -42,7 +42,7 @@ if [ -z "$DOMAIN" ]; then
 fi
 
 # Validate domain format (basic check)
-if ! [[ "$DOMAIN" =~ ^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.[a-zA-Z]{2,}$ ]]; then
+if ! [[ "$DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.[a-zA-Z]{2,}$ ]]; then
   echo -e "${RED}❌ Error: Invalid domain format${NC}"
   exit 1
 fi
