@@ -18,8 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -31,7 +30,7 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 })
 
-export function RegisterForm() {
+export function SetupForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -52,7 +51,7 @@ export function RegisterForm() {
       // Don't send confirmPassword to API
       const { confirmPassword, ...registerData } = values
       await axios.post("/api/register", registerData)
-      toast.success("Account created! Please login.")
+      toast.success("Admin account created! Please login.")
       router.push("/login")
     } catch (error) {
       toast.error("Something went wrong.")
@@ -62,10 +61,12 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="w-[350px]">
+    <Card className="w-[400px]">
       <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Create an account to get started.</CardDescription>
+        <CardTitle>Initial Setup</CardTitle>
+        <CardDescription>
+          Welcome! Create your administrator account to get started.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -90,7 +91,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
+                    <Input placeholder="admin@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,18 +124,11 @@ export function RegisterForm() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Register"}
+              {isLoading ? "Creating admin account..." : "Create Admin Account"}
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter>
-        <Button variant="link" className="w-full" asChild>
-          <Link href="/login">
-            Already have an account? Login
-          </Link>
-        </Button>
-      </CardFooter>
     </Card>
   )
 }

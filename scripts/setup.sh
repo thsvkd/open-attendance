@@ -65,7 +65,7 @@ NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n')
 
 cat > .env << EOF
 # Database
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:./prisma/db/dev.db"
 
 # NextAuth Configuration
 NEXTAUTH_URL="http://localhost:3000"
