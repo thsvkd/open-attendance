@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimePickerField } from "@/components/ui/time-picker-field";
 import { PageLoading } from "@/components/ui/page-loading";
 import type { LeaveType, LeaveTypeSelection, HalfDayPeriod, UserBalance, LeaveRequestRecord } from "@/types";
 
@@ -262,29 +263,50 @@ export default function AnnualLeavePage() {
               )}
 
               {leaveTypeSelection === "QUARTER_DAY" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startTime">{t('startTime')}</Label>
-                    <Input
-                      type="time"
-                      id="startTime"
-                      value={startTime}
-                      onChange={(e) => handleStartTimeChange(e.target.value)}
-                      className="h-12 px-4 text-base"
-                      required
-                    />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">{t('duration')}</Label>
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      2시간 고정
+                    </Badge>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="endTime">{t('endTime')}</Label>
-                    <Input
-                      type="time"
-                      id="endTime"
-                      value={endTime}
-                      onChange={(e) => handleEndTimeChange(e.target.value)}
-                      className="h-12 px-4 text-base"
-                      required
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <TimePickerField
+                        label={t('startTime')}
+                        value={startTime}
+                        onChange={handleStartTimeChange}
+                        placeholder={t('selectTime') || "Select time"}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-end h-[68px] pb-3 text-muted-foreground font-light">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="m13 18 6-6-6-6" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <TimePickerField
+                        label={t('endTime')}
+                        value={endTime}
+                        onChange={handleEndTimeChange}
+                        placeholder={t('selectTime') || "Select time"}
+                      />
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이 맞춰집니다.
+                  </p>
                 </div>
               )}
 
