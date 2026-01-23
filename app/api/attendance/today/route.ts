@@ -1,32 +1,19 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { startOfDay, endOfDay } from "date-fns";
+import {
+  requireAuth,
+  findTodayAttendance,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
 
-export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+export async function GET() {
+  const { session, error } = await requireAuth();
+  if (error) return error;
 
-  if (!session) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
-  const today = new Date();
-  
   try {
-    const attendance = await db.attendance.findFirst({
-      where: {
-        userId: session.user.id,
-        date: {
-          gte: startOfDay(today),
-          lte: endOfDay(today),
-        }
-      }
-    });
-
-    return NextResponse.json(attendance);
-  } catch (error) {
-    console.error("ATTENDANCE_GET_ERROR", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    const attendance = await findTodayAttendance(session!.user.id);
+    return successResponse(attendance);
+  } catch (e) {
+    console.error("ATTENDANCE_GET_ERROR", e);
+    return internalErrorResponse();
   }
 }

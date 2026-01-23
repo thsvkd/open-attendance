@@ -13,19 +13,12 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
-
-interface Attendance {
-  id: string;
-  date: string;
-  checkIn: string | null;
-  checkOut: string | null;
-  status: string;
-}
+import { PageLoading } from "@/components/ui/page-loading";
+import type { AttendanceRecord } from "@/types";
 
 export default function AttendancePage() {
-  const [history, setHistory] = useState<Attendance[]>([]);
+  const [history, setHistory] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useTranslations("attendance");
   const formatter = useFormatter();
@@ -45,11 +38,7 @@ export default function AttendancePage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <PageLoading />;
   }
 
   return (

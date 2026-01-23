@@ -16,7 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { Loader2, Check, X, Plus, Edit, UserPlus, Users, CalendarDays } from "lucide-react";
+import { Check, X, Edit, UserPlus, Users, CalendarDays } from "lucide-react";
+import { PageLoading } from "@/components/ui/page-loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -32,13 +33,34 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslations, useFormatter } from "next-intl";
 
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joinDate: string;
+}
+
+interface AdminLeave {
+  id: string;
+  type: string;
+  leaveType?: string;
+  startDate: string;
+  endDate: string;
+  startTime?: string;
+  endTime?: string;
+  days: number;
+  status: string;
+  user: { name: string; email: string };
+}
+
 export default function AdminPage() {
   const { data: session } = useSession();
-  const [leaves, setLeaves] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [leaves, setLeaves] = useState<AdminLeave[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const t = useTranslations("admin");
   const tc = useTranslations("common");
   const tl = useTranslations("earlyLeave");
@@ -82,6 +104,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onUpdateStatus = async (id: string, status: string) => {
@@ -89,7 +112,7 @@ export default function AdminPage() {
       await axios.patch("/api/admin/leaves", { id, status });
       toast.success(status === "APPROVED" ? t('leaves.approveSuccess') : t('leaves.rejectSuccess'));
       fetchAllLeaves();
-    } catch (error) {
+    } catch {
       toast.error(t('leaves.actionFailed'));
     }
   };
@@ -102,7 +125,7 @@ export default function AdminPage() {
       setIsAddUserOpen(false);
       fetchAllUsers();
       setFormData({ name: "", email: "", password: "", currentPassword: "", role: "USER", joinDate: format(new Date(), "yyyy-MM-dd") });
-    } catch (error) {
+    } catch {
       toast.error(t('members.addFailed'));
     }
   };
@@ -110,16 +133,16 @@ export default function AdminPage() {
   const onEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.patch("/api/admin/users", { id: editingUser.id, ...formData });
+      await axios.patch("/api/admin/users", { id: editingUser!.id, ...formData });
       toast.success(t('members.updateSuccess'));
       setEditingUser(null);
       fetchAllUsers();
-    } catch (error) {
+    } catch {
       toast.error(t('members.updateFailed'));
     }
   };
 
-  const openEditDialog = (user: any) => {
+  const openEditDialog = (user: AdminUser) => {
     setEditingUser(user);
     setFormData({
       name: user.name || "",
@@ -132,11 +155,7 @@ export default function AdminPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <PageLoading />;
   }
 
   return (
@@ -186,7 +205,7 @@ export default function AdminPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    leaves.map((leave: any) => (
+                    leaves.map((leave) => (
                       <TableRow key={leave.id}>
                         <TableCell className="font-medium">
                           {leave.user.name}
@@ -316,7 +335,7 @@ export default function AdminPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    users.map((user: any) => (
+                    users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center gap-x-3">

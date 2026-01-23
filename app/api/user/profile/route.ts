@@ -1,70 +1,78 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import {
+  requireAuth,
+  parseJsonBody,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
+
+const PROFILE_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  joinDate: true,
+} as const;
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const { session, error } = await requireAuth();
+  if (error) return error;
 
   try {
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        joinDate: true,
-      },
+      where: { id: session!.user.id },
+      select: PROFILE_SELECT,
     });
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
+      return errorResponse("User not found", 404);
     }
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("[PROFILE_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(user);
+  } catch (e) {
+    console.error("[PROFILE_GET]", e);
+    return internalErrorResponse();
   }
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
+  const { session, error } = await requireAuth();
+  if (error) return error;
 
-  if (!session?.user?.id) {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const body = await parseJsonBody<{
+    name?: string;
+    email?: string;
+    password?: string;
+    currentPassword?: string;
+  }>(req);
+
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
   }
 
-  try {
-    const body = await req.json();
-    const { name, email, password, currentPassword } = body;
+  const { name, email, password, currentPassword } = body;
 
+  try {
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: session!.user.id },
     });
 
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
+      return errorResponse("User not found", 404);
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (name) updateData.name = name;
 
-    // Allow email updates with validation
     if (email && email !== user.email) {
-      // Check if email is already taken by another user
       const existingUser = await db.user.findUnique({
         where: { email },
       });
 
-      if (existingUser && existingUser.id !== session.user.id) {
-        return new NextResponse("Email already in use", { status: 409 });
+      if (existingUser && existingUser.id !== session!.user.id) {
+        return errorResponse("Email already in use", 409);
       }
 
       updateData.email = email;
@@ -72,36 +80,30 @@ export async function PATCH(req: Request) {
 
     if (password) {
       if (!currentPassword) {
-        return new NextResponse("Current password required", { status: 400 });
+        return errorResponse("Current password required", 400);
       }
 
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password!);
       if (!isPasswordValid) {
-        return new NextResponse("Incorrect current password", { status: 403 });
+        return errorResponse("Incorrect current password", 403);
       }
 
       updateData.password = await bcrypt.hash(password, 10);
     }
 
     if (Object.keys(updateData).length === 0) {
-      return new NextResponse("No fields to update", { status: 400 });
+      return errorResponse("No fields to update", 400);
     }
 
     const updatedUser = await db.user.update({
-      where: { id: session.user.id },
+      where: { id: session!.user.id },
       data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        joinDate: true,
-      },
+      select: PROFILE_SELECT,
     });
 
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    console.error("[PROFILE_PATCH]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(updatedUser);
+  } catch (e) {
+    console.error("[PROFILE_PATCH]", e);
+    return internalErrorResponse();
   }
 }

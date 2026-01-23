@@ -23,41 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
-import { cn } from "@/lib/utils";
-
-type LeaveType = "FULL_DAY" | "HALF_DAY_AM" | "HALF_DAY_PM" | "QUARTER_DAY";
-type LeaveTypeSelection = "FULL_DAY" | "HALF_DAY" | "QUARTER_DAY";
-type HalfDayPeriod = "AM" | "PM";
-
-interface UserInfo {
-  totalLeaves: number;
-  usedLeaves: number;
-  joinDate: string;
-}
-
-interface LeaveRequest {
-  id: string;
-  startDate: string;
-  endDate: string;
-  days: number;
-  status: string;
-  leaveType: LeaveType;
-  startTime?: string;
-  endTime?: string;
-}
+import { DatePickerField } from "@/components/ui/date-picker-field";
+import { PageLoading } from "@/components/ui/page-loading";
+import type { LeaveType, LeaveTypeSelection, HalfDayPeriod, UserBalance, LeaveRequestRecord } from "@/types";
 
 export default function AnnualLeavePage() {
-  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [leaves, setLeaves] = useState<LeaveRequestRecord[]>([]);
+  const [userInfo, setUserInfo] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [leaveTypeSelection, setLeaveTypeSelection] = useState<LeaveTypeSelection>("FULL_DAY");
@@ -69,7 +44,6 @@ export default function AnnualLeavePage() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const t = useTranslations('annualLeave');
 
-  // Compute actual leaveType based on selection and period
   const getActualLeaveType = (): LeaveType => {
     if (leaveTypeSelection === "HALF_DAY") {
       return halfDayPeriod === "AM" ? "HALF_DAY_AM" : "HALF_DAY_PM";
@@ -157,11 +131,7 @@ export default function AnnualLeavePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <PageLoading />;
   }
 
   const remainingLeaves = userInfo ? userInfo.totalLeaves - userInfo.usedLeaves : 0;
@@ -222,7 +192,7 @@ export default function AnnualLeavePage() {
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('leaveType')}</Label>
-                <Select value={leaveTypeSelection} onValueChange={(value: LeaveTypeSelection) => setLeaveTypeSelection(value)}>
+                <Select value={leaveTypeSelection} onValueChange={(value: string) => setLeaveTypeSelection(value as LeaveTypeSelection)}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('selectLeaveType')} />
                   </SelectTrigger>
@@ -236,89 +206,32 @@ export default function AnnualLeavePage() {
 
               {leaveTypeSelection === "FULL_DAY" ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t('startDate')}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full h-12 justify-start text-left font-normal",
-                            !startDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={startDate}
-                          onSelect={setStartDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('endDate')}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full h-12 justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? format(endDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={endDate}
-                          onSelect={setEndDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                  <DatePickerField
+                    label={t('startDate')}
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    placeholder={t('pickDate')}
+                  />
+                  <DatePickerField
+                    label={t('endDate')}
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    placeholder={t('pickDate')}
+                  />
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Label>{t('date')}</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full h-12 justify-start text-left font-normal",
-                          !startDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={startDate}
-                        onSelect={setStartDate}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DatePickerField
+                  label={t('date')}
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  placeholder={t('pickDate')}
+                />
               )}
 
               {leaveTypeSelection === "HALF_DAY" && (
                 <div className="space-y-2">
                   <Label>{t('halfDayPeriod')}</Label>
-                  <Select value={halfDayPeriod} onValueChange={(value: HalfDayPeriod) => setHalfDayPeriod(value)}>
+                  <Select value={halfDayPeriod} onValueChange={(value: string) => setHalfDayPeriod(value as HalfDayPeriod)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

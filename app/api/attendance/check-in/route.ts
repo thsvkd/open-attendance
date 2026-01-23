@@ -1,45 +1,36 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { startOfDay, endOfDay } from "date-fns";
+import {
+  requireAuth,
+  findTodayAttendance,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
 
-export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
-  const today = new Date();
+export async function POST() {
+  const { session, error } = await requireAuth();
+  if (error) return error;
 
   try {
-    const existing = await db.attendance.findFirst({
-      where: {
-        userId: session.user.id,
-        date: {
-          gte: startOfDay(today),
-          lte: endOfDay(today),
-        }
-      }
-    });
+    const existing = await findTodayAttendance(session!.user.id);
 
     if (existing) {
-      return new NextResponse("Already checked in", { status: 400 });
+      return errorResponse("Already checked in", 400);
     }
 
+    const today = new Date();
     const attendance = await db.attendance.create({
       data: {
-        userId: session.user.id,
+        userId: session!.user.id,
         date: today,
         checkIn: today,
-        status: "PRESENT"
-      }
+        status: "PRESENT",
+      },
     });
 
-    return NextResponse.json(attendance);
-  } catch (error) {
-    console.error("CHECKIN_ERROR", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(attendance);
+  } catch (e) {
+    console.error("CHECKIN_ERROR", e);
+    return internalErrorResponse();
   }
 }

@@ -49,7 +49,7 @@ export function CheckInCard() {
             await axios.post("/api/attendance/check-in");
             toast.success(t('checkInSuccess'));
             fetchAttendance();
-        } catch (error) {
+        } catch {
             toast.error(t('checkInFailed'));
         } finally {
             setActionLoading(false);
@@ -62,7 +62,7 @@ export function CheckInCard() {
             await axios.post("/api/attendance/check-out");
             toast.success(t('checkOutSuccess'));
             fetchAttendance();
-        } catch (error) {
+        } catch {
             toast.error(t('checkOutFailed'));
         } finally {
             setActionLoading(false);

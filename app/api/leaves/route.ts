@@ -1,91 +1,110 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { differenceInDays } from "date-fns";
+import {
+  requireAuth,
+  parseJsonBody,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+  const { session, error } = await requireAuth();
+  if (error) return error;
 
   try {
     const leaves = await db.leaveRequest.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session!.user.id },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(leaves);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(leaves);
+  } catch (e) {
+    console.error("[LEAVES_GET]", e);
+    return internalErrorResponse();
   }
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+  const { session, error } = await requireAuth();
+  if (error) return error;
+
+  const body = await parseJsonBody<{
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    reason?: string;
+  }>(req);
+
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
+  }
+
+  const { type, startDate, endDate, reason } = body;
+
+  if (!type || !startDate || !endDate) {
+    return errorResponse("Missing required fields", 400);
+  }
 
   try {
-    const { type, startDate, endDate, reason } = await req.json();
-
     const start = new Date(startDate);
     const end = new Date(endDate);
     const days = differenceInDays(end, start) + 1;
 
     const leave = await db.leaveRequest.create({
       data: {
-        userId: session.user.id,
+        userId: session!.user.id,
         type,
         startDate: start,
         endDate: end,
         days,
-        reason,
+        reason: reason || null,
         status: "PENDING",
       },
     });
 
-    return NextResponse.json(leave);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(leave);
+  } catch (e) {
+    console.error("[LEAVES_POST]", e);
+    return internalErrorResponse();
   }
 }
 
-// Cancel a leave request (PATCH)
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+  const { session, error } = await requireAuth();
+  if (error) return error;
+
+  const body = await parseJsonBody<{ id?: string }>(req);
+  if (!body || !body.id) {
+    return errorResponse("Leave request ID required", 400);
+  }
+
+  const { id } = body;
 
   try {
-    const { id } = await req.json();
-
-    // Find the leave request
     const leave = await db.leaveRequest.findUnique({
       where: { id },
     });
 
     if (!leave) {
-      return NextResponse.json({ message: "Leave request not found" }, { status: 404 });
+      return errorResponse("Leave request not found", 404);
     }
 
-    // Check if the user owns this request
-    if (leave.userId !== session.user.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    if (leave.userId !== session!.user.id) {
+      return errorResponse("Unauthorized", 403);
     }
 
-    // Check if the request is still pending
     if (leave.status !== "PENDING") {
-      return NextResponse.json(
-        { message: "Only pending requests can be cancelled" },
-        { status: 400 }
-      );
+      return errorResponse("Only pending requests can be cancelled", 400);
     }
 
-    // Update status to CANCELLED
     const updatedLeave = await db.leaveRequest.update({
       where: { id },
       data: { status: "CANCELLED" },
     });
 
-    return NextResponse.json(updatedLeave);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(updatedLeave);
+  } catch (e) {
+    console.error("[LEAVES_PATCH]", e);
+    return internalErrorResponse();
   }
 }
