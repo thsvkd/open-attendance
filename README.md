@@ -2,9 +2,9 @@
 
 # 🕐 Open Attendance
 
-### Open-source Attendance & Leave Management System
+## Open-source Attendance & Leave Management System
 
-*A comprehensive solution for tracking employee attendance, leaves, and work hours*
+A comprehensive solution for tracking employee attendance, leave, and time-off
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://reactjs.org/)
@@ -24,11 +24,6 @@
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Quick Start](#-quick-start)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Development](#-development)
-- [Deployment](#-deployment)
-- [Documentation](#-documentation)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -36,15 +31,15 @@
 
 ## 🎯 Overview
 
-**Open Attendance** is an open-source attendance and leave management system designed for small to medium-sized teams (especially startups). It provides a comprehensive platform to track employee attendance, manage annual leave, handle sick leave, and generate insightful reports.
+**Open Attendance** is an open-source attendance and leave management system designed for small teams (especially startups). It provides a unified platform to handle attendance tracking, annual leave management, sick leave processing, and insight reporting.
 
 ### Why Open Attendance?
 
-- ✅ **Free & Open Source** - No licensing fees, full transparency
-- 🚀 **Easy to Deploy** - Simple setup with automated scripts
-- 🌏 **Multilingual** - Supports Korean and English out of the box
+- ✅ **Free & Open Source** - No licensing cost, full transparency
+- 🚀 **Easy Deployment** - Simple setup with automated scripts
+- 🌏 **Multilingual** - Korean and English supported by default
 - 📊 **Comprehensive Reporting** - Track attendance and leave patterns
-- 🔒 **Secure** - Built with NextAuth.js for robust authentication
+- 🔒 **Security** - Strong authentication using NextAuth.js
 - 🎨 **Modern UI** - Beautiful interface built with Tailwind CSS and Radix UI
 
 ---
@@ -52,63 +47,43 @@
 ## ✨ Features
 
 ### 📅 Attendance Management
-- **Automatic Attendance Recording** - Assumes attendance on all working days (excluding holidays)
-- **Absence Recording** - Record and track absence reasons
-- **Flexible Work Hours** - Support for various work schedules
+
+- **Automatic attendance recording** - Assumes attendance on all working days (excluding holidays)
+- **Absence recording** - Record and track reasons for absence
+- **Flexible work hours** - Supports various work schedules
 
 ### 🏖️ Leave Management
-- **Annual Leave Tracking** - Monitor total, used, and remaining annual leave days
-- **Leave Request Workflow** - Submit, approve, and track leave requests
-- **Multiple Leave Types**:
-  - Annual leave (연차)
-  - Sick leave (병가)
-  - Official leave (공가)
-  - Early departure (조퇴)
+
+- **Annual leave tracking** - Monitor total, used, and remaining leave days
+- **Leave request workflow** - Submit, approve, and track leave requests
+- **Leave types**:
+  - Annual leave
+  - Sick leave
+  - Official leave
+  - Early leave
   - Other leave types
-- **Korean Labor Law Compliance** - Follows Korean annual leave regulations
-- **Leave Balance Dashboard** - Real-time view of leave entitlements
+- **Korean labor law compliant** - Applies Korean annual leave regulations
+- **Leave balance dashboard** - Real-time leave status
 
 ### 👥 User Management
-- **Role-Based Access Control**:
-  - **Administrators** - Full system access and management capabilities
-  - **Regular Users** - View and manage personal attendance/leave data
-- **Secure Authentication** - Powered by NextAuth.js
-- **User Profiles** - Manage personal information and preferences
+
+- **Role-based access control**:
+  - **Admin** - Full access to all features
+  - **User** - Access to personal attendance and leave data
+- **Secure authentication** - Powered by NextAuth.js
+- **User profiles** - Manage personal info and settings
 
 ### 🌐 Internationalization
-- **Korean (한국어)** - Full Korean language support
-- **English** - Complete English translation
-- **Easy Language Switching** - Toggle between languages seamlessly
 
----
-
-## 🛠 Tech Stack
-
-### Frontend
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
-- **UI Library**: [React 19](https://reactjs.org/)
-- **Language**: [TypeScript 5](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Components**: [Radix UI](https://www.radix-ui.com/)
-- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
-- **i18n**: [next-intl](https://next-intl-docs.vercel.app/)
-
-### Backend
-- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
-- **Database**: SQLite (development) / PostgreSQL (production ready)
-- **ORM**: [Prisma](https://www.prisma.io/)
-- **API**: Next.js API Routes
-
-### DevOps
-- **Package Manager**: npm
-- **Code Quality**: ESLint
-- **Version Control**: Git
+- **Korean** - Full Korean support
+- **English** - Full English translation
+- **Easy language switch** - Seamless language toggling
 
 ---
 
 ## 🚀 Quick Start
 
-Get Open Attendance up and running in minutes!
+Run Open Attendance in minutes!
 
 ### Prerequisites
 
@@ -116,30 +91,17 @@ Get Open Attendance up and running in minutes!
 - **npm** 10.x or higher
 - **Git**
 
----
-
-## 📦 Installation
-
-### Step 1: Clone the Repository
+### Clone the Repository
 
 ```bash
-git clone https://github.com/thsvkd/open-attendance.git
-cd open-attendance
+
 ```
 
-### Step 2: Run Automated Setup Script
+### Setup & Run
 
 ```bash
 ./scripts/setup.sh
 ```
-
-This script automatically performs the following tasks:
-- Creates `.env` file and auto-generates `NEXTAUTH_SECRET`
-- Installs dependencies
-- Generates Prisma client
-- Runs database migrations
-
-### Step 3: Start Development Server
 
 ```bash
 ./scripts/run.sh
@@ -148,10 +110,10 @@ This script automatically performs the following tasks:
 Or run in production mode:
 
 ```bash
-./scripts/run.sh --prod
+./scripts/run.sh --prod   # build then start
 ```
 
-🎉 Open [http://localhost:3000](http://localhost:3000) in your browser!
+After it starts, open [http://localhost:3000](http://localhost:3000) 🎉
 
 ---
 
@@ -161,177 +123,97 @@ Or run in production mode:
 
 | Variable          | Description                | Required | Default                 |
 | ----------------- | -------------------------- | -------- | ----------------------- |
-| `DATABASE_URL`    | Database connection string | Yes      | `file:./prisma/dev.db`  |
+| `DATABASE_URL`    | Database connection string | Yes      | `file:./dev.db`         |
 | `NEXTAUTH_URL`    | Application URL            | Yes      | `http://localhost:3000` |
 | `NEXTAUTH_SECRET` | NextAuth secret key        | Yes      | -                       |
 
-### Database Configuration
+### Database Setup
 
 **Development**: SQLite (default)
+
 ```env
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:./dev.db"
 ```
 
 **Production**: PostgreSQL (recommended)
+
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
 ```
 
 ---
 
-## 💻 Development
-
-### Running Development Server
-
-```bash
-npm run dev
-# or
-./scripts/run.sh
-```
-
-### Building for Production
-
-```bash
-npm run build
-npm start
-# or
-./scripts/run.sh --prod
-```
-
 ### Database Management
 
 **Run Prisma Studio** (Database GUI):
+
 ```bash
 npx prisma studio
 ```
 
-**Create a Migration**:
+**Create a migration**:
+
 ```bash
 npx prisma migrate dev --name your_migration_name
 ```
 
-**Reset Database**:
+**Initialize/Reset database**:
+
 ```bash
 npx prisma migrate reset
 ```
-
-### Project Structure
-
-```
-open-attendance/
-├── app/                    # Next.js app directory (pages & API routes)
-│   ├── api/               # API endpoints
-│   ├── dashboard/         # Dashboard pages
-│   └── auth/              # Authentication pages
-├── components/            # React components
-│   ├── dashboard/        # Dashboard-specific components
-│   └── ui/               # Reusable UI components
-├── lib/                   # Utility functions & configurations
-├── messages/             # i18n translation files
-│   ├── en.json           # English translations
-│   └── ko.json           # Korean translations
-├── prisma/               # Database schema & migrations
-├── public/               # Static assets
-└── scripts/              # Utility scripts
-```
-
----
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/thsvkd/open-attendance)
-
-1. Click the "Deploy" button above
-2. Configure environment variables
-3. Deploy!
-
-### Manual Deployment
-
-```bash
-# Build the application
-npm run build
-
-# Start production server
-npm start
-```
-
-### Environment Setup for Production
-
-1. Set up a PostgreSQL database
-2. Configure environment variables in your hosting platform
-3. Run database migrations:
-   ```bash
-   npx prisma migrate deploy
-   ```
-
----
-
-## 📚 Documentation
-
-- **[Features](FEATURES.md)** - Detailed feature documentation
-- **[API Documentation](docs/API.md)** - API endpoints reference *(coming soon)*
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Deployment instructions *(coming soon)*
-- **[Contributing](CONTRIBUTING.md)** - How to contribute *(coming soon)*
-
-### Useful Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [NextAuth.js Documentation](https://next-auth.js.org/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Whether it's:
+We welcome contributions from the community!
 
 - 🐛 Bug reports
 - 💡 Feature requests
 - 📝 Documentation improvements
 - 🔧 Code contributions
 
-Please feel free to open an issue or submit a pull request.
-
 ### Development Setup
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
+3. Commit changes: `git commit -m 'Add amazing feature'`
 4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+5. Open a pull request
 
 ---
 
 ## 🐛 Troubleshooting
 
-### NextAuth Configuration Error
+### NextAuth configuration error
 
 **Error**:
-```
+
+```log
 [next-auth][warn][NEXTAUTH_URL]
 [next-auth][warn][NO_SECRET]
 GET /api/auth/error?error=Configuration 500
 ```
 
 **Solution**: Run the setup script to configure environment variables:
+
 ```bash
 ./scripts/setup.sh
 ```
 
-### Database Connection Issues
+### Database connection issues
 
 **Error**: `Can't reach database server`
 
-**Solution**: Check your `DATABASE_URL` in `.env` and ensure the database server is running.
+**Solution**: Check `DATABASE_URL` in `.env` and ensure the database server is running.
 
-### Port Already in Use
+### Port already in use
 
 **Error**: `Port 3000 is already in use`
 
-**Solution**: Kill the process using port 3000 or specify a different port:
+**Solution**: Stop the process using port 3000 or use another port:
+
 ```bash
 PORT=3001 npm run dev
 ```
@@ -340,26 +222,19 @@ PORT=3001 npm run dev
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## 🛠 Tech Stack
 
-Built with ❤️ using:
+Built with:
+
 - [Next.js](https://nextjs.org/)
 - [Prisma](https://www.prisma.io/)
 - [NextAuth.js](https://next-auth.js.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Radix UI](https://www.radix-ui.com/)
-
----
-
-## 📞 Support
-
-- 🌟 Star this repository if you find it helpful!
-- 🐛 [Report Issues](https://github.com/thsvkd/open-attendance/issues)
-- 💬 [Discussions](https://github.com/thsvkd/open-attendance/discussions)
 
 ---
 
