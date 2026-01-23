@@ -58,10 +58,10 @@ export default function AttendancePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('date')}</TableHead>
-                <TableHead>{t('checkIn')}</TableHead>
-                <TableHead>{t('checkOut')}</TableHead>
-                <TableHead>{t('status')}</TableHead>
+                <TableHead className="text-left">{t('date')}</TableHead>
+                <TableHead className="text-center">{t('checkIn')}</TableHead>
+                <TableHead className="text-center">{t('checkOut')}</TableHead>
+                <TableHead className="text-right">{t('status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -74,20 +74,20 @@ export default function AttendancePage() {
               ) : (
                 history.map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium text-left">
                       {formatter.dateTime(new Date(record.date), {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
                       })}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <Badge statusType="attendance" status={record.status} label={t(`statuses.${record.status}`)} />
                     </TableCell>
                   </TableRow>

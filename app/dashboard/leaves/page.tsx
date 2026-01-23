@@ -169,11 +169,11 @@ export default function LeavesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('type')}</TableHead>
-                  <TableHead>{t('dates')}</TableHead>
-                  <TableHead>{t('days')}</TableHead>
-                  <TableHead>{t('status')}</TableHead>
-                  <TableHead>{t('common.actions')}</TableHead>
+                  <TableHead className="text-left">{t('type')}</TableHead>
+                  <TableHead className="text-center">{t('dates')}</TableHead>
+                  <TableHead className="text-center">{t('days')}</TableHead>
+                  <TableHead className="text-center">{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -186,12 +186,12 @@ export default function LeavesPage() {
                 ) : (
                   leaves.map((leave) => (
                     <TableRow key={leave.id}>
-                      <TableCell>{t(`types.${leave.type}`)}</TableCell>
-                      <TableCell className="text-xs">
+                      <TableCell className="text-left">{t(`types.${leave.type}`)}</TableCell>
+                      <TableCell className="text-center text-xs">
                         {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
                       </TableCell>
-                      <TableCell>{leave.days}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">{leave.days}</TableCell>
+                      <TableCell className="text-center">
                         <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
                       </TableCell>
                       <TableCell className="text-right">

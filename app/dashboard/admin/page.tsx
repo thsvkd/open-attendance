@@ -189,11 +189,11 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('table.employee')}</TableHead>
-                    <TableHead>{tl('type')}</TableHead>
-                    <TableHead>{tl('dates')}</TableHead>
-                    <TableHead>{tl('days')}</TableHead>
-                    <TableHead>{tl('status')}</TableHead>
+                    <TableHead className="text-left">{t('table.employee')}</TableHead>
+                    <TableHead className="text-center">{tl('type')}</TableHead>
+                    <TableHead className="text-center">{tl('dates')}</TableHead>
+                    <TableHead className="text-center">{tl('days')}</TableHead>
+                    <TableHead className="text-center">{tl('status')}</TableHead>
                     <TableHead className="text-right">{tc('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -209,13 +209,13 @@ export default function AdminPage() {
                       <TableRow key={leave.id}>
                         <TableCell className="font-medium">
                           {leave.user.name}
-                          <p className="text-xs text-muted-foreground font-normal">{leave.user.email}</p>
+                          <p className="text-xs text-left text-muted-foreground font-normal">{leave.user.email}</p>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <div>
                             {tl(`types.${leave.type}`)}
                             {leave.type === "ANNUAL" && leave.leaveType && leave.leaveType !== "FULL_DAY" && (
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-center text-muted-foreground">
                                 {ta(`leaveTypes.${leave.leaveType}`)}
                                 {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
                                   <span className="block">{leave.startTime} - {leave.endTime}</span>
@@ -224,7 +224,7 @@ export default function AdminPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-xs">
+                        <TableCell className="text-xs text-center">
                           {leave.leaveType === "FULL_DAY" || !leave.leaveType ? (
                             <>
                               {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
@@ -233,8 +233,8 @@ export default function AdminPage() {
                             format(new Date(leave.startDate), "MM/dd")
                           )}
                         </TableCell>
-                        <TableCell>{leave.days}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">{leave.days}</TableCell>
+                        <TableCell className="text-center">
                           <Badge statusType="leave" status={leave.status} label={tl(`statuses.${leave.status}`)} />
                         </TableCell>
                         <TableCell className="text-right space-x-2 min-w-[120px]">{leave.status === "PENDING" && (
@@ -321,9 +321,9 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('table.employee')}</TableHead>
-                    <TableHead>{t('table.role')}</TableHead>
-                    <TableHead>{t('table.joinedAt')}</TableHead>
+                    <TableHead className="text-left">{t('table.employee')}</TableHead>
+                    <TableHead className="text-center">{t('table.role')}</TableHead>
+                    <TableHead className="text-center">{t('table.joinedAt')}</TableHead>
                     <TableHead className="text-right">{tc('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -337,7 +337,7 @@ export default function AdminPage() {
                   ) : (
                     users.map((user) => (
                       <TableRow key={user.id}>
-                        <TableCell>
+                        <TableCell className="text-left">
                           <div className="flex items-center gap-x-3">
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                               {user.name?.[0]?.toUpperCase()}
@@ -348,10 +348,10 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <Badge statusType="role" status={user.role || "USER"} />
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="text-center text-sm">
                           {formatter.dateTime(new Date(user.joinDate), {
                             year: 'numeric',
                             month: 'long',

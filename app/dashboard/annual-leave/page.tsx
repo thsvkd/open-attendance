@@ -330,11 +330,11 @@ export default function AnnualLeavePage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('type')}</TableHead>
-                  <TableHead>{t('dates')}</TableHead>
-                  <TableHead>{t('duration')}</TableHead>
-                  <TableHead>{t('status')}</TableHead>
-                  <TableHead>{t('common.actions')}</TableHead>
+                  <TableHead className="text-left">{t('type')}</TableHead>
+                  <TableHead className="text-center">{t('dates')}</TableHead>
+                  <TableHead className="text-center">{t('duration')}</TableHead>
+                  <TableHead className="text-center">{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -347,7 +347,7 @@ export default function AnnualLeavePage() {
                 ) : (
                   leaves.map((leave) => (
                     <TableRow key={leave.id}>
-                      <TableCell className="text-xs">
+                      <TableCell className="text-xs text-left">
                         {t(`leaveTypes.${leave.leaveType || 'FULL_DAY'}`)}
                         {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
                           <span className="block text-muted-foreground">
@@ -355,7 +355,7 @@ export default function AnnualLeavePage() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-xs">
+                      <TableCell className="text-xs text-center">
                         {leave.leaveType === "FULL_DAY" ? (
                           <>
                             {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
@@ -364,8 +364,8 @@ export default function AnnualLeavePage() {
                           format(new Date(leave.startDate), "MM/dd")
                         )}
                       </TableCell>
-                      <TableCell>{leave.days} {t('days')}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">{leave.days} {t('days')}</TableCell>
+                      <TableCell className="text-center">
                         <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
                       </TableCell>
                       <TableCell className="text-right">
