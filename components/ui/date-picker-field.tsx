@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,10 +26,17 @@ export function DatePickerField({
   onSelect,
   placeholder = "Pick a date",
 }: DatePickerFieldProps) {
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = (date: Date | undefined) => {
+    onSelect(date);
+    setOpen(false);
+  };
+
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -45,7 +53,7 @@ export function DatePickerField({
           <Calendar
             mode="single"
             selected={selected}
-            onSelect={onSelect}
+            onSelect={handleSelect}
             initialFocus
           />
         </PopoverContent>

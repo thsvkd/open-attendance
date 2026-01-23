@@ -51,6 +51,24 @@ export default function AnnualLeavePage() {
     return leaveTypeSelection as LeaveType;
   };
 
+  const handleStartTimeChange = (newStartTime: string) => {
+    setStartTime(newStartTime);
+    // 2시간 이후를 종료 시간으로 자동 설정
+    const [hours, minutes] = newStartTime.split(":").map(Number);
+    const endHours = (hours + 2) % 24;
+    const endTimeStr = `${String(endHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    setEndTime(endTimeStr);
+  };
+
+  const handleEndTimeChange = (newEndTime: string) => {
+    setEndTime(newEndTime);
+    // 2시간 전을 시작 시간으로 자동 설정
+    const [hours, minutes] = newEndTime.split(":").map(Number);
+    const startHours = (hours - 2 + 24) % 24;
+    const startTimeStr = `${String(startHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    setStartTime(startTimeStr);
+  };
+
   const fetchData = async () => {
     try {
       const [leavesRes, userRes] = await Promise.all([
@@ -251,7 +269,7 @@ export default function AnnualLeavePage() {
                       type="time"
                       id="startTime"
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
+                      onChange={(e) => handleStartTimeChange(e.target.value)}
                       className="h-12 px-4 text-base"
                       required
                     />
@@ -262,7 +280,7 @@ export default function AnnualLeavePage() {
                       type="time"
                       id="endTime"
                       value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
+                      onChange={(e) => handleEndTimeChange(e.target.value)}
                       className="h-12 px-4 text-base"
                       required
                     />
