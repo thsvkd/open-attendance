@@ -32,7 +32,7 @@ export function MobileSidebar() {
         <SheetDescription className="sr-only">
           Access dashboard navigation and features
         </SheetDescription>
-        <Sidebar />
+        <Sidebar onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );

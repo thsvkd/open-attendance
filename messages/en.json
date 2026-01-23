@@ -54,6 +54,9 @@
     "endDate": "End Date"
   },
   "annualLeave": {
+    "common": {
+      "actions": "Actions"
+    },
     "title": "Annual Leave Management",
     "description": "Request and manage your annual leave",
     "requestLeave": "Request Annual Leave",
@@ -70,10 +73,14 @@
     "reasonPlaceholder": "Reason for annual leave",
     "submitRequest": "Submit Request",
     "noRequests": "No annual leave requests yet.",
+    "cancel": "Cancel",
+    "cancelSuccess": "Leave request cancelled successfully.",
+    "cancelFailed": "Failed to cancel request.",
     "statuses": {
       "PENDING": "Pending",
       "APPROVED": "Approved",
-      "REJECTED": "Rejected"
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
     },
     "startDate": "Start Date",
     "endDate": "End Date",

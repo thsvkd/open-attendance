@@ -216,21 +216,20 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell>{leave.days}</TableCell>
                         <TableCell>
-                          <Badge variant={leave.status === "APPROVED" ? "default" : leave.status === "PENDING" ? "secondary" : "destructive"}>
+                          <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
                             {tl(`statuses.${leave.status}`)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right space-x-2">
-                          {leave.status === "PENDING" && (
-                            <>
-                              <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onUpdateStatus(leave.id, "APPROVED")}>
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onUpdateStatus(leave.id, "REJECTED")}>
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
+                        <TableCell className="text-right space-x-2 min-w-[120px]">{leave.status === "PENDING" && (
+                          <>
+                            <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => onUpdateStatus(leave.id, "APPROVED")}>
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onUpdateStatus(leave.id, "REJECTED")}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                         </TableCell>
                       </TableRow>
                     ))

@@ -7,7 +7,11 @@ import { LayoutDashboard, Clock, CalendarDays, CalendarClock, ShieldCheck } from
 import { useSession } from "next-auth/react";
 import { useTranslations } from 'next-intl';
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role;
@@ -62,6 +66,7 @@ export function Sidebar() {
             <Link
               key={route.href}
               href={route.href}
+              onClick={onNavigate}
               className={cn(
                 "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
                 pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
@@ -74,24 +79,25 @@ export function Sidebar() {
             </Link>
           ))}
           {role === "ADMIN" && (
-             <>
-                <div className="my-4 border-t border-gray-700" />
-                {adminRoutes.map((route) => (
-                  <Link
-                    key={route.href}
-                    href={route.href}
-                    className={cn(
-                      "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
-                      pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
-                    )}
-                  >
-                    <div className="flex items-center flex-1">
-                      <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
-                      {route.label}
-                    </div>
-                  </Link>
-                ))}
-             </>
+            <>
+              <div className="my-4 border-t border-gray-700" />
+              {adminRoutes.map((route) => (
+                <Link
+                  key={route.href}
+                  href={route.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+                    pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
+                  )}
+                >
+                  <div className="flex items-center flex-1">
+                    <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
+                    {route.label}
+                  </div>
+                </Link>
+              ))}
+            </>
           )}
         </div>
       </div>

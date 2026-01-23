@@ -152,7 +152,7 @@ export default function LeavesPage() {
                       </TableCell>
                       <TableCell>{leave.days}</TableCell>
                       <TableCell>
-                        <Badge variant={leave.status === "APPROVED" ? "default" : leave.status === "PENDING" ? "secondary" : "destructive"}>
+                        <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
                           {t(`statuses.${leave.status}`)}
                         </Badge>
                       </TableCell>

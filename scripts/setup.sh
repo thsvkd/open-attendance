@@ -57,22 +57,35 @@ if [ -f ".env" ]; then
   cp .env .env.backup
 fi
 
-# Create .env file
-echo -e "${GREEN}📝 Creating .env file...${NC}"
+# Create .env file from .env.example
+echo -e "${GREEN}📝 Creating .env file from .env.example...${NC}"
+
+# Check if .env.example exists
+if [ ! -f ".env.example" ]; then
+  echo -e "${RED}❌ Error: .env.example file not found${NC}"
+  exit 1
+fi
+
+# Copy .env.example to .env
+cp .env.example .env
 
 # Generate a random secret for NEXTAUTH_SECRET
 NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n')
 
-cat > .env << EOF
-# Database
-DATABASE_URL="file:./prisma/db/dev.db"
-
-# NextAuth Configuration
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="$NEXTAUTH_SECRET"
-EOF
+# Replace NEXTAUTH_SECRET in .env file
+if command -v sed &> /dev/null; then
+  # Use different sed syntax for macOS and Linux
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
+  else
+    sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
+  fi
+else
+  echo -e "${YELLOW}⚠️  sed not found. Please manually update NEXTAUTH_SECRET in .env${NC}"
+fi
 
 echo -e "${GREEN}✅ .env file created successfully${NC}"
+echo -e "${GREEN}🔑 NEXTAUTH_SECRET has been automatically generated${NC}"
 
 # Install dependencies
 echo -e "${GREEN}📦 Installing dependencies...${NC}"
