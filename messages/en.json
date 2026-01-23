@@ -160,6 +160,8 @@
       "title": "Leave Request History",
       "description": "List of pending and processed requests.",
       "noRequests": "No pending requests.",
+      "approve": "Approve",
+      "reject": "Reject",
       "approveSuccess": "Approved successfully.",
       "rejectSuccess": "Rejected successfully.",
       "actionFailed": "Action failed."

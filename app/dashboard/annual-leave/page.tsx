@@ -374,69 +374,135 @@ export default function AnnualLeavePage() {
             <CardTitle>{t('myRequests')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('type')}</TableHead>
-                  <TableHead>{t('dates')}</TableHead>
-                  <TableHead>{t('duration')}</TableHead>
-                  <TableHead>{t('status')}</TableHead>
-                  <TableHead>{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaves.length === 0 ? (
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      {t('noRequests')}
-                    </TableCell>
+                    <TableHead>{t('type')}</TableHead>
+                    <TableHead>{t('dates')}</TableHead>
+                    <TableHead>{t('duration')}</TableHead>
+                    <TableHead>{t('status')}</TableHead>
+                    <TableHead>{t('common.actions')}</TableHead>
                   </TableRow>
-                ) : (
-                  leaves.map((leave) => (
-                    <TableRow key={leave.id}>
-                      <TableCell className="text-xs">
-                        {t(`leaveTypes.${leave.leaveType || 'FULL_DAY'}`)}
-                        {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
-                          <span className="block text-muted-foreground">
-                            {leave.startTime} - {leave.endTime}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {leave.leaveType === "FULL_DAY" ? (
-                          <>
-                            {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
-                          </>
-                        ) : (
-                          format(new Date(leave.startDate), "MM/dd")
-                        )}
-                      </TableCell>
-                      <TableCell>{leave.days} {t('days')}</TableCell>
-                      <TableCell>
-                        <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {leave.status === "PENDING" && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleCancelLeave(leave.id)}
-                            disabled={cancelling === leave.id}
-                          >
-                            {cancelling === leave.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              t('cancel')
-                            )}
-                          </Button>
-                        )}
+                </TableHeader>
+                <TableBody>
+                  {leaves.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        {t('noRequests')}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    leaves.map((leave) => (
+                      <TableRow key={leave.id}>
+                        <TableCell className="text-xs">
+                          {t(`leaveTypes.${leave.leaveType || 'FULL_DAY'}`)}
+                          {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
+                            <span className="block text-muted-foreground">
+                              {leave.startTime} - {leave.endTime}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {leave.leaveType === "FULL_DAY" ? (
+                            <>
+                              {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                            </>
+                          ) : (
+                            format(new Date(leave.startDate), "MM/dd")
+                          )}
+                        </TableCell>
+                        <TableCell>{leave.days} {t('days')}</TableCell>
+                        <TableCell>
+                          <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {leave.status === "PENDING" && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleCancelLeave(leave.id)}
+                              disabled={cancelling === leave.id}
+                            >
+                              {cancelling === leave.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                t('cancel')
+                              )}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {leaves.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  {t('noRequests')}
+                </div>
+              ) : (
+                leaves.map((leave) => (
+                  <Card key={leave.id} className="shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold">{t(`leaveTypes.${leave.leaveType || 'FULL_DAY'}`)}</div>
+                            {leave.leaveType === "QUARTER_DAY" && leave.startTime && leave.endTime && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {leave.startTime} - {leave.endTime}
+                              </div>
+                            )}
+                          </div>
+                          <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">{t('dates')}</div>
+                            <div className="text-sm font-medium">
+                              {leave.leaveType === "FULL_DAY" ? (
+                                <>
+                                  {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                                </>
+                              ) : (
+                                format(new Date(leave.startDate), "MM/dd")
+                              )}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-xs text-muted-foreground">{t('duration')}</div>
+                            <div className="text-sm font-medium">{leave.days} {t('days')}</div>
+                          </div>
+                        </div>
+                        {leave.status === "PENDING" && (
+                          <div className="pt-2 border-t">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                              onClick={() => handleCancelLeave(leave.id)}
+                              disabled={cancelling === leave.id}
+                            >
+                              {cancelling === leave.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : null}
+                              {t('cancel')}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
