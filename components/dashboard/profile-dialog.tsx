@@ -71,6 +71,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
         },
         body: JSON.stringify({
           name,
+          email,
           password: newPassword || undefined,
           currentPassword: currentPassword || undefined,
         }),
@@ -78,12 +79,13 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
 
       if (response.ok) {
         toast.success(t('success'));
-        // Update session to reflect name change in header
+        // Update session to reflect changes in header
         await update({
           ...session,
           user: {
             ...session?.user,
             name,
+            email,
           }
         });
         onClose();
@@ -91,6 +93,8 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
         setCurrentPassword("");
       } else if (response.status === 403) {
         toast.error(t('incorrectPassword'));
+      } else if (response.status === 409) {
+        toast.error(t('emailInUse'));
       } else {
         toast.error(t('error'));
       }
@@ -112,9 +116,11 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
             <Label htmlFor="email">{t('email')}</Label>
             <Input
               id="email"
+              type="email"
               value={email}
-              disabled
-              className="bg-slate-100 dark:bg-slate-800"
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('email')}
+              required
             />
           </div>
           <div className="space-y-2">

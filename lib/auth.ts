@@ -64,25 +64,36 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user }) {
-      const dbUser = await db.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      });
-
-      if (!dbUser) {
-        if (user) {
-          token.id = user.id;
-        }
+      // On initial sign-in, user object is available
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.role = user.role;
         return token;
       }
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        role: dbUser.role,
-      };
+      // On subsequent requests, refresh user data from database using ID
+      // This ensures email changes are properly reflected
+      if (token.id && typeof token.id === 'string') {
+        const dbUser = await db.user.findUnique({
+          where: {
+            id: token.id,
+          },
+        });
+
+        if (dbUser) {
+          return {
+            id: dbUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            role: dbUser.role,
+          };
+        }
+      }
+
+      // If user not found, return existing token
+      return token;
     }
   }
 };
