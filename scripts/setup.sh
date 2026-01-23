@@ -183,22 +183,30 @@ if [ "$USE_HTTPS" = "true" ]; then
   echo -e "${GREEN}📜 Obtaining SSL certificate from Let's Encrypt...${NC}"
   echo -e "${YELLOW}This may take a minute...${NC}"
   
-  sudo certbot certonly --nginx \
+  if sudo certbot certonly --nginx \
     --non-interactive \
     --agree-tos \
     --email "$LE_EMAIL" \
-    -d "$DOMAIN"
-  
-  if [ $? -eq 0 ]; then
+    -d "$DOMAIN"; then
+    
     echo -e "${GREEN}✅ SSL certificate obtained successfully!${NC}"
     
     # Now update nginx config to use HTTPS
     echo -e "${GREEN}📝 Updating nginx configuration for HTTPS...${NC}"
     envsubst '${DOMAIN}' < "$PROJECT_ROOT/nginx/nginx.conf.template" | sudo tee /etc/nginx/sites-available/open-attendance > /dev/null
     
-    # Test and reload nginx
-    sudo nginx -t
-    sudo systemctl reload nginx
+    # Test nginx configuration before reloading
+    echo -e "${GREEN}🔍 Testing nginx configuration...${NC}"
+    if sudo nginx -t; then
+      echo -e "${GREEN}🔄 Reloading nginx...${NC}"
+      sudo systemctl reload nginx
+    else
+      echo -e "${RED}❌ Nginx configuration test failed${NC}"
+      echo -e "${YELLOW}Reverting to HTTP-only configuration...${NC}"
+      envsubst '${DOMAIN}' < "$PROJECT_ROOT/nginx/nginx-http-only.conf.template" | sudo tee /etc/nginx/sites-available/open-attendance > /dev/null
+      sudo systemctl reload nginx
+      exit 1
+    fi
     
     # Setup automatic certificate renewal
     echo -e "${GREEN}⏰ Setting up automatic certificate renewal...${NC}"
