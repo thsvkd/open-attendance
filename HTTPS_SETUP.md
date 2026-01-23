@@ -116,11 +116,11 @@ sudo nginx -t  # Test configuration
 ## Security Features
 
 - TLS 1.2 and 1.3 only
-- Strong cipher suites
+- Strong cipher suites (ECDHE-ECDSA-AES128-GCM-SHA256, ECDHE-RSA-AES128-GCM-SHA256, etc.)
 - HSTS (HTTP Strict Transport Security)
-- X-Frame-Options header
-- X-Content-Type-Options header
-- X-XSS-Protection header
+- Content-Security-Policy header (modern XSS protection)
+- X-Frame-Options header (clickjacking protection)
+- X-Content-Type-Options header (MIME sniffing protection)
 - Automatic HTTP to HTTPS redirect
 
 ## Troubleshooting
