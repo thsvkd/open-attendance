@@ -15,9 +15,26 @@
 이 스크립트는 다음 작업을 수행합니다:
 - `.env` 파일 생성 (환경 변수 설정)
 - `NEXTAUTH_SECRET` 자동 생성
+- HTTPS 설정 여부 선택 (선택 사항)
+  - Let's Encrypt를 통한 SSL 인증서 자동 발급
+  - Nginx 리버스 프록시 설정
+  - 자동 인증서 갱신 설정
 - 의존성 패키지 설치 (`npm install`)
 - Prisma 클라이언트 생성
 - 데이터베이스 마이그레이션 실행
+
+#### HTTPS 설정 (프로덕션 환경 권장)
+
+초기 설정 중 HTTPS를 활성화하려면:
+1. 유효한 도메인 이름이 필요합니다 (예: attendance.example.com)
+2. 해당 도메인이 서버 IP를 가리키도록 DNS를 설정해야 합니다
+3. 포트 80과 443이 인터넷에서 접근 가능해야 합니다
+4. setup.sh 실행 시 HTTPS 활성화를 선택하고 도메인과 이메일을 입력합니다
+
+**나중에 HTTPS를 설정하려면:**
+```bash
+./scripts/setup-https.sh
+```
 
 ### 2. 개발 서버 실행
 
@@ -32,6 +49,8 @@ npm run dev
 ```
 
 서버가 시작되면 [http://localhost:3000](http://localhost:3000)에서 접속할 수 있습니다.
+
+**HTTPS가 활성화된 경우:** 설정한 도메인(예: https://attendance.example.com)으로 접속하세요.
 
 ### 3. 프로덕션 빌드 및 실행
 
@@ -80,6 +99,33 @@ npm run dev
 DATABASE_URL="file:./prisma/dev.db"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-here"
+
+# HTTPS 설정 (선택 사항)
+USE_HTTPS="false"
+DOMAIN=""
+```
+
+### HTTPS 설정
+
+프로덕션 환경에서 HTTPS를 사용하려면:
+- `USE_HTTPS="true"` 로 설정
+- `DOMAIN`에 도메인 이름 지정 (예: "attendance.example.com")
+- `NEXTAUTH_URL`을 HTTPS URL로 변경 (예: "https://attendance.example.com")
+
+또는 `./scripts/setup.sh` 또는 `./scripts/setup-https.sh`를 실행하여 자동으로 설정할 수 있습니다.
+
+## 보안 및 인증서
+
+### SSL 인증서 자동 갱신
+
+HTTPS를 활성화하면 Let's Encrypt 인증서가 자동으로 갱신되도록 cron job이 설정됩니다:
+- 매일 오전 3시에 인증서 갱신 확인
+- 갱신이 필요한 경우 자동으로 갱신
+- 로그는 `/var/log/ssl-renewal.log`에 저장
+
+수동으로 인증서를 갱신하려면:
+```bash
+./scripts/renew-ssl.sh
 ```
 
 ## 문제 해결
@@ -95,6 +141,25 @@ GET /api/auth/error?error=Configuration 500
 ```
 
 **해결 방법**: `./scripts/setup.sh` 스크립트를 실행하여 환경 변수를 설정하세요.
+
+### HTTPS 인증서 발급 실패
+
+Let's Encrypt 인증서 발급이 실패하는 경우:
+
+**원인:**
+- 도메인 DNS가 올바르게 설정되지 않음
+- 포트 80/443이 방화벽에 의해 차단됨
+- 도메인이 서버 IP를 정확히 가리키지 않음
+
+**해결 방법:**
+1. DNS 설정 확인: `nslookup your-domain.com`
+2. 방화벽 설정 확인:
+   ```bash
+   sudo ufw allow 80
+   sudo ufw allow 443
+   ```
+3. Nginx 상태 확인: `sudo systemctl status nginx`
+4. 인증서 재발급 시도: `./scripts/setup-https.sh`
 
 ## 개발 가이드
 
