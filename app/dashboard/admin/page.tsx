@@ -216,9 +216,7 @@ export default function AdminPage() {
                         </TableCell>
                         <TableCell>{leave.days}</TableCell>
                         <TableCell>
-                          <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
-                            {tl(`statuses.${leave.status}`)}
-                          </Badge>
+                          <Badge statusType="leave" status={leave.status} label={tl(`statuses.${leave.status}`)} />
                         </TableCell>
                         <TableCell className="text-right space-x-2 min-w-[120px]">{leave.status === "PENDING" && (
                           <>
@@ -332,9 +330,7 @@ export default function AdminPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
-                            {user.role}
-                          </Badge>
+                          <Badge statusType="role" status={user.role || "USER"} />
                         </TableCell>
                         <TableCell className="text-sm">
                           {formatter.dateTime(new Date(user.joinDate), {

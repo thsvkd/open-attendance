@@ -34,10 +34,16 @@ export function Header() {
                     <span className="text-sm font-medium">
                         {session?.user?.name}
                     </span>
-                    <Badge variant={session?.user?.role === "ADMIN" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                        {session?.user?.role === "ADMIN" && <Shield className="h-3 w-3 mr-1 inline" />}
-                        {session?.user?.role}
-                    </Badge>
+                    {session?.user?.role === "ADMIN" ? (
+                        <Badge statusType="role" status={session?.user?.role || "USER"} label={
+                            <span className="flex items-center gap-1">
+                                <Shield className="h-3 w-3" />
+                                {session?.user?.role}
+                            </span>
+                        } />
+                    ) : (
+                        <Badge statusType="role" status={session?.user?.role || "USER"} />
+                    )}
                 </div>
 
                 <DropdownMenu>
@@ -56,7 +62,7 @@ export function Header() {
                             <div className="flex flex-col space-y-1">
                                 <div className="flex items-center gap-x-2">
                                     <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
-                                    <Badge variant="outline" className="text-[10px] px-1 py-0">{session?.user?.role}</Badge>
+                                    <Badge statusType="role" status={session?.user?.role || "USER"} />
                                 </div>
                                 <p className="text-xs leading-none text-muted-foreground">
                                     {session?.user?.email}

@@ -381,7 +381,7 @@ export default function AnnualLeavePage() {
                   <TableHead>{t('dates')}</TableHead>
                   <TableHead>{t('duration')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  <TableHead>{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -413,9 +413,7 @@ export default function AnnualLeavePage() {
                       </TableCell>
                       <TableCell>{leave.days} {t('days')}</TableCell>
                       <TableCell>
-                        <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
-                          {t(`statuses.${leave.status}`)}
-                        </Badge>
+                        <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
                       </TableCell>
                       <TableCell className="text-right">
                         {leave.status === "PENDING" && (
