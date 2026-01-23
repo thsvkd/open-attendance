@@ -16,9 +16,23 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import { cn } from "@/lib/utils";
 
 interface LeaveRequest {
   id: string;
@@ -33,6 +47,10 @@ export default function LeavesPage() {
   const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [leaveType, setLeaveType] = useState<string>("SICK");
   const t = useTranslations('earlyLeave');
 
   const fetchLeaves = async () => {
@@ -52,19 +70,48 @@ export default function LeavesPage() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!startDate || !endDate) {
+      toast.error("Please select start and end dates");
+      return;
+    }
+
     setSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const data = {
+      type: leaveType,
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
+      reason: (document.getElementById("reason") as HTMLInputElement)?.value || "",
+    };
 
     try {
       await axios.post("/api/leaves", data);
       toast.success(t('submitRequest'));
       fetchLeaves();
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setLeaveType("SICK");
       (e.target as HTMLFormElement).reset();
     } catch {
       toast.error(t('submitFailed'));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancelLeave = async (leaveId: string) => {
+    setCancelling(leaveId);
+    try {
+      await axios.patch("/api/leaves", { id: leaveId });
+      toast.success(t('cancelSuccess'));
+      fetchLeaves();
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : t('cancelFailed');
+      toast.error(errorMessage);
+    } finally {
+      setCancelling(null);
     }
   };
 
@@ -91,21 +138,68 @@ export default function LeavesPage() {
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="type">{t('type')}</Label>
-                <select name="type" id="type" className="w-full border rounded-md p-2 bg-background">
-                  <option value="SICK">{t('types.SICK')}</option>
-                  <option value="OFFICIAL">{t('types.OFFICIAL')}</option>
-                  <option value="OTHER">{t('types.OTHER')}</option>
-                </select>
+                <Label>{t('type')}</Label>
+                <Select value={leaveType} onValueChange={setLeaveType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectType')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SICK">{t('types.SICK')}</SelectItem>
+                    <SelectItem value="OFFICIAL">{t('types.OFFICIAL')}</SelectItem>
+                    <SelectItem value="OTHER">{t('types.OTHER')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">{t('startDate')}</Label>
-                  <Input type="date" id="startDate" name="startDate" required />
+                  <Label>{t('startDate')}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full h-12 justify-start text-left font-normal",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endDate">{t('endDate')}</Label>
-                  <Input type="date" id="endDate" name="endDate" required />
+                  <Label>{t('endDate')}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full h-12 justify-start text-left font-normal",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {endDate ? format(endDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
               <div className="space-y-2">
@@ -134,12 +228,13 @@ export default function LeavesPage() {
                   <TableHead>{t('dates')}</TableHead>
                   <TableHead>{t('days')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {leaves.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
                       {t('noRequests')}
                     </TableCell>
                   </TableRow>
@@ -155,6 +250,23 @@ export default function LeavesPage() {
                         <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
                           {t(`statuses.${leave.status}`)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {leave.status === "PENDING" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleCancelLeave(leave.id)}
+                            disabled={cancelling === leave.id}
+                          >
+                            {cancelling === leave.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              t('cancel')
+                            )}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

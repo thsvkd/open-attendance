@@ -248,7 +248,7 @@ export default function AnnualLeavePage() {
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? format(startDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                          {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -273,7 +273,7 @@ export default function AnnualLeavePage() {
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? format(endDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                          {endDate ? format(endDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -300,7 +300,7 @@ export default function AnnualLeavePage() {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">

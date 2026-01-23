@@ -27,11 +27,15 @@
     "dayComplete": "오늘 근무 종료"
   },
   "earlyLeave": {
+    "common": {
+      "actions": "작업"
+    },
     "title": "조퇴/결근 신청",
     "description": "근무 중 조퇴 또는 결근을 신청합니다",
-    "requestLeave": "조퇴/결근 신청",
+    "requestLeave": "신청서 작성",
     "myRequests": "내 신청 내역",
     "type": "유형",
+    "selectType": "유형 선택",
     "dates": "날짜",
     "days": "일수",
     "status": "상태",
@@ -48,10 +52,16 @@
     "statuses": {
       "PENDING": "대기중",
       "APPROVED": "승인됨",
-      "REJECTED": "거절됨"
+      "REJECTED": "거절됨",
+      "CANCELLED": "취소됨"
     },
     "startDate": "시작일",
-    "endDate": "종료일"
+    "endDate": "종료일",
+    "submitFailed": "신청에 실패했습니다",
+    "cancel": "취소",
+    "cancelSuccess": "신청이 취소되었습니다.",
+    "cancelFailed": "취소에 실패했습니다.",
+    "pickDate": "날짜 선택"
   },
   "annualLeave": {
     "common": {
@@ -88,6 +98,7 @@
     "leaveFailed": "신청에 실패했습니다",
     "leaveType": "휴가 유형",
     "selectLeaveType": "휴가 유형 선택",
+    "pickDate": "날짜 선택",
     "leaveTypes": {
       "FULL_DAY": "연차",
       "HALF_DAY": "반차",

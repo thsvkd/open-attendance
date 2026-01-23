@@ -27,11 +27,15 @@
     "dayComplete": "Day Complete"
   },
   "earlyLeave": {
+    "common": {
+      "actions": "Actions"
+    },
     "title": "Early Leave/Absence",
     "description": "Request early departure or absence during work hours",
-    "requestLeave": "Request Early Leave",
+    "requestLeave": "Request Leave",
     "myRequests": "My Requests",
     "type": "Type",
+    "selectType": "Select Type",
     "dates": "Dates",
     "days": "Days",
     "status": "Status",
@@ -48,10 +52,16 @@
     "statuses": {
       "PENDING": "Pending",
       "APPROVED": "Approved",
-      "REJECTED": "Rejected"
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
     },
     "startDate": "Start Date",
-    "endDate": "End Date"
+    "endDate": "End Date",
+    "submitFailed": "Failed to submit request",
+    "cancel": "Cancel",
+    "cancelSuccess": "Request cancelled successfully.",
+    "cancelFailed": "Failed to cancel request.",
+    "pickDate": "Pick a date"
   },
   "annualLeave": {
     "common": {
@@ -88,6 +98,7 @@
     "leaveFailed": "Failed to submit request",
     "leaveType": "Leave Type",
     "selectLeaveType": "Select leave type",
+    "pickDate": "Pick a date",
     "leaveTypes": {
       "FULL_DAY": "Full Day",
       "HALF_DAY": "Half Day",
