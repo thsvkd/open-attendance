@@ -159,11 +159,11 @@ Or run in production mode:
 
 ### Environment Variables
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `DATABASE_URL` | Database connection string | Yes | `file:./prisma/dev.db` |
-| `NEXTAUTH_URL` | Application URL | Yes | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | NextAuth secret key | Yes | - |
+| Variable          | Description                | Required | Default                 |
+| ----------------- | -------------------------- | -------- | ----------------------- |
+| `DATABASE_URL`    | Database connection string | Yes      | `file:./prisma/dev.db`  |
+| `NEXTAUTH_URL`    | Application URL            | Yes      | `http://localhost:3000` |
+| `NEXTAUTH_SECRET` | NextAuth secret key        | Yes      | -                       |
 
 ### Database Configuration
 

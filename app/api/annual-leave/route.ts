@@ -2,9 +2,72 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 
 type LeaveType = "FULL_DAY" | "HALF_DAY_AM" | "HALF_DAY_PM" | "QUARTER_DAY";
+
+// Convert leave request to minute ranges for overlap detection
+function getLeaveMinutes(
+  leaveType: LeaveType,
+  startDate: Date,
+  endDate: Date,
+  startTime?: string,
+  endTime?: string
+): { start: number; end: number }[] {
+  const ranges: { start: number; end: number }[] = [];
+
+  const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  for (let dayOffset = 0; dayOffset <= daysDiff; dayOffset++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(currentDate.getDate() + dayOffset);
+
+    const dayStart = new Date(currentDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const baseMinutes = dayStart.getTime() / (1000 * 60);
+
+    switch (leaveType) {
+      case "FULL_DAY":
+        // 09:00 - 18:00
+        ranges.push({
+          start: baseMinutes + 9 * 60,
+          end: baseMinutes + 18 * 60,
+        });
+        break;
+      case "HALF_DAY_AM":
+        // 09:00 - 13:00
+        ranges.push({
+          start: baseMinutes + 9 * 60,
+          end: baseMinutes + 13 * 60,
+        });
+        break;
+      case "HALF_DAY_PM":
+        // 14:00 - 18:00
+        ranges.push({
+          start: baseMinutes + 14 * 60,
+          end: baseMinutes + 18 * 60,
+        });
+        break;
+      case "QUARTER_DAY":
+        if (startTime && endTime) {
+          const [startHour, startMin] = startTime.split(":").map(Number);
+          const [endHour, endMin] = endTime.split(":").map(Number);
+          ranges.push({
+            start: baseMinutes + startHour * 60 + startMin,
+            end: baseMinutes + endHour * 60 + endMin,
+          });
+        }
+        break;
+    }
+  }
+
+  return ranges;
+}
+
+// Check if two time ranges overlap
+function rangesOverlap(range1: { start: number; end: number }, range2: { start: number; end: number }): boolean {
+  return range1.start < range2.end && range1.end > range2.start;
+}
 
 // Calculate days based on leave type
 function calculateDays(leaveType: LeaveType, startDate: Date, endDate: Date): number {
@@ -83,6 +146,45 @@ export async function POST(req: Request) {
         { message: `Insufficient leave balance. You have ${remainingLeaves} days remaining.` },
         { status: 400 }
       );
+    }
+
+    // Check for overlapping leave requests
+    const existingLeaves = await db.leaveRequest.findMany({
+      where: {
+        userId: session.user.id,
+        type: "ANNUAL",
+        status: {
+          in: ["PENDING", "APPROVED"],
+        },
+      },
+    });
+
+    // Get time ranges for the new request
+    const newRanges = getLeaveMinutes(leaveType as LeaveType, start, end, startTime, endTime);
+
+    // Check each existing leave for overlap
+    for (const existingLeave of existingLeaves) {
+      const existingRanges = getLeaveMinutes(
+        existingLeave.leaveType as LeaveType,
+        new Date(existingLeave.startDate),
+        new Date(existingLeave.endDate),
+        existingLeave.startTime || undefined,
+        existingLeave.endTime || undefined
+      );
+
+      // Check if any ranges overlap
+      for (const newRange of newRanges) {
+        for (const existingRange of existingRanges) {
+          if (rangesOverlap(newRange, existingRange)) {
+            return NextResponse.json(
+              {
+                message: `This leave request overlaps with an existing ${existingLeave.status.toLowerCase()} request from ${format(new Date(existingLeave.startDate), "MM/dd")} to ${format(new Date(existingLeave.endDate), "MM/dd")}.`,
+              },
+              { status: 400 }
+            );
+          }
+        }
+      }
     }
 
     const leave = await db.leaveRequest.create({

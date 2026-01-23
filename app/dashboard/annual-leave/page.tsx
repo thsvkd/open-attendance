@@ -23,9 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import { cn } from "@/lib/utils";
 
 type LeaveType = "FULL_DAY" | "HALF_DAY_AM" | "HALF_DAY_PM" | "QUARTER_DAY";
 type LeaveTypeSelection = "FULL_DAY" | "HALF_DAY" | "QUARTER_DAY";
@@ -57,6 +64,9 @@ export default function AnnualLeavePage() {
   const [halfDayPeriod, setHalfDayPeriod] = useState<HalfDayPeriod>("AM");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("11:00");
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const t = useTranslations('annualLeave');
 
   // Compute actual leaveType based on selection and period
@@ -88,25 +98,38 @@ export default function AnnualLeavePage() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (leaveTypeSelection === "FULL_DAY" && (!startDate || !endDate)) {
+      toast.error("Please select start and end dates");
+      return;
+    }
+    if (leaveTypeSelection !== "FULL_DAY" && !startDate) {
+      toast.error("Please select a date");
+      return;
+    }
+
     setSubmitting(true);
-    const formData = new FormData(e.currentTarget);
-    const formEntries = Object.fromEntries(formData.entries());
 
     const actualLeaveType = getActualLeaveType();
     const data = {
-      ...formEntries,
+      startDate: startDate ? format(startDate, "yyyy-MM-dd") : "",
+      endDate: leaveTypeSelection === "FULL_DAY" && endDate ? format(endDate, "yyyy-MM-dd") : startDate ? format(startDate, "yyyy-MM-dd") : "",
       leaveType: actualLeaveType,
       startTime: leaveTypeSelection === "QUARTER_DAY" ? startTime : undefined,
       endTime: leaveTypeSelection === "QUARTER_DAY" ? endTime : undefined,
+      reason: (document.getElementById("reason") as HTMLInputElement)?.value || "",
     };
 
     try {
       await axios.post("/api/annual-leave", data);
       toast.success(t('leaveSuccess'));
       fetchData();
-      (e.target as HTMLFormElement).reset();
       setLeaveTypeSelection("FULL_DAY");
       setHalfDayPeriod("AM");
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setStartTime("09:00");
+      setEndTime("11:00");
     } catch (error) {
       const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
         ? error.response.data.message
@@ -114,6 +137,22 @@ export default function AnnualLeavePage() {
       toast.error(errorMessage);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCancelLeave = async (leaveId: string) => {
+    setCancelling(leaveId);
+    try {
+      await axios.patch("/api/leaves", { id: leaveId });
+      toast.success(t('cancelSuccess'));
+      fetchData();
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : t('cancelFailed');
+      toast.error(errorMessage);
+    } finally {
+      setCancelling(null);
     }
   };
 
@@ -198,19 +237,81 @@ export default function AnnualLeavePage() {
               {leaveTypeSelection === "FULL_DAY" ? (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="startDate">{t('startDate')}</Label>
-                    <Input type="date" id="startDate" name="startDate" required />
+                    <Label>{t('startDate')}</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full h-12 justify-start text-left font-normal",
+                            !startDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {startDate ? format(startDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={setStartDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="endDate">{t('endDate')}</Label>
-                    <Input type="date" id="endDate" name="endDate" required />
+                    <Label>{t('endDate')}</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full h-12 justify-start text-left font-normal",
+                            !endDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {endDate ? format(endDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={setEndDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">{t('date')}</Label>
-                  <Input type="date" id="startDate" name="startDate" required />
-                  <input type="hidden" name="endDate" value="" />
+                  <Label>{t('date')}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full h-12 justify-start text-left font-normal",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               )}
 
@@ -238,6 +339,7 @@ export default function AnnualLeavePage() {
                       id="startTime"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
+                      className="h-12 px-4 text-base"
                       required
                     />
                   </div>
@@ -248,6 +350,7 @@ export default function AnnualLeavePage() {
                       id="endTime"
                       value={endTime}
                       onChange={(e) => setEndTime(e.target.value)}
+                      className="h-12 px-4 text-base"
                       required
                     />
                   </div>
@@ -278,12 +381,13 @@ export default function AnnualLeavePage() {
                   <TableHead>{t('dates')}</TableHead>
                   <TableHead>{t('duration')}</TableHead>
                   <TableHead>{t('status')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {leaves.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
                       {t('noRequests')}
                     </TableCell>
                   </TableRow>
@@ -309,9 +413,26 @@ export default function AnnualLeavePage() {
                       </TableCell>
                       <TableCell>{leave.days} {t('days')}</TableCell>
                       <TableCell>
-                        <Badge variant={leave.status === "APPROVED" ? "default" : leave.status === "PENDING" ? "secondary" : "destructive"}>
+                        <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "PENDING" ? "secondary" : "destructive"}>
                           {t(`statuses.${leave.status}`)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {leave.status === "PENDING" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleCancelLeave(leave.id)}
+                            disabled={cancelling === leave.id}
+                          >
+                            {cancelling === leave.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              t('cancel')
+                            )}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

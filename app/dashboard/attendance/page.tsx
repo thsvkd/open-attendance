@@ -99,7 +99,7 @@ export default function AttendancePage() {
                       {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={record.status === "PRESENT" ? "default" : "secondary"}>
+                      <Badge variant={record.status === "PRESENT" ? "success" : "secondary"}>
                         {t(`statuses.${record.status}`)}
                       </Badge>
                     </TableCell>

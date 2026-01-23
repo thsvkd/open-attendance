@@ -47,3 +47,45 @@ export async function POST(req: Request) {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+
+// Cancel a leave request (PATCH)
+export async function PATCH(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+
+  try {
+    const { id } = await req.json();
+
+    // Find the leave request
+    const leave = await db.leaveRequest.findUnique({
+      where: { id },
+    });
+
+    if (!leave) {
+      return NextResponse.json({ message: "Leave request not found" }, { status: 404 });
+    }
+
+    // Check if the user owns this request
+    if (leave.userId !== session.user.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
+
+    // Check if the request is still pending
+    if (leave.status !== "PENDING") {
+      return NextResponse.json(
+        { message: "Only pending requests can be cancelled" },
+        { status: 400 }
+      );
+    }
+
+    // Update status to CANCELLED
+    const updatedLeave = await db.leaveRequest.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
+
+    return NextResponse.json(updatedLeave);
+  } catch (error) {
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

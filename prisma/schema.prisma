@@ -100,7 +100,7 @@ model LeaveRequest {
   days      Float       // 사용 일수 (1, 0.5, 0.25)
   
   reason    String?
-  status    String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  status    String      @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
   
   approvedBy String?    // 승인자 ID
   rejectedReason String?

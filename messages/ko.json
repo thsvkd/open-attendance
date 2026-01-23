@@ -54,6 +54,9 @@
     "endDate": "종료일"
   },
   "annualLeave": {
+    "common": {
+      "actions": "작업"
+    },
     "title": "연차 관리",
     "description": "연차를 신청하고 관리합니다",
     "requestLeave": "연차 신청",
@@ -70,10 +73,14 @@
     "reasonPlaceholder": "연차 사용 사유",
     "submitRequest": "신청하기",
     "noRequests": "연차 신청 내역이 없습니다.",
+    "cancel": "취소",
+    "cancelSuccess": "연차 신청이 취소되었습니다.",
+    "cancelFailed": "취소에 실패했습니다.",
     "statuses": {
       "PENDING": "대기중",
       "APPROVED": "승인됨",
-      "REJECTED": "거절됨"
+      "REJECTED": "거절됨",
+      "CANCELLED": "취소됨"
     },
     "startDate": "시작일",
     "endDate": "종료일",
