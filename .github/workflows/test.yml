@@ -91,6 +91,10 @@ jobs:
         run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: file:./test.db
+      - name: Seed test database
+        run: npx tsx scripts/seed-test-db.ts
+        env:
+          DATABASE_URL: file:./test.db
       - name: Build Next.js
         run: npm run build
         env:
