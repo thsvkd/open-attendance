@@ -4,8 +4,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Parse DATABASE_URL from .env file to get relative path
-function getDatabasePath() {
+// Load environment variables from .env.local or .env file
+function loadEnvFile() {
   // Try .env.local first, then .env
   let envPath = path.join(__dirname, '..', '.env.local');
 
@@ -19,10 +19,32 @@ function getDatabasePath() {
   }
 
   const envContent = fs.readFileSync(envPath, 'utf-8');
-  const match = envContent.match(/DATABASE_URL="file:\.\/(.+?)"/);
+  const envVars = {};
+  
+  // Parse environment variables
+  envContent.split('\n').forEach(line => {
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)="?([^"]*)"?$/);
+    if (match) {
+      envVars[match[1]] = match[2];
+    }
+  });
 
-  if (!match) {
+  return envVars;
+}
+
+// Parse DATABASE_URL from .env file to get relative path
+function getDatabasePath() {
+  const envVars = loadEnvFile();
+  const databaseUrl = envVars.DATABASE_URL;
+
+  if (!databaseUrl) {
     console.error('Error: DATABASE_URL not found in .env file');
+    process.exit(1);
+  }
+
+  const match = databaseUrl.match(/file:\.\/(.+?)$/);
+  if (!match) {
+    console.error('Error: DATABASE_URL format not recognized. Expected file:./path');
     process.exit(1);
   }
 
@@ -30,28 +52,51 @@ function getDatabasePath() {
   return path.join(__dirname, '..', 'prisma', match[1]);
 }
 
-// Check if database exists
+// Check if database exists and has the correct schema
 const dbPath = getDatabasePath();
+const envVars = loadEnvFile();
 
-// Check if database file exists
-if (!fs.existsSync(dbPath)) {
-  console.log('Database not found. Initializing database...');
+// Function to check if database has required tables
+function hasRequiredTables() {
+  if (!fs.existsSync(dbPath)) {
+    return false;
+  }
+
   try {
-    // Create database using sqlite3
-    execSync(`sqlite3 "${dbPath}" "VACUUM;"`, {
-      cwd: path.join(__dirname, '..')
-    });
+    // Check if User table exists (core table in our schema)
+    const result = execSync(
+      `sqlite3 "${dbPath}" "SELECT name FROM sqlite_master WHERE type='table' AND name='User';"`,
+      { encoding: 'utf-8', cwd: path.join(__dirname, '..') }
+    );
+    return result.trim() === 'User';
+  } catch (error) {
+    return false;
+  }
+}
 
-    // Push schema to database
-    execSync('npx prisma db push', {
+// Initialize database if needed
+if (!hasRequiredTables()) {
+  console.log('Database not found or schema not initialized. Initializing database...');
+  try {
+    // Create database file if it doesn't exist
+    if (!fs.existsSync(dbPath)) {
+      execSync(`sqlite3 "${dbPath}" "VACUUM;"`, {
+        cwd: path.join(__dirname, '..')
+      });
+    }
+
+    // Push schema to database (with environment variables)
+    execSync('npm exec prisma db push', {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env, ...envVars }
     });
 
-    // Generate Prisma Client
-    execSync('npx prisma generate', {
+    // Generate Prisma Client (with environment variables)
+    execSync('npm exec prisma generate', {
       stdio: 'pipe',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env, ...envVars }
     });
 
     console.log('Database initialized successfully!');
