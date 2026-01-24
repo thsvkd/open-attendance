@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { format } from "date-fns";
+import { getTranslations } from "next-intl/server";
 import {
   requireAuth,
   parseJsonBody,
@@ -36,6 +37,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const { session, error } = await requireAuth();
   if (error) return error;
+
+  const t = await getTranslations("annualLeave");
 
   const body = await parseJsonBody<{
     startDate?: string;
@@ -94,7 +97,7 @@ export async function POST(req: Request) {
 
     if (days > remainingLeaves) {
       return errorResponse(
-        `Insufficient leave balance. You have ${remainingLeaves} days remaining.`,
+        t("insufficientBalance", { remaining: remainingLeaves }),
         400,
       );
     }
@@ -128,8 +131,13 @@ export async function POST(req: Request) {
       for (const newRange of newRanges) {
         for (const existingRange of existingRanges) {
           if (rangesOverlap(newRange, existingRange)) {
+            const statusKey = existingLeave.status as keyof typeof t;
             return errorResponse(
-              `This leave request overlaps with an existing ${existingLeave.status.toLowerCase()} request from ${format(new Date(existingLeave.startDate), "MM/dd")} to ${format(new Date(existingLeave.endDate), "MM/dd")}.`,
+              t("overlapError", {
+                status: t(`statuses.${statusKey}`),
+                start: format(new Date(existingLeave.startDate), "MM/dd"),
+                end: format(new Date(existingLeave.endDate), "MM/dd"),
+              }),
               400,
             );
           }

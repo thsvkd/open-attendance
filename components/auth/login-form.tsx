@@ -27,15 +27,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1, "Password is required"),
-});
+import { useTranslations } from "next-intl";
 
 export function LoginForm() {
+  const t = useTranslations("auth.login");
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const formSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(1, t("passwordRequired")),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,9 +57,9 @@ export function LoginForm() {
     });
 
     if (result?.error) {
-      toast.error("Invalid credentials");
+      toast.error(t("invalidCredentials"));
     } else {
-      toast.success("Logged in!");
+      toast.success(t("loginSuccess"));
       router.push("/dashboard");
       router.refresh();
     }
@@ -68,10 +70,8 @@ export function LoginForm() {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account.
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -81,9 +81,9 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("email")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
+                    <Input placeholder="user@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +94,7 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("password")}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -103,14 +103,14 @@ export function LoginForm() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? t("submitting") : t("submit")}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter>
         <Button variant="link" className="w-full" asChild>
-          <Link href="/register">Don&apos;t have an account? Register</Link>
+          <Link href="/register">{t("noAccount")}</Link>
         </Button>
       </CardFooter>
     </Card>

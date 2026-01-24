@@ -59,7 +59,7 @@ export default function LeavesPage() {
     e.preventDefault();
 
     if (!startDate || !endDate) {
-      toast.error("Please select start and end dates");
+      toast.error(t("selectStartEnd"));
       return;
     }
 

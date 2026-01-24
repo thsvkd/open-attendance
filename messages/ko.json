@@ -65,7 +65,8 @@
     "cancel": "취소",
     "cancelSuccess": "신청이 취소되었습니다.",
     "cancelFailed": "취소에 실패했습니다.",
-    "pickDate": "날짜 선택"
+    "pickDate": "날짜 선택",
+    "selectStartEnd": "시작일과 종료일을 선택해주세요"
   },
   "annualLeave": {
     "common": {
@@ -119,7 +120,13 @@
     "endTime": "종료 시간",
     "halfDayAM": "오전 (09:00 - 13:00)",
     "halfDayPM": "오후 (14:00 - 18:00)",
-    "selectTime": "시간 선택"
+    "selectTime": "시간 선택",
+    "selectStartEnd": "시작일과 종료일을 선택해주세요",
+    "selectDate": "날짜를 선택해주세요",
+    "twoHoursFixed": "2시간 고정",
+    "twoHoursAutoAdjust": "시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이 맞춰집니다.",
+    "overlapError": "선택한 휴가 기간이 이미 존재하는 {status} 요청({start} ~ {end})과 겹칩니다.",
+    "insufficientBalance": "잔여 연차가 부족합니다. 현재 {remaining}일 남았습니다."
   },
   "attendance": {
     "title": "내 근태",
@@ -203,6 +210,18 @@
   "auth": {
     "confirmPassword": "비밀번호 확인",
     "alreadyHaveAccount": "이미 계정이 있으신가요? 로그인",
-    "createAccount": "시작하려면 계정을 생성하세요."
+    "createAccount": "시작하려면 계정을 생성하세요.",
+    "login": {
+      "title": "로그인",
+      "description": "계정에 로그인하려면 아래에 이메일을 입력하세요.",
+      "email": "이메일",
+      "password": "비밀번호",
+      "passwordRequired": "비밀번호를 입력해주세요",
+      "submit": "로그인",
+      "submitting": "로그인 중...",
+      "noAccount": "계정이 없으신가요? 회원가입",
+      "invalidCredentials": "잘못된 인증 정보입니다.",
+      "loginSuccess": "로그인 성공!"
+    }
   }
 }

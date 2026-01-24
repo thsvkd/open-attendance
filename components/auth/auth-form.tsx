@@ -51,7 +51,7 @@ const CONFIG = {
   register: {
     title: "Register",
     description: "",
-    emailPlaceholder: "m@example.com",
+    emailPlaceholder: "user@example.com",
     submitLabel: "Register",
     loadingLabel: "Creating account...",
     successMessage: "Account created! Please login.",

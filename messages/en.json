@@ -65,7 +65,8 @@
     "cancel": "Cancel",
     "cancelSuccess": "Request cancelled successfully.",
     "cancelFailed": "Failed to cancel request.",
-    "pickDate": "Pick a date"
+    "pickDate": "Pick a date",
+    "selectStartEnd": "Please select start and end dates"
   },
   "annualLeave": {
     "common": {
@@ -119,7 +120,13 @@
     "endTime": "End Time",
     "halfDayAM": "AM (09:00 - 13:00)",
     "halfDayPM": "PM (14:00 - 18:00)",
-    "selectTime": "Select time"
+    "selectTime": "Select time",
+    "selectStartEnd": "Please select start and end dates",
+    "selectDate": "Please select a date",
+    "twoHoursFixed": "2 hours fixed",
+    "twoHoursAutoAdjust": "Changing the start or end time will automatically adjust to 2-hour intervals.",
+    "overlapError": "This leave request overlaps with an existing {status} request from {start} to {end}.",
+    "insufficientBalance": "Insufficient leave balance. You have {remaining} days remaining."
   },
   "attendance": {
     "title": "My Attendance",
@@ -203,6 +210,18 @@
   "auth": {
     "confirmPassword": "Confirm Password",
     "alreadyHaveAccount": "Already have an account? Login",
-    "createAccount": "Create an account to get started."
+    "createAccount": "Create an account to get started.",
+    "login": {
+      "title": "Login",
+      "description": "Enter your email below to login to your account.",
+      "email": "Email",
+      "password": "Password",
+      "passwordRequired": "Password is required",
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "noAccount": "Don't have an account? Register",
+      "invalidCredentials": "Invalid credentials",
+      "loginSuccess": "Logged in!"
+    }
   }
 }

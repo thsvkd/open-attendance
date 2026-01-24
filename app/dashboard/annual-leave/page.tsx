@@ -100,11 +100,11 @@ export default function AnnualLeavePage() {
     e.preventDefault();
 
     if (leaveTypeSelection === "FULL_DAY" && (!startDate || !endDate)) {
-      toast.error("Please select start and end dates");
+      toast.error(t("selectStartEnd"));
       return;
     }
     if (leaveTypeSelection !== "FULL_DAY" && !startDate) {
-      toast.error("Please select a date");
+      toast.error(t("selectDate"));
       return;
     }
 
@@ -305,7 +305,7 @@ export default function AnnualLeavePage() {
                       variant="outline"
                       className="text-[10px] font-normal"
                     >
-                      2시간 고정
+                      {t("twoHoursFixed")}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-3">
@@ -343,8 +343,7 @@ export default function AnnualLeavePage() {
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground text-center">
-                    시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이
-                    맞춰집니다.
+                    {t("twoHoursAutoAdjust")}
                   </p>
                 </div>
               )}
