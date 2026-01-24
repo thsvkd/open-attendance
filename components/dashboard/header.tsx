@@ -25,7 +25,7 @@ export function Header() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
-        <div className="flex items-center p-4 border-b bg-white dark:bg-slate-950">
+        <div className="flex items-center p-4 border-b bg-white dark:bg-slate-950 sticky top-0 z-50 md:static">
             <MobileSidebar />
             <div className="ml-auto flex items-center gap-x-6">
                 <LanguageSwitcher />

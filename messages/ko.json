@@ -171,6 +171,7 @@
       "description": "등록된 모든 직원을 관리합니다.",
       "addMember": "직원 추가",
       "editMember": "직원 정보 수정",
+      "edit": "수정",
       "noMembers": "등록된 직원이 없습니다.",
       "addSuccess": "직원이 추가되었습니다.",
       "addFailed": "직원 추가에 실패했습니다.",

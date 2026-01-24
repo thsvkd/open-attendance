@@ -171,6 +171,7 @@
       "description": "Manage all registered employees and their information.",
       "addMember": "Add Member",
       "editMember": "Edit Member",
+      "edit": "Edit",
       "noMembers": "No members registered.",
       "addSuccess": "Member added successfully.",
       "addFailed": "Failed to add member.",

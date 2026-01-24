@@ -381,56 +381,113 @@ export default function AdminPage() {
               <CardDescription>{t('members.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('table.employee')}</TableHead>
-                    <TableHead>{t('table.role')}</TableHead>
-                    <TableHead>{t('table.joinedAt')}</TableHead>
-                    <TableHead className="text-right">{tc('actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.length === 0 ? (
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        {t('members.noMembers')}
-                      </TableCell>
+                      <TableHead>{t('table.employee')}</TableHead>
+                      <TableHead>{t('table.role')}</TableHead>
+                      <TableHead>{t('table.joinedAt')}</TableHead>
+                      <TableHead className="text-right">{tc('actions')}</TableHead>
                     </TableRow>
-                  ) : (
-                    users.map((user: any) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-x-3">
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                              {user.name?.[0]?.toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-xs text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge statusType="role" status={user.role || "USER"} />
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {formatter.dateTime(new Date(user.joinDate), {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                  </TableHeader>
+                  <TableBody>
+                    {users.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          {t('members.noMembers')}
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      users.map((user: any) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-x-3">
+                              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                {user.name?.[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-xs text-muted-foreground">{user.email}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge statusType="role" status={user.role || "USER"} />
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatter.dateTime(new Date(user.joinDate), {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4">
+                {users.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    {t('members.noMembers')}
+                  </div>
+                ) : (
+                  users.map((user: any) => (
+                    <Card key={user.id} className="shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+                              {user.name?.[0]?.toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold">{user.name}</div>
+                              <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">{t('table.role')}</span>
+                              <Badge statusType="role" status={user.role || "USER"} />
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">{t('table.joinedAt')}</span>
+                              <span className="font-medium text-right">
+                                {formatter.dateTime(new Date(user.joinDate), {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => openEditDialog(user)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              {t('members.edit')}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

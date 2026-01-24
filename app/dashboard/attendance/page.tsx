@@ -71,10 +71,10 @@ export default function AttendancePage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('date')}</TableHead>
-                  <TableHead>{t('checkIn')}</TableHead>
-                  <TableHead>{t('checkOut')}</TableHead>
-                  <TableHead>{t('status')}</TableHead>
+                  <TableHead className="text-left">{t('date')}</TableHead>
+                  <TableHead className="text-center">{t('checkIn')}</TableHead>
+                  <TableHead className="text-center">{t('checkOut')}</TableHead>
+                  <TableHead className="text-center">{t('status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,13 +94,13 @@ export default function AttendancePage() {
                           day: 'numeric'
                         })}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Badge statusType="attendance" status={record.status} label={t(`statuses.${record.status}`)} />
                       </TableCell>
                     </TableRow>
@@ -131,14 +131,14 @@ export default function AttendancePage() {
                           })}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="flex justify-between items-start gap-3">
                         <div className="space-y-1">
                           <div className="text-xs text-muted-foreground">{t('checkIn')}</div>
                           <div className="font-medium">
                             {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
                           </div>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 text-right mr-2">
                           <div className="text-xs text-muted-foreground">{t('checkOut')}</div>
                           <div className="font-medium">
                             {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}

@@ -463,7 +463,7 @@ export default function AnnualLeavePage() {
                           </div>
                           <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="flex justify-between items-start gap-3">
                           <div className="space-y-1">
                             <div className="text-xs text-muted-foreground">{t('dates')}</div>
                             <div className="text-sm font-medium">
@@ -476,7 +476,7 @@ export default function AnnualLeavePage() {
                               )}
                             </div>
                           </div>
-                          <div className="space-y-1">
+                          <div className="space-y-1 text-right mr-2">
                             <div className="text-xs text-muted-foreground">{t('duration')}</div>
                             <div className="text-sm font-medium">{leave.days} {t('days')}</div>
                           </div>
