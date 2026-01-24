@@ -6,91 +6,91 @@ on:
   pull_request:
     branches: [main, develop]
 
+# 중복 실행되는 워크플로가 있다면 이전 실행을 취소하여 자원을 아낍니다.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # 1. Lint 작업 (가장 가벼운 검사를 먼저 수행)
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci # npm install 대신 npm ci 사용
+      - name: Run linter
+        run: npm run lint
+
+  # 2. 유닛 및 통합 테스트
   unit-and-integration-tests:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
+    needs: lint # Lint가 성공해야 테스트 시작
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
+          node-version: 20
+          cache: "npm"
       - name: Install dependencies
-        run: npm install
-      
+        run: npm ci
       - name: Setup test environment
         run: |
           cp .env.example .env
           echo "DATABASE_URL=file:./test.db" >> .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
-      
       - name: Generate Prisma Client
         run: npx prisma generate
-      
-      - name: Run unit and integration tests
+      - name: Run tests
         run: npm run test
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
-          NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
-      
       - name: Upload test coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-coverage
           path: coverage/
-          retention-days: 30
+          retention-days: 7 # 유지 기간을 7일로 단축하여 효율화
 
+  # 3. E2E 테스트
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x]
-
+    needs: unit-and-integration-tests # 유닛 테스트 통과 후 실행 (자원 절약)
+    timeout-minutes: 30 # 기존 60분에서 현실적으로 단축
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
+          node-version: 20
+          cache: "npm"
       - name: Install dependencies
-        run: npm install
-
-      - name: Install Playwright browsers
+        run: npm ci
+      - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-
       - name: Setup test environment
         run: |
           cp .env.example .env
           echo "DATABASE_URL=file:./test.db" >> .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
-
       - name: Generate Prisma Client
         run: npx prisma generate
-
       - name: Initialize test database
         run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: file:./test.db
-
       - name: Build Next.js
         run: npm run build
         env:
@@ -98,7 +98,6 @@ jobs:
           DATABASE_URL: file:./test.db
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
-
       - name: Run E2E tests
         run: npx playwright test
         env:
@@ -106,15 +105,13 @@ jobs:
           DATABASE_URL: file:./test.db
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
-        timeout-minutes: 15
-
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
-          retention-days: 30
+          retention-days: 7
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -122,28 +119,4 @@ jobs:
         with:
           name: playwright-results
           path: test-results/
-          retention-days: 30
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Run linter
-        run: npm run lint
+          retention-days: 7
