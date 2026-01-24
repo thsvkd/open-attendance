@@ -2,19 +2,19 @@ import { differenceInDays } from "date-fns";
 import type { LeaveType } from "@/types";
 
 /**
- * 휴가 요청을 분 단위 범위로 변환하여 겹침 감지에 사용합니다.
+ * Converts leave request to minute ranges for overlap detection.
  */
 export function getLeaveMinutes(
   leaveType: LeaveType,
   startDate: Date,
   endDate: Date,
   startTime?: string,
-  endTime?: string
+  endTime?: string,
 ): { start: number; end: number }[] {
   const ranges: { start: number; end: number }[] = [];
 
   const daysDiff = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   for (let dayOffset = 0; dayOffset <= daysDiff; dayOffset++) {
@@ -61,22 +61,22 @@ export function getLeaveMinutes(
 }
 
 /**
- * 두 시간 범위가 겹치는지 확인합니다.
+ * Checks if two time ranges overlap.
  */
 export function rangesOverlap(
   range1: { start: number; end: number },
-  range2: { start: number; end: number }
+  range2: { start: number; end: number },
 ): boolean {
   return range1.start < range2.end && range1.end > range2.start;
 }
 
 /**
- * 휴가 유형에 따라 사용 일수를 계산합니다.
+ * Calculates used days based on leave type.
  */
 export function calculateDays(
   leaveType: LeaveType,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): number {
   switch (leaveType) {
     case "HALF_DAY_AM":

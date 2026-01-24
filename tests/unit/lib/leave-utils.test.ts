@@ -7,7 +7,7 @@ import {
 
 describe("leave-utils", () => {
   describe("getLeaveMinutes", () => {
-    it("전일 휴가의 근무 시간 범위를 올바르게 계산해야 함", () => {
+    it("should correctly calculate the working hour range for a full-day leave", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
       const ranges = getLeaveMinutes("FULL_DAY", startDate, endDate);
@@ -16,7 +16,7 @@ describe("leave-utils", () => {
       expect(ranges[0].end - ranges[0].start).toBe(9 * 60); // 9시간 = 540분
     });
 
-    it("오전 반차의 근무 시간 범위를 올바르게 계산해야 함", () => {
+    it("should correctly calculate the working hour range for an AM half-day leave", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
       const ranges = getLeaveMinutes("HALF_DAY_AM", startDate, endDate);
@@ -25,7 +25,7 @@ describe("leave-utils", () => {
       expect(ranges[0].end - ranges[0].start).toBe(4 * 60); // 4시간 = 240분
     });
 
-    it("오후 반차의 근무 시간 범위를 올바르게 계산해야 함", () => {
+    it("should correctly calculate the working hour range for a PM half-day leave", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
       const ranges = getLeaveMinutes("HALF_DAY_PM", startDate, endDate);
@@ -34,7 +34,7 @@ describe("leave-utils", () => {
       expect(ranges[0].end - ranges[0].start).toBe(4 * 60); // 4시간 = 240분
     });
 
-    it("반반차의 시작/종료 시간을 올바르게 계산해야 함", () => {
+    it("should correctly calculate the start/end time for a quarter-day leave", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
       const ranges = getLeaveMinutes(
@@ -42,14 +42,14 @@ describe("leave-utils", () => {
         startDate,
         endDate,
         "09:00",
-        "11:00"
+        "11:00",
       );
 
       expect(ranges).toHaveLength(1);
       expect(ranges[0].end - ranges[0].start).toBe(2 * 60); // 2시간 = 120분
     });
 
-    it("여러 날에 걸친 전일 휴가를 올바르게 계산해야 함", () => {
+    it("should correctly calculate full-day leaves over multiple days", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-17"); // 3일
       const ranges = getLeaveMinutes("FULL_DAY", startDate, endDate);
@@ -60,7 +60,7 @@ describe("leave-utils", () => {
       });
     });
 
-    it("시간 정보가 없는 반반차는 빈 범위를 반환해야 함", () => {
+    it("should return an empty range for a quarter-day leave without time information", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
       const ranges = getLeaveMinutes("QUARTER_DAY", startDate, endDate);
@@ -70,28 +70,28 @@ describe("leave-utils", () => {
   });
 
   describe("rangesOverlap", () => {
-    it("겹치는 시간 범위를 올바르게 감지해야 함", () => {
+    it("should correctly detect overlapping time ranges", () => {
       const range1 = { start: 100, end: 200 };
       const range2 = { start: 150, end: 250 };
 
       expect(rangesOverlap(range1, range2)).toBe(true);
     });
 
-    it("겹치지 않는 시간 범위를 올바르게 감지해야 함", () => {
+    it("should correctly detect non-overlapping time ranges", () => {
       const range1 = { start: 100, end: 200 };
       const range2 = { start: 200, end: 300 };
 
       expect(rangesOverlap(range1, range2)).toBe(false);
     });
 
-    it("완전히 포함된 시간 범위를 겹침으로 감지해야 함", () => {
+    it("should detect completely included time ranges as overlapping", () => {
       const range1 = { start: 100, end: 300 };
       const range2 = { start: 150, end: 250 };
 
       expect(rangesOverlap(range1, range2)).toBe(true);
     });
 
-    it("정확히 붙어있는 시간 범위는 겹치지 않음으로 감지해야 함", () => {
+    it("should detect exactly adjacent time ranges as non-overlapping", () => {
       const range1 = { start: 100, end: 200 };
       const range2 = { start: 200, end: 300 };
 
@@ -100,7 +100,7 @@ describe("leave-utils", () => {
   });
 
   describe("calculateDays", () => {
-    it("전일 휴가의 일수를 올바르게 계산해야 함", () => {
+    it("should correctly calculate the number of days for a full-day leave", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-17");
 
@@ -109,7 +109,7 @@ describe("leave-utils", () => {
       expect(days).toBe(3);
     });
 
-    it("하루 전일 휴가는 1일로 계산해야 함", () => {
+    it("should calculate a single full-day leave as 1 day", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
 
@@ -118,7 +118,7 @@ describe("leave-utils", () => {
       expect(days).toBe(1);
     });
 
-    it("오전 반차는 0.5일로 계산해야 함", () => {
+    it("should calculate an AM half-day leave as 0.5 days", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
 
@@ -127,7 +127,7 @@ describe("leave-utils", () => {
       expect(days).toBe(0.5);
     });
 
-    it("오후 반차는 0.5일로 계산해야 함", () => {
+    it("should calculate a PM half-day leave as 0.5 days", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
 
@@ -136,7 +136,7 @@ describe("leave-utils", () => {
       expect(days).toBe(0.5);
     });
 
-    it("반반차는 0.25일로 계산해야 함", () => {
+    it("should calculate a quarter-day leave as 0.25 days", () => {
       const startDate = new Date("2024-01-15");
       const endDate = new Date("2024-01-15");
 

@@ -8,7 +8,14 @@ import {
   successResponse,
 } from "@/lib/api-utils";
 
-const ALLOWED_UPDATE_FIELDS = ["name", "email", "password", "role", "joinDate", "totalLeaves"] as const;
+const ALLOWED_UPDATE_FIELDS = [
+  "name",
+  "email",
+  "password",
+  "role",
+  "joinDate",
+  "totalLeaves",
+] as const;
 
 export async function GET() {
   const { error } = await requireAdmin();
@@ -109,7 +116,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    // 허용된 필드만 추출 (mass assignment 방지)
+    // Extract only allowed fields (prevent mass assignment)
     const updateData: Record<string, unknown> = {};
     for (const field of ALLOWED_UPDATE_FIELDS) {
       if (field in rawUpdateData && rawUpdateData[field] !== undefined) {
@@ -117,18 +124,23 @@ export async function PATCH(req: Request) {
       }
     }
 
-    // 자기 자신을 수정할 때 비밀번호 변경 시 현재 비밀번호 확인
+    // Verify current password when changing password for self-update
     if (id === session!.user.id && updateData.password) {
       if (!currentPassword || typeof currentPassword !== "string") {
         return errorResponse("Current password required for self-update", 400);
       }
 
-      const currentUser = await db.user.findUnique({ where: { id: session!.user.id } });
+      const currentUser = await db.user.findUnique({
+        where: { id: session!.user.id },
+      });
       if (!currentUser?.password) {
         return errorResponse("User not found", 404);
       }
 
-      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        currentUser.password,
+      );
       if (!isPasswordValid) {
         return errorResponse("Incorrect current password", 403);
       }
@@ -144,8 +156,12 @@ export async function PATCH(req: Request) {
       delete updateData.password;
     }
 
-    // role 값 검증
-    if (updateData.role && updateData.role !== "ADMIN" && updateData.role !== "USER") {
+    // Validate role value
+    if (
+      updateData.role &&
+      updateData.role !== "ADMIN" &&
+      updateData.role !== "USER"
+    ) {
       return errorResponse("Invalid role value", 400);
     }
 

@@ -11,10 +11,10 @@ echo -e "${GREEN}  Open Attendance - Test Runner${NC}"
 echo -e "${GREEN}======================================${NC}"
 echo ""
 
-# 테스트 타입 선택
+# Choose test type
 TEST_TYPE=${1:-all}
 
-# 유효한 테스트 타입인지 확인
+# Check if valid test type
 if [[ ! "$TEST_TYPE" =~ ^(unit|e2e|all|watch)$ ]]; then
   echo -e "${RED}Error: Invalid test type '${TEST_TYPE}'${NC}"
   echo ""
@@ -29,7 +29,7 @@ if [[ ! "$TEST_TYPE" =~ ^(unit|e2e|all|watch)$ ]]; then
   exit 1
 fi
 
-# 환경 변수 설정
+# Set environment variables
 export NODE_ENV=test
 export DATABASE_URL="file:./test.db"
 export NEXTAUTH_URL="http://localhost:3000"
@@ -39,7 +39,7 @@ echo -e "${YELLOW}Environment: ${NODE_ENV}${NC}"
 echo -e "${YELLOW}Database: ${DATABASE_URL}${NC}"
 echo ""
 
-# 테스트 실행
+# Execute tests
 case "$TEST_TYPE" in
   unit)
     echo -e "${GREEN}Running unit and integration tests...${NC}"
