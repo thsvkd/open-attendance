@@ -47,3 +47,9 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+.ca
+.github/skills
+.gemini
+.agent
+.agents
+.claude

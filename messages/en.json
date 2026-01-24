@@ -160,6 +160,8 @@
       "title": "Leave Request History",
       "description": "List of pending and processed requests.",
       "noRequests": "No pending requests.",
+      "approve": "Approve",
+      "reject": "Reject",
       "approveSuccess": "Approved successfully.",
       "rejectSuccess": "Rejected successfully.",
       "actionFailed": "Action failed."
@@ -169,6 +171,7 @@
       "description": "Manage all registered employees and their information.",
       "addMember": "Add Member",
       "editMember": "Edit Member",
+      "edit": "Edit",
       "noMembers": "No members registered.",
       "addSuccess": "Member added successfully.",
       "addFailed": "Failed to add member.",

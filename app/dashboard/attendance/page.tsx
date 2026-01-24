@@ -55,46 +55,95 @@ export default function AttendancePage() {
           <CardTitle>{t('history')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-left">{t('date')}</TableHead>
-                <TableHead className="text-center">{t('checkIn')}</TableHead>
-                <TableHead className="text-center">{t('checkOut')}</TableHead>
-                <TableHead className="text-right">{t('status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {history.length === 0 ? (
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    {t('noRecords')}
-                  </TableCell>
+                  <TableHead className="text-left">{t('date')}</TableHead>
+                  <TableHead className="text-center">{t('checkIn')}</TableHead>
+                  <TableHead className="text-center">{t('checkOut')}</TableHead>
+                  <TableHead className="text-center">{t('status')}</TableHead>
                 </TableRow>
-              ) : (
-                history.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-medium text-left">
-                      {formatter.dateTime(new Date(record.date), {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge statusType="attendance" status={record.status} label={t(`statuses.${record.status}`)} />
+              </TableHeader>
+              <TableBody>
+                {history.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      {t('noRecords')}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  history.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell className="font-medium">
+                        {formatter.dateTime(new Date(record.date), {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge statusType="attendance" status={record.status} label={t(`statuses.${record.status}`)} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {history.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                {t('noRecords')}
+              </div>
+            ) : (
+              history.map((record) => (
+                <Card key={record.id} className="shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">{t('date')}</span>
+                        <span className="font-medium text-sm">
+                          {formatter.dateTime(new Date(record.date), {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="space-y-1">
+                          <div className="text-xs text-muted-foreground">{t('checkIn')}</div>
+                          <div className="font-medium">
+                            {record.checkIn ? format(new Date(record.checkIn), "p") : "-"}
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-right mr-2">
+                          <div className="text-xs text-muted-foreground">{t('checkOut')}</div>
+                          <div className="font-medium">
+                            {record.checkOut ? format(new Date(record.checkOut), "p") : "-"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-muted-foreground">{t('status')}</span>
+                        <Badge statusType="attendance" status={record.status} label={t(`statuses.${record.status}`)} />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

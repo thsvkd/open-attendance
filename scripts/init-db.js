@@ -38,7 +38,7 @@ if (!fs.existsSync(dbPath)) {
     });
 
     // Push schema to database
-    execSync('npx prisma db push --skip-generate', {
+    execSync('npx prisma db push', {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..')
     });
