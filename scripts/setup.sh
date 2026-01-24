@@ -51,45 +51,49 @@ fi
 
 echo -e "${GREEN}📁 Project directory: $PROJECT_ROOT${NC}"
 
-# Check if .env file exists
-if [ -f ".env" ]; then
-  echo -e "${YELLOW}⚠️  .env file already exists. Backing up to .env.backup${NC}"
-  cp .env .env.backup
+# Check if .env.local file exists
+if [ -f ".env.local" ]; then
+  echo -e "${YELLOW}⚠️  .env.local file already exists. Backing up to .env.local.backup${NC}"
+  cp .env.local .env.local.backup
 fi
 
-# Create .env file from .env.example
-echo -e "${GREEN}📝 Creating .env file from .env.example...${NC}"
+# Create .env.local file from .env.local.example
+echo -e "${GREEN}📝 Creating .env.local file from .env.local.example...${NC}"
 
-# Check if .env.example exists
-if [ ! -f ".env.example" ]; then
-  echo -e "${RED}❌ Error: .env.example file not found${NC}"
+# Check if .env.local.example exists
+if [ ! -f ".env.local.example" ]; then
+  echo -e "${RED}❌ Error: .env.local.example file not found${NC}"
   exit 1
 fi
 
-# Copy .env.example to .env
-cp .env.example .env
+# Copy .env.local.example to .env.local
+cp .env.local.example .env.local
 
 # Generate a random secret for NEXTAUTH_SECRET
 NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n')
 
-# Replace NEXTAUTH_SECRET in .env file
+# Replace NEXTAUTH_SECRET in .env.local file
 if command -v sed &> /dev/null; then
   # Use different sed syntax for macOS and Linux
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
+    sed -i '' "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.local
   else
-    sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env
+    sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.local
   fi
 else
-  echo -e "${YELLOW}⚠️  sed not found. Please manually update NEXTAUTH_SECRET in .env${NC}"
+  echo -e "${YELLOW}⚠️  sed not found. Please manually update NEXTAUTH_SECRET in .env.local${NC}"
 fi
 
-echo -e "${GREEN}✅ .env file created successfully${NC}"
+echo -e "${GREEN}✅ .env.local file created successfully${NC}"
 echo -e "${GREEN}🔑 NEXTAUTH_SECRET has been automatically generated${NC}"
 
 # Install dependencies
 echo -e "${GREEN}📦 Installing dependencies...${NC}"
 npm install
+
+# Setup Git hooks with Husky
+echo -e "${GREEN}🪝 Setting up Git hooks...${NC}"
+npx husky install
 
 # Generate Prisma Client
 echo -e "${GREEN}🔧 Generating Prisma Client...${NC}"
@@ -97,6 +101,10 @@ npx prisma generate
 
 # Run database migrations
 echo -e "${GREEN}🗄️  Running database migrations...${NC}"
+# Load .env.local to ensure DATABASE_URL is available
+set -a
+source .env.local 2>/dev/null || true
+set +a
 npx prisma migrate deploy 2>/dev/null || npx prisma db push
 
 echo ""

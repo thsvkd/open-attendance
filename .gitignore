@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+*.spec.ts-snapshots/
 
 # next.js
 /.next/
@@ -32,8 +36,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
-!.env.example
+.env.local*
+!.env.local.example
 
 # database
 *.db
