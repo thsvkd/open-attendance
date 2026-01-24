@@ -1,49 +1,49 @@
-# Agents Guide
+# AI Agents Development Guide
 
-## 프로젝트 개요
+## Project Overview
 
-근태 및 연차 관리를 위한 오픈소스 프로젝트입니다. 직원의 출석, 퇴근, 휴가 등을 체계적으로 관리하고 분석할 수 있는 통합 시스 템을 제공합니다.
+This is an open-source project for attendance and annual leave management. It provides an integrated system for systematically managing and analyzing employee attendance, time off, and vacation.
 
-## 기능 정의
+## Feature Requirements
 
-### 직원의 출석/퇴근 기록 관리
+### Employee Attendance/Check-out Management
 
-- 기본적으로 법정 휴무일 및 회사 지정 휴무일이외의 날짜에 출석한 것으로 간주
-- 실제 출석을 하지 않은 경우 출석하지 않은 것으로 처리 및 이유를 기록할 수 있음
+- By default, assume attendance on all dates except legal holidays and company-designated holidays
+- If actual attendance is not made, record it as absent with a reason
 
-### 연차, 휴가, 병가 등 휴무 관리
+### Annual Leave, Vacation, and Sick Leave Management
 
-- 연차 잔여일 관리
-- 휴가 신청 및 승인 워크플로우
-  - slack을 통해 휴가 및 병가 신청할 수 있게 구현
-- 병가, 경조사휴가 등 특수 휴가 처리
-- 휴가 사용 현황 추적
-- 연도별 연차 초기화 및 이월 정책 관리
-- 한국의 법정 공휴일 반영 및 한국의 연차법을 적용
-  - 입사일 기준 또는 회계년도 기준 중 선택할 수 있게 구현
+- Annual leave balance management
+- Leave request and approval workflow
+  - Implement leave and sick leave requests via Slack
+- Special leave handling (sick leave, family events leave, etc.)
+- Leave usage tracking
+- Annual leave initialization and carryover policy management
+- Reflect Korean public holidays and apply Korean annual leave laws
+  - Implement choice between hire date basis or fiscal year basis
 
-### 근태 및 연차 사용 현황 분석 및 리포팅
+### Attendance and Leave Usage Analysis and Reporting
 
-- 월간/분기별/연간 근태 및 연차 사용 현황 리포트
+- Monthly/quarterly/annual attendance and leave usage reports
 
-### 사용자 계정 및 권한 관리
+### User Account and Permission Management
 
-- 로그인 및 계정 생성
-- 사용자별 역할 및 권한 관리
-  - 관리자: 모든 기능 접근 가능
-  - 일반 사용자: 자신의 근태 및 연차 정보만 접근 가능
+- Login and account creation
+- Role-based permissions management
+  - Administrator: Full access to all features
+  - Regular user: Access only to their own attendance and leave information
 
-## 개발 팁
+## Development Guidelines
 
-- vercel-react-best-practices 스킬을 활용할 것
-- 인간 개발자가 나중에 수정하기 용이하게 코드를 작성할 것
-  - 코드를 이해할 수 있는 주석을 충분히 달 것
-  - 코드의 중복을 줄이고 모듈화할 것
-  - 코드 스타일 가이드를 준수할 것
-- 기능 및 피드백 구현/반영 후 다음의 과정을 거칠 것
-  - 포맷팅
-  - 린팅
-  - 테스트
-  - 커밋
-- 새로운 기능을 추가할 때는 관련 문서(README.md, AGENTS.md 등)를 업데이트하고, 테스트 코드도 추가할 것
-- 커밋 메시지는 표준 커밋 메시지 규칙을 따를 것
+- Utilize vercel-react-best-practices skills
+- Write code that is easy for human developers to modify later
+  - Add sufficient comments to understand the code
+  - Reduce code duplication and modularize
+  - Follow code style guidelines
+- After implementing features and feedback, follow these steps:
+  - Formatting
+  - Linting
+  - Testing
+  - Commit
+- When adding new features, update related documents (README.md, AGENTS.md, etc.) and add test code
+- Follow standard commit message conventions

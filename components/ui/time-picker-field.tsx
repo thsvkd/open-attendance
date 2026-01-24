@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface TimePickerFieldProps {
   label: string;
@@ -22,8 +23,9 @@ export function TimePickerField({
   label,
   value,
   onChange,
-  placeholder = "Select time",
+  placeholder,
 }: TimePickerFieldProps) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const hourRef = useRef<HTMLDivElement>(null);
   const minuteRef = useRef<HTMLDivElement>(null);
@@ -76,7 +78,7 @@ export function TimePickerField({
           >
             <Clock className="mr-2 h-4 w-4 opacity-50" />
             <span className="text-base font-medium">
-              {value || placeholder}
+              {value || placeholder || t("selectTime")}
             </span>
           </Button>
         </PopoverTrigger>
@@ -87,7 +89,7 @@ export function TimePickerField({
           <div className="flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
               <div className="text-sm font-medium text-foreground">
-                Select Time
+                {t("selectTime")}
               </div>
             </div>
             <div className="flex h-56 overflow-hidden relative">
@@ -144,7 +146,7 @@ export function TimePickerField({
           </div>
           <div className="p-2 border-t bg-muted/20">
             <Button size="sm" className="w-full" onClick={() => setOpen(false)}>
-              Confirm
+              {t("confirm")}
             </Button>
           </div>
         </PopoverContent>

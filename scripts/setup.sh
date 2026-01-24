@@ -93,7 +93,7 @@ npm install
 
 # Setup Git hooks with Husky
 echo -e "${GREEN}🪝 Setting up Git hooks...${NC}"
-npx husky install
+npx husky
 
 # Generate Prisma Client
 echo -e "${GREEN}🔧 Generating Prisma Client...${NC}"

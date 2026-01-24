@@ -98,7 +98,7 @@ test.describe.serial("Phase 3: Login Test (Admin exists)", () => {
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByPlaceholder("m@example.com")).toBeVisible();
+    await expect(page.getByPlaceholder("user@example.com")).toBeVisible();
     await expect(page.getByLabel("Password")).toBeVisible();
     await expect(page.getByRole("button", { name: "Login" })).toBeVisible();
   });
@@ -119,7 +119,7 @@ test.describe.serial("Phase 3: Login Test (Admin exists)", () => {
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
 
-    await page.getByPlaceholder("m@example.com").fill("wrong@example.com");
+    await page.getByPlaceholder("user@example.com").fill("wrong@example.com");
     await page.getByLabel("Password").fill("wrongpassword");
     await page.getByRole("button", { name: "Login" }).click();
 
@@ -134,7 +134,7 @@ test.describe.serial("Phase 3: Login Test (Admin exists)", () => {
     await page.goto("/login");
     await page.waitForLoadState("domcontentloaded");
 
-    await page.getByPlaceholder("m@example.com").fill(ADMIN.email);
+    await page.getByPlaceholder("user@example.com").fill(ADMIN.email);
     await page.getByLabel("Password").fill(ADMIN.password);
     await page.getByRole("button", { name: "Login" }).click();
 
@@ -151,7 +151,7 @@ test.describe.serial("Phase 4: Registration Test (Admin exists)", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByPlaceholder("John Doe")).toBeVisible();
-    await expect(page.getByPlaceholder("m@example.com")).toBeVisible();
+    await expect(page.getByPlaceholder("user@example.com")).toBeVisible();
     await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Confirm Password")).toBeVisible();
     await expect(page.getByRole("button", { name: "Register" })).toBeVisible();
@@ -174,7 +174,7 @@ test.describe.serial("Phase 4: Registration Test (Admin exists)", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await page.getByPlaceholder("John Doe").fill("Test User");
-    await page.getByPlaceholder("m@example.com").fill("user@example.com");
+    await page.getByPlaceholder("user@example.com").fill("user@example.com");
     await page.getByLabel("Password", { exact: true }).fill("user123456");
     await page.getByLabel("Confirm Password").fill("user123456");
     await page.getByRole("button", { name: "Register" }).click();
@@ -189,7 +189,7 @@ test.describe.serial("Phase 4: Registration Test (Admin exists)", () => {
     await page.waitForLoadState("domcontentloaded");
 
     await page.getByPlaceholder("John Doe").fill("Duplicate User");
-    await page.getByPlaceholder("m@example.com").fill(ADMIN.email);
+    await page.getByPlaceholder("user@example.com").fill(ADMIN.email);
     await page.getByLabel("Password", { exact: true }).fill("password123");
     await page.getByLabel("Confirm Password").fill("password123");
     await page.getByRole("button", { name: "Register" }).click();

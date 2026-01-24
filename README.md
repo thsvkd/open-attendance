@@ -174,13 +174,27 @@ We welcome contributions from the community!
 - 📝 Documentation improvements
 - 🔧 Code contributions
 
-### Development Setup
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+### Quick Start for Contributors
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Commit changes: `git commit -m 'Add amazing feature'`
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📚 Documentation
+
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [Security Policy](SECURITY.md) - Security best practices
+- [Testing Guide](docs/TESTING.md) - Testing documentation
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment
+- [Architecture](docs/ARCHITECTURE.md) - System architecture overview
 
 ---
 

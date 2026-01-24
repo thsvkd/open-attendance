@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import axios from "axios"
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import axios from "axios";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,20 +16,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  email: z.string().email(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+const formSchema = z
+  .object({
+    name: z.string().min(2, "Name is required"),
+    email: z.string().email(),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 interface AuthFormProps {
   variant: "register" | "setup";
@@ -38,8 +50,8 @@ interface AuthFormProps {
 const CONFIG = {
   register: {
     title: "Register",
-    description: "Create an account to get started.",
-    emailPlaceholder: "m@example.com",
+    description: "",
+    emailPlaceholder: "user@example.com",
     submitLabel: "Register",
     loadingLabel: "Creating account...",
     successMessage: "Account created! Please login.",
@@ -59,9 +71,10 @@ const CONFIG = {
 } as const;
 
 export function AuthForm({ variant }: AuthFormProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = React.useState(false)
-  const config = CONFIG[variant]
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
+  const config = CONFIG[variant];
+  const t = useTranslations("auth");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,21 +84,21 @@ export function AuthForm({ variant }: AuthFormProps) {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...registerData } = values
-      await axios.post("/api/register", registerData)
-      toast.success(config.successMessage)
-      router.push("/login")
+      const { confirmPassword, ...registerData } = values;
+      await axios.post("/api/register", registerData);
+      toast.success(config.successMessage);
+      router.push("/login");
     } catch {
-      toast.error("Something went wrong.")
+      toast.error("Something went wrong.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -93,7 +106,9 @@ export function AuthForm({ variant }: AuthFormProps) {
     <Card className={config.width}>
       <CardHeader>
         <CardTitle>{config.title}</CardTitle>
-        <CardDescription>{config.description}</CardDescription>
+        <CardDescription>
+          {config.description || t("createAccount")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -142,7 +157,7 @@ export function AuthForm({ variant }: AuthFormProps) {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>{t("confirmPassword")}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -159,12 +174,10 @@ export function AuthForm({ variant }: AuthFormProps) {
       {config.showFooter && (
         <CardFooter>
           <Button variant="link" className="w-full" asChild>
-            <Link href="/login">
-              Already have an account? Login
-            </Link>
+            <Link href="/login">{t("alreadyHaveAccount")}</Link>
           </Button>
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }

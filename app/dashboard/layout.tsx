@@ -18,9 +18,7 @@ export default async function DashboardLayout({
         <div className="sticky top-0 z-50 md:static">
           <Header />
         </div>
-        <div className="p-8 overflow-y-auto flex-1">
-          {children}
-        </div>
+        <div className="p-8 overflow-y-auto flex-1">{children}</div>
       </main>
     </div>
   );
