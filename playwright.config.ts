@@ -5,9 +5,9 @@ import { defineConfig, devices } from "@playwright/test";
  * @see https://playwright.dev/docs/test-configuration
  */
 
-// 환경 변수에서 포트 가져오기 (기본값: 3000)
-// E2E_PORT를 설정하면 해당 포트 사용, 아니면 3000 사용
-const PORT = process.env.E2E_PORT ? parseInt(process.env.E2E_PORT, 10) : 3000;
+// 환경 변수에서 포트 가져오기 (기본값: 3001)
+// E2E_PORT를 설정하면 해당 포트 사용, 아니면 3001 사용
+const PORT = process.env.E2E_PORT ? parseInt(process.env.E2E_PORT, 10) : 3001;
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
