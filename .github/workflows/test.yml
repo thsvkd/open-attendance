@@ -56,47 +56,58 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [20.x]
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Setup test environment
         run: |
           cp .env.example .env
           echo "DATABASE_URL=file:./test.db" >> .env
           echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
-      
+
       - name: Generate Prisma Client
         run: npx prisma generate
-      
+
       - name: Initialize test database
         run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: file:./test.db
 
+      - name: Build Next.js
+        run: npm run build
+        env:
+          NODE_ENV: test
+          DATABASE_URL: file:./test.db
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: test-secret-for-ci
+
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npx playwright test
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
         timeout-minutes: 15
-      
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
@@ -104,7 +115,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
