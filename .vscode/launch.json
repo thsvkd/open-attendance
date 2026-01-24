@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Client",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "pathMapping": {
+        "/": "${workspaceFolder}/",
+        "/_next/": "${workspaceFolder}/.next/"
+      },
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*",
+        "/_next/*": "${webRoot}/.next/*"
+      }
+    },
+    {
+      "name": "Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Full Stack",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "serverReadyAction": {
+        "pattern": "▲ Local:.*http://localhost:(\\d+)",
+        "uriFormat": "http://localhost:%s",
+        "action": "debugWithChrome"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full (Server + Client)",
+      "configurations": ["Server", "Client"],
+      "stopAll": true
+    }
+  ]
+}

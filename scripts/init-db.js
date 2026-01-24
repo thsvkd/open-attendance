@@ -4,20 +4,67 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Parse DATABASE_URL from .env file to get relative path
-function getDatabasePath() {
-  const envPath = path.join(__dirname, '..', '.env');
+// Load environment variables from .env.local or .env file
+function loadEnvFile() {
+  // Try .env.local first, then .env
+  let envPath = path.join(__dirname, '..', '.env.local');
 
   if (!fs.existsSync(envPath)) {
-    console.error('Error: .env file not found');
-    process.exit(1);
+    envPath = path.join(__dirname, '..', '.env');
+  }
+
+  if (!fs.existsSync(envPath)) {
+    // If no env file found, return empty object (rely on process.env)
+    console.log('No .env.local or .env file found, using environment variables.');
+    return {};
   }
 
   const envContent = fs.readFileSync(envPath, 'utf-8');
-  const match = envContent.match(/DATABASE_URL="file:\.\/(.+?)"/);
+  const envVars = {};
 
-  if (!match) {
+  // Parse environment variables
+  envContent.split('\n').forEach(line => {
+    // Skip comments and empty lines
+    if (line.startsWith('#') || !line.trim()) return;
+
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (match) {
+      let value = match[2].trim();
+      // Remove surrounding quotes if present
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      envVars[match[1]] = value;
+    }
+  });
+
+  return envVars;
+}
+
+// Update NEXTAUTH_URL based on PORT
+function applyDynamicEnvVars(envVars) {
+  // Get PORT from environment variable or .env file
+  const port = process.env.PORT || envVars.PORT || '3000';
+
+  // Update NEXTAUTH_URL to use the same port
+  envVars.NEXTAUTH_URL = `http://localhost:${port}`;
+
+  return envVars;
+}
+
+// Parse DATABASE_URL from .env file to get relative path
+function getDatabasePath(envVars) {
+  const databaseUrl = envVars.DATABASE_URL;
+
+  if (!databaseUrl) {
     console.error('Error: DATABASE_URL not found in .env file');
+    process.exit(1);
+  }
+
+  const match = databaseUrl.match(/file:\.\/(.+?)$/);
+  if (!match) {
+    console.error('Error: DATABASE_URL format not recognized. Expected file:./path');
     process.exit(1);
   }
 
@@ -25,28 +72,58 @@ function getDatabasePath() {
   return path.join(__dirname, '..', 'prisma', match[1]);
 }
 
-// Check if database exists
-const dbPath = getDatabasePath();
+// Check if database exists and has the correct schema
+let envVars = loadEnvFile();
 
-// Check if database file exists
-if (!fs.existsSync(dbPath)) {
-  console.log('Database not found. Initializing database...');
+// Environment variables take precedence over .env file values
+if (process.env.DATABASE_URL) {
+  envVars.DATABASE_URL = process.env.DATABASE_URL;
+}
+
+envVars = applyDynamicEnvVars(envVars);
+const dbPath = getDatabasePath(envVars);
+
+// Function to check if database has required tables
+function hasRequiredTables() {
+  if (!fs.existsSync(dbPath)) {
+    return false;
+  }
+
   try {
-    // Create database using sqlite3
-    execSync(`sqlite3 "${dbPath}" "VACUUM;"`, {
-      cwd: path.join(__dirname, '..')
-    });
+    // Check if User table exists (core table in our schema)
+    const result = execSync(
+      `sqlite3 "${dbPath}" "SELECT name FROM sqlite_master WHERE type='table' AND name='User';"`,
+      { encoding: 'utf-8', cwd: path.join(__dirname, '..') }
+    );
+    return result.trim() === 'User';
+  } catch (error) {
+    return false;
+  }
+}
 
-    // Push schema to database
-    execSync('npx prisma db push', {
+// Initialize database if needed
+if (!hasRequiredTables()) {
+  console.log('Database not found or schema not initialized. Initializing database...');
+  try {
+    // Create database file if it doesn't exist
+    if (!fs.existsSync(dbPath)) {
+      execSync(`sqlite3 "${dbPath}" "VACUUM;"`, {
+        cwd: path.join(__dirname, '..')
+      });
+    }
+
+    // Push schema to database (with environment variables)
+    execSync('npm exec prisma db push', {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env, ...envVars }
     });
 
-    // Generate Prisma Client
-    execSync('npx prisma generate', {
+    // Generate Prisma Client (with environment variables)
+    execSync('npm exec prisma generate', {
       stdio: 'pipe',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
+      env: { ...process.env, ...envVars }
     });
 
     console.log('Database initialized successfully!');

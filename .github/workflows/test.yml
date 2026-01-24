@@ -91,19 +91,25 @@ jobs:
         run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: file:./test.db
+      - name: Seed test database
+        run: npx tsx scripts/seed-test-db.ts
+        env:
+          DATABASE_URL: file:./test.db
       - name: Build Next.js
         run: npm run build
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
-          NEXTAUTH_URL: http://localhost:3000
+          E2E_PORT: 3001
+          NEXTAUTH_URL: http://localhost:3001
           NEXTAUTH_SECRET: test-secret-for-ci
       - name: Run E2E tests
         run: npx playwright test
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
-          NEXTAUTH_URL: http://localhost:3000
+          E2E_PORT: 3001
+          NEXTAUTH_URL: http://localhost:3001
           NEXTAUTH_SECRET: test-secret-for-ci
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

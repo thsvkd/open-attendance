@@ -47,7 +47,12 @@ case "$TEST_TYPE" in
     ;;
   e2e)
     echo -e "${GREEN}Running E2E tests...${NC}"
-    npm run test:e2e
+    npx playwright test
+    E2E_EXIT_CODE=$?
+    echo ""
+    echo -e "${YELLOW}To view the test report, run:${NC}"
+    echo -e "  npx playwright show-report"
+    exit $E2E_EXIT_CODE
     ;;
   watch)
     echo -e "${GREEN}Running tests in watch mode...${NC}"
@@ -62,7 +67,7 @@ case "$TEST_TYPE" in
     
     echo ""
     echo -e "${YELLOW}Step 2/2: E2E Tests${NC}"
-    npm run test:e2e
+    npx playwright test
     E2E_TEST_EXIT_CODE=$?
     
     echo ""
@@ -83,7 +88,10 @@ case "$TEST_TYPE" in
     fi
     
     echo ""
-    
+    echo -e "${YELLOW}To view the E2E test report, run:${NC}"
+    echo -e "  npx playwright show-report"
+    echo ""
+
     # 하나라도 실패하면 종료 코드 1 반환
     if [ $UNIT_TEST_EXIT_CODE -ne 0 ] || [ $E2E_TEST_EXIT_CODE -ne 0 ]; then
       exit 1
