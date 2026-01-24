@@ -206,7 +206,7 @@ GET /api/auth/error?error=Configuration 500
 
 **Error**: `Can't reach database server`
 
-**Solution**: Check `DATABASE_URL` in `.env` and ensure the database server is running.
+**Solution**: Check `DATABASE_URL` in `.env.local` and ensure the database server is running.
 
 ### Port already in use
 

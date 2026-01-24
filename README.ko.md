@@ -212,7 +212,7 @@ GET /api/auth/error?error=Configuration 500
 
 **오류**: `Can't reach database server`
 
-**해결 방법**: `.env` 파일의 `DATABASE_URL`을 확인하고 데이터베이스 서버가 실행 중인지 확인하세요.
+**해결 방법**: `.env.local` 파일의 `DATABASE_URL`을 확인하고 데이터베이스 서버가 실행 중인지 확인하세요.
 
 ### 포트가 이미 사용 중
 

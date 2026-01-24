@@ -44,9 +44,9 @@ jobs:
         run: npm ci
       - name: Setup test environment
         run: |
-          cp .env.example .env
-          echo "DATABASE_URL=file:./test.db" >> .env
-          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
+          cp .env.local.example .env.local
+          echo "DATABASE_URL=file:./test.db" >> .env.local
+          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env.local
       - name: Generate Prisma Client
         run: npx prisma generate
       - name: Run tests
@@ -82,9 +82,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Setup test environment
         run: |
-          cp .env.example .env
-          echo "DATABASE_URL=file:./test.db" >> .env
-          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env
+          cp .env.local.example .env.local
+          echo "DATABASE_URL=file:./test.db" >> .env.local
+          echo "NEXTAUTH_SECRET=test-secret-for-ci" >> .env.local
       - name: Generate Prisma Client
         run: npx prisma generate
       - name: Initialize test database

@@ -38,9 +38,9 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Check if .env file exists
-if [ ! -f ".env" ]; then
-  echo -e "${RED}❌ Error: .env file not found${NC}"
+# Check if .env.local file exists
+if [ ! -f ".env.local" ]; then
+  echo -e "${RED}❌ Error: .env.local file not found${NC}"
   echo -e "${YELLOW}Please run the setup script first:${NC}"
   echo -e "  ${GREEN}./scripts/setup.sh${NC}"
   exit 1
