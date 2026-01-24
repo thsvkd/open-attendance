@@ -67,6 +67,7 @@ Open Attendance is built using a modern full-stack architecture with Next.js as 
 ### Frontend Layer
 
 #### Technology Stack
+
 - **React 19**: Modern React with concurrent features
 - **Next.js 16**: App Router for server-side rendering
 - **TypeScript**: Type safety throughout the application
@@ -75,6 +76,7 @@ Open Attendance is built using a modern full-stack architecture with Next.js as 
 - **next-intl**: Internationalization support
 
 #### Key Features
+
 - Server-side rendering (SSR)
 - Static site generation (SSG) where applicable
 - Client-side hydration
@@ -138,12 +140,14 @@ Response
 ```
 
 #### Session Management
+
 - JWT-based sessions
 - Secure HTTP-only cookies
 - Session expiration handling
 - CSRF protection
 
 #### Authorization
+
 - Role-based access control (RBAC)
 - Admin vs User permissions
 - Protected API routes
@@ -195,18 +199,19 @@ Leave
 #### Database Operations
 
 **Query Pattern:**
+
 ```typescript
 // Example: Get user with attendance
 const user = await prisma.user.findUnique({
   where: { id: userId },
   include: {
     attendance: {
-      where: { date: today }
+      where: { date: today },
     },
     annualLeave: {
-      where: { year: currentYear }
-    }
-  }
+      where: { year: currentYear },
+    },
+  },
 });
 ```
 
@@ -257,6 +262,7 @@ const user = await prisma.user.findUnique({
 ## 🔐 Security Architecture
 
 ### Authentication Security
+
 - Password hashing with bcrypt (10 rounds)
 - JWT tokens with secure secret
 - HTTP-only cookies
@@ -264,6 +270,7 @@ const user = await prisma.user.findUnique({
 - Session expiration
 
 ### API Security
+
 - Authentication middleware
 - Role-based authorization
 - Input validation (Zod schemas)
@@ -271,6 +278,7 @@ const user = await prisma.user.findUnique({
 - XSS protection (React escaping)
 
 ### Data Security
+
 - Environment variable management
 - Database connection encryption (production)
 - Sensitive data not in logs
@@ -279,16 +287,19 @@ const user = await prisma.user.findUnique({
 ## 📊 State Management
 
 ### Server State
+
 - Next.js Server Components (default)
 - Server Actions for mutations
 - Automatic revalidation
 
 ### Client State
+
 - React hooks (useState, useReducer)
 - Form state (react-hook-form)
 - No global state management needed (server-first approach)
 
 ### Session State
+
 - NextAuth session provider
 - Server-side session validation
 - Client-side session access
@@ -296,6 +307,7 @@ const user = await prisma.user.findUnique({
 ## 🌐 Internationalization
 
 ### Structure
+
 ```
 messages/
 ├── en.json          # English translations
@@ -303,6 +315,7 @@ messages/
 ```
 
 ### Implementation
+
 - next-intl for i18n
 - Server-side translation
 - Client component translation
@@ -312,15 +325,18 @@ messages/
 ## 🧪 Testing Architecture
 
 ### Unit Tests
+
 - **Framework**: Vitest
 - **Location**: Colocated with source files
 - **Coverage**: Business logic, utilities
 
 ### Integration Tests
+
 - **Framework**: Vitest + React Testing Library
 - **Scope**: Component integration, API routes
 
 ### E2E Tests
+
 - **Framework**: Playwright
 - **Scope**: Critical user flows
 - **Environment**: Isolated test database
@@ -360,6 +376,7 @@ open-attendance/
 ## 🚀 Performance Considerations
 
 ### Optimizations
+
 - Server Components by default (reduced JavaScript)
 - Static generation where possible
 - Database query optimization
@@ -368,6 +385,7 @@ open-attendance/
 - Font optimization
 
 ### Caching Strategy
+
 - Next.js automatic caching
 - Database query caching (Prisma)
 - Static asset caching
@@ -376,6 +394,7 @@ open-attendance/
 ## 🔮 Future Architecture Considerations
 
 ### Planned Improvements
+
 - [ ] Redis for session storage
 - [ ] Background job processing (leave notifications)
 - [ ] Real-time updates (WebSocket)
@@ -384,6 +403,7 @@ open-attendance/
 - [ ] Microservices for scaling
 
 ### Scalability
+
 - Horizontal scaling with load balancer
 - Database read replicas
 - CDN for static assets

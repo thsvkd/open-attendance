@@ -9,12 +9,12 @@ export function getLeaveMinutes(
   startDate: Date,
   endDate: Date,
   startTime?: string,
-  endTime?: string
+  endTime?: string,
 ): { start: number; end: number }[] {
   const ranges: { start: number; end: number }[] = [];
 
   const daysDiff = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   for (let dayOffset = 0; dayOffset <= daysDiff; dayOffset++) {
@@ -65,7 +65,7 @@ export function getLeaveMinutes(
  */
 export function rangesOverlap(
   range1: { start: number; end: number },
-  range2: { start: number; end: number }
+  range2: { start: number; end: number },
 ): boolean {
   return range1.start < range2.end && range1.end > range2.start;
 }
@@ -76,7 +76,7 @@ export function rangesOverlap(
 export function calculateDays(
   leaveType: LeaveType,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): number {
   switch (leaveType) {
     case "HALF_DAY_AM":

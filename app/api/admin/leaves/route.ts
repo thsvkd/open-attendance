@@ -72,7 +72,10 @@ export async function PATCH(req: Request) {
         },
       });
 
-      const totalUsed = approvedLeaves.reduce((sum, item) => sum + item.days, 0);
+      const totalUsed = approvedLeaves.reduce(
+        (sum, item) => sum + item.days,
+        0,
+      );
 
       await db.user.update({
         where: { id: updatedLeave.userId },

@@ -90,7 +90,7 @@ describe("/api/leaves", () => {
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
       vi.mocked(db.leaveRequest.findMany).mockRejectedValue(
-        new Error("Database error")
+        new Error("Database error"),
       );
 
       const response = await GET();

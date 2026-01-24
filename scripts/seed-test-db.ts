@@ -14,13 +14,15 @@ async function main() {
   // Check if users already exist
   const existingUsers = await prisma.user.count();
   if (existingUsers > 0) {
-    console.log(`Database already has ${existingUsers} user(s). Skipping seed.`);
+    console.log(
+      `Database already has ${existingUsers} user(s). Skipping seed.`,
+    );
     return;
   }
 
   // Create a test admin user
   const hashedPassword = await bcrypt.hash("test-password-123", 10);
-  
+
   const testUser = await prisma.user.create({
     data: {
       name: "Test Admin",

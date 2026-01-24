@@ -33,6 +33,7 @@ NEXTAUTH_SECRET="your-generated-secret"
 ```
 
 To generate `NEXTAUTH_SECRET`:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -59,7 +60,7 @@ openssl rand -base64 32
 1. **Create `docker-compose.yml`**
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -127,7 +128,7 @@ CMD ["node", "server.js"]
 
 ```typescript
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   // ... other config
 };
 ```
@@ -204,6 +205,7 @@ nano .env.local
 ```
 
 Add:
+
 ```env
 DATABASE_URL="postgresql://attendance_user:your_secure_password@localhost:5432/attendance"
 NEXTAUTH_URL="https://your-domain.com"
@@ -236,6 +238,7 @@ sudo nano /etc/nginx/sites-available/open-attendance
 ```
 
 Add:
+
 ```nginx
 server {
     listen 80;
@@ -253,6 +256,7 @@ server {
 ```
 
 Enable site:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/open-attendance /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -309,7 +313,7 @@ Add a health check route at `/api/health`:
 ```typescript
 // app/api/health/route.ts
 export async function GET() {
-  return Response.json({ status: 'ok' });
+  return Response.json({ status: "ok" });
 }
 ```
 

@@ -83,7 +83,10 @@ export async function PATCH(req: Request) {
         return errorResponse("Current password required", 400);
       }
 
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password!);
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password!,
+      );
       if (!isPasswordValid) {
         return errorResponse("Incorrect current password", 403);
       }

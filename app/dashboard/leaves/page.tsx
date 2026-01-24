@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { PageLoading } from "@/components/ui/page-loading";
 import type { LeaveRequestRecord } from "@/types";
@@ -38,7 +38,7 @@ export default function LeavesPage() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [leaveType, setLeaveType] = useState<string>("SICK");
-  const t = useTranslations('earlyLeave');
+  const t = useTranslations("earlyLeave");
 
   const fetchLeaves = async () => {
     try {
@@ -68,19 +68,20 @@ export default function LeavesPage() {
       type: leaveType,
       startDate: format(startDate, "yyyy-MM-dd"),
       endDate: format(endDate, "yyyy-MM-dd"),
-      reason: (document.getElementById("reason") as HTMLInputElement)?.value || "",
+      reason:
+        (document.getElementById("reason") as HTMLInputElement)?.value || "",
     };
 
     try {
       await axios.post("/api/leaves", data);
-      toast.success(t('submitRequest'));
+      toast.success(t("submitRequest"));
       fetchLeaves();
       setStartDate(undefined);
       setEndDate(undefined);
       setLeaveType("SICK");
       (e.target as HTMLFormElement).reset();
     } catch {
-      toast.error(t('submitFailed'));
+      toast.error(t("submitFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -90,12 +91,13 @@ export default function LeavesPage() {
     setCancelling(leaveId);
     try {
       await axios.patch("/api/leaves", { id: leaveId });
-      toast.success(t('cancelSuccess'));
+      toast.success(t("cancelSuccess"));
       fetchLeaves();
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
-        ? error.response.data.message
-        : t('cancelFailed');
+      const errorMessage =
+        axios.isAxiosError(error) && error.response?.data?.message
+          ? error.response.data.message
+          : t("cancelFailed");
       toast.error(errorMessage);
     } finally {
       setCancelling(null);
@@ -110,50 +112,58 @@ export default function LeavesPage() {
     <div className="grid gap-6 md:grid-cols-2">
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t('title')}</h2>
-          <p className="text-muted-foreground">{t('description')}</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("description")}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('requestLeave')}</CardTitle>
+            <CardTitle>{t("requestLeave")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label>{t('type')}</Label>
+                <Label>{t("type")}</Label>
                 <Select value={leaveType} onValueChange={setLeaveType}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t('selectType')} />
+                    <SelectValue placeholder={t("selectType")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SICK">{t('types.SICK')}</SelectItem>
-                    <SelectItem value="OFFICIAL">{t('types.OFFICIAL')}</SelectItem>
-                    <SelectItem value="OTHER">{t('types.OTHER')}</SelectItem>
+                    <SelectItem value="SICK">{t("types.SICK")}</SelectItem>
+                    <SelectItem value="OFFICIAL">
+                      {t("types.OFFICIAL")}
+                    </SelectItem>
+                    <SelectItem value="OTHER">{t("types.OTHER")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <DatePickerField
-                  label={t('startDate')}
+                  label={t("startDate")}
                   selected={startDate}
                   onSelect={setStartDate}
-                  placeholder={t('pickDate')}
+                  placeholder={t("pickDate")}
                 />
                 <DatePickerField
-                  label={t('endDate')}
+                  label={t("endDate")}
                   selected={endDate}
                   onSelect={setEndDate}
-                  placeholder={t('pickDate')}
+                  placeholder={t("pickDate")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="reason">{t('reason')}</Label>
-                <Input id="reason" name="reason" placeholder={t('reasonPlaceholder')} />
+                <Label htmlFor="reason">{t("reason")}</Label>
+                <Input
+                  id="reason"
+                  name="reason"
+                  placeholder={t("reasonPlaceholder")}
+                />
               </div>
               <Button className="w-full" type="submit" disabled={submitting}>
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t('submitRequest')}
+                {submitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("submitRequest")}
               </Button>
             </form>
           </CardContent>
@@ -163,7 +173,7 @@ export default function LeavesPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>{t('myRequests')}</CardTitle>
+            <CardTitle>{t("myRequests")}</CardTitle>
           </CardHeader>
           <CardContent>
             {/* Desktop Table View */}
@@ -171,18 +181,21 @@ export default function LeavesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('type')}</TableHead>
-                    <TableHead>{t('dates')}</TableHead>
-                    <TableHead>{t('days')}</TableHead>
-                    <TableHead>{t('status')}</TableHead>
-                    <TableHead>{t('common.actions')}</TableHead>
+                    <TableHead>{t("type")}</TableHead>
+                    <TableHead>{t("dates")}</TableHead>
+                    <TableHead>{t("days")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
+                    <TableHead>{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {leaves.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        {t('noRequests')}
+                      <TableCell
+                        colSpan={5}
+                        className="text-center text-muted-foreground"
+                      >
+                        {t("noRequests")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -190,11 +203,16 @@ export default function LeavesPage() {
                       <TableRow key={leave.id}>
                         <TableCell>{t(`types.${leave.type}`)}</TableCell>
                         <TableCell className="text-xs">
-                          {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                          {format(new Date(leave.startDate), "MM/dd")} -{" "}
+                          {format(new Date(leave.endDate), "MM/dd")}
                         </TableCell>
                         <TableCell>{leave.days}</TableCell>
                         <TableCell>
-                          <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
+                          <Badge
+                            statusType="leave"
+                            status={leave.status}
+                            label={t(`statuses.${leave.status}`)}
+                          />
                         </TableCell>
                         <TableCell className="text-right">
                           {leave.status === "PENDING" && (
@@ -208,7 +226,7 @@ export default function LeavesPage() {
                               {cancelling === leave.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                t('cancel')
+                                t("cancel")
                               )}
                             </Button>
                           )}
@@ -224,7 +242,7 @@ export default function LeavesPage() {
             <div className="md:hidden space-y-4">
               {leaves.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  {t('noRequests')}
+                  {t("noRequests")}
                 </div>
               ) : (
                 leaves.map((leave) => (
@@ -232,19 +250,32 @@ export default function LeavesPage() {
                     <CardContent className="p-4">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold">{t(`types.${leave.type}`)}</span>
-                          <Badge statusType="leave" status={leave.status} label={t(`statuses.${leave.status}`)} />
+                          <span className="font-semibold">
+                            {t(`types.${leave.type}`)}
+                          </span>
+                          <Badge
+                            statusType="leave"
+                            status={leave.status}
+                            label={t(`statuses.${leave.status}`)}
+                          />
                         </div>
                         <div className="flex justify-between items-start gap-3">
                           <div className="space-y-1">
-                            <div className="text-xs text-muted-foreground">{t('dates')}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {t("dates")}
+                            </div>
                             <div className="text-sm font-medium">
-                              {format(new Date(leave.startDate), "MM/dd")} - {format(new Date(leave.endDate), "MM/dd")}
+                              {format(new Date(leave.startDate), "MM/dd")} -{" "}
+                              {format(new Date(leave.endDate), "MM/dd")}
                             </div>
                           </div>
                           <div className="space-y-1 text-right mr-2">
-                            <div className="text-xs text-muted-foreground">{t('days')}</div>
-                            <div className="text-sm font-medium">{leave.days}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {t("days")}
+                            </div>
+                            <div className="text-sm font-medium">
+                              {leave.days}
+                            </div>
                           </div>
                         </div>
                         {leave.status === "PENDING" && (
@@ -259,7 +290,7 @@ export default function LeavesPage() {
                               {cancelling === leave.id ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : null}
-                              {t('cancel')}
+                              {t("cancel")}
                             </Button>
                           </div>
                         )}

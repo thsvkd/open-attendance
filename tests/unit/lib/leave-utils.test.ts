@@ -42,7 +42,7 @@ describe("leave-utils", () => {
         startDate,
         endDate,
         "09:00",
-        "11:00"
+        "11:00",
       );
 
       expect(ranges).toHaveLength(1);

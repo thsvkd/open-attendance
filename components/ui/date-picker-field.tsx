@@ -42,19 +42,19 @@ export function DatePickerField({
             variant="outline"
             className={cn(
               "w-full h-12 justify-start text-left font-normal",
-              !selected && "text-muted-foreground"
+              !selected && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {selected ? format(selected, "yyyy-MM-dd") : <span>{placeholder}</span>}
+            {selected ? (
+              format(selected, "yyyy-MM-dd")
+            ) : (
+              <span>{placeholder}</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={selected}
-            onSelect={handleSelect}
-          />
+          <Calendar mode="single" selected={selected} onSelect={handleSelect} />
         </PopoverContent>
       </Popover>
     </div>

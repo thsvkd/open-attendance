@@ -66,9 +66,11 @@ export function successResponse(data: unknown) {
  * 요청 body의 JSON을 안전하게 파싱합니다.
  * 파싱 실패 시 null을 반환합니다.
  */
-export async function parseJsonBody<T = unknown>(req: Request): Promise<T | null> {
+export async function parseJsonBody<T = unknown>(
+  req: Request,
+): Promise<T | null> {
   try {
-    return await req.json() as T;
+    return (await req.json()) as T;
   } catch {
     return null;
   }

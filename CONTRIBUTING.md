@@ -70,6 +70,7 @@ cd open-attendance
 ```
 
 This will:
+
 - Install dependencies
 - Create `.env.local` file
 - Initialize the database
@@ -269,15 +270,15 @@ npm run test:e2e:headed  # Headed mode
 Example:
 
 ```typescript
-describe('Leave Balance Calculation', () => {
-  it('should calculate remaining days correctly', () => {
+describe("Leave Balance Calculation", () => {
+  it("should calculate remaining days correctly", () => {
     // Arrange
     const totalDays = 15;
     const usedDays = 5;
-    
+
     // Act
     const remaining = calculateRemainingDays(totalDays, usedDays);
-    
+
     // Assert
     expect(remaining).toBe(10);
   });
@@ -307,6 +308,7 @@ When modifying the database schema:
 ## Questions?
 
 Feel free to:
+
 - 💬 Open a **Discussion** on GitHub
 - 🐛 Create an **Issue** for bugs
 - 💡 Suggest **Enhancements** via issues

@@ -3,7 +3,8 @@ import { mockDeep, mockReset, DeepMockProxy } from "vitest-mock-extended";
 import { beforeEach } from "vitest";
 
 // Mock Prisma Client 생성
-export const prismaMock = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
+export const prismaMock =
+  mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
 
 // 각 테스트 전 Mock 리셋
 beforeEach(() => {

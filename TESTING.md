@@ -13,11 +13,13 @@
 ## 🛠 테스트 스택
 
 ### 단위/통합 테스트
+
 - **Vitest**: 빠르고 현대적인 테스트 프레임워크
 - **Testing Library**: React 컴포넌트 테스트
 - **vitest-mock-extended**: Prisma 및 의존성 모킹
 
 ### E2E 테스트
+
 - **Playwright**: 크로스 브라우저 E2E 테스트
   - Chromium, Firefox, WebKit 지원
 
@@ -135,7 +137,9 @@ describe("/api/leaves GET", () => {
     const { getServerSession } = await import("next-auth");
     vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
-    const mockLeaves = [/* ... */];
+    const mockLeaves = [
+      /* ... */
+    ];
     prismaMock.leaveRequest.findMany.mockResolvedValue(mockLeaves);
 
     const response = await GET();
@@ -160,21 +164,25 @@ test("로그인 페이지가 올바르게 렌더링되어야 함", async ({ page
 ## 🔧 테스트 모범 사례
 
 ### 1. 테스트 격리
+
 - 각 테스트는 독립적으로 실행되어야 합니다
 - 테스트 간 상태 공유를 피합니다
 - `beforeEach`와 `afterEach`를 사용하여 상태를 초기화합니다
 
 ### 2. 명확한 테스트 케이스
+
 - 테스트 이름은 무엇을 테스트하는지 명확히 설명해야 합니다
 - 한국어로 작성하여 가독성을 높입니다
 - Given-When-Then 패턴을 따릅니다
 
 ### 3. Mock 사용
+
 - 외부 의존성(DB, API 등)은 모킹합니다
 - `vitest-mock-extended`를 사용하여 Prisma를 모킹합니다
 - 테스트 헬퍼를 활용하여 재사용 가능한 모킹 로직을 작성합니다
 
 ### 4. 의미 있는 Assertion
+
 - 구체적이고 명확한 assertion을 작성합니다
 - 에러 메시지를 포함하여 실패 원인을 쉽게 파악할 수 있도록 합니다
 

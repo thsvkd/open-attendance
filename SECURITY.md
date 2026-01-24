@@ -98,13 +98,13 @@ DATABASE_URL="postgresql://user:password@host:5432/database?schema=public&sslmod
 
 ```typescript
 // ✅ Always validate user input
-import { z } from 'zod';
+import { z } from "zod";
 
 const leaveRequestSchema = z.object({
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
-  leaveType: z.enum(['ANNUAL', 'SICK', 'OTHER']),
-  reason: z.string().max(500)
+  leaveType: z.enum(["ANNUAL", "SICK", "OTHER"]),
+  reason: z.string().max(500),
 });
 ```
 
@@ -113,7 +113,7 @@ const leaveRequestSchema = z.object({
 ```typescript
 // ✅ Use Prisma ORM (parameterized queries)
 const user = await prisma.user.findUnique({
-  where: { email }
+  where: { email },
 });
 
 // ❌ Never use raw SQL with user input
@@ -131,20 +131,20 @@ const query = `SELECT * FROM users WHERE email = '${email}'`; // Vulnerable!
 
 ```typescript
 // ✅ Always check authentication
-import { getServerSession } from 'next-auth';
+import { getServerSession } from "next-auth";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
-  
+
   // Check authorization
-  if (session.user.role !== 'ADMIN') {
-    return new Response('Forbidden', { status: 403 });
+  if (session.user.role !== "ADMIN") {
+    return new Response("Forbidden", { status: 403 });
   }
-  
+
   // Proceed with authenticated request
 }
 ```
@@ -178,11 +178,11 @@ npm update
 ```typescript
 // ✅ Validate required environment variables
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is required');
+  throw new Error("DATABASE_URL is required");
 }
 
 if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error('NEXTAUTH_SECRET is required');
+  throw new Error("NEXTAUTH_SECRET is required");
 }
 ```
 
@@ -193,8 +193,8 @@ if (!process.env.NEXTAUTH_SECRET) {
 try {
   // Database operation
 } catch (error) {
-  console.error('Database error:', error); // Log for debugging
-  return new Response('Internal server error', { status: 500 }); // Generic message to user
+  console.error("Database error:", error); // Log for debugging
+  return new Response("Internal server error", { status: 500 }); // Generic message to user
 }
 ```
 

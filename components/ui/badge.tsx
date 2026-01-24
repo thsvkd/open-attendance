@@ -1,7 +1,7 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -24,26 +24,27 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
-)
+  },
+);
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof badgeVariants> {
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {
   /**
    * 상태의 유형에 따라 자동으로 variant를 결정합니다.
    * "attendance" | "leave" | "role" | undefined
    */
-  statusType?: "attendance" | "leave" | "role"
+  statusType?: "attendance" | "leave" | "role";
   /**
    * 상태값 (statusType과 함께 사용 시)
    * 예: PRESENT, PENDING, APPROVED, REJECTED, CANCELLED, ADMIN, USER
    */
-  status?: string
+  status?: string;
   /**
    * 직접 지정되는 표시 텍스트
    */
-  label?: React.ReactNode
+  label?: React.ReactNode;
 }
 
 function Badge({
@@ -56,35 +57,42 @@ function Badge({
   ...props
 }: BadgeProps) {
   // statusType과 status가 전달된 경우 variant를 자동으로 결정
-  const computedVariant = statusType && status ? getStatusVariant(status, statusType) : variant
+  const computedVariant =
+    statusType && status ? getStatusVariant(status, statusType) : variant;
 
   return (
-    <div className={cn(badgeVariants({ variant: computedVariant }), className)} {...props}>
+    <div
+      className={cn(badgeVariants({ variant: computedVariant }), className)}
+      {...props}
+    >
       {label || children || status}
     </div>
-  )
+  );
 }
 
 /**
  * 상태값과 타입에 따라 올바른 뱃지 variant를 결정합니다.
  */
-function getStatusVariant(status: string, statusType: string): VariantProps<typeof badgeVariants>["variant"] {
+function getStatusVariant(
+  status: string,
+  statusType: string,
+): VariantProps<typeof badgeVariants>["variant"] {
   switch (statusType) {
     case "attendance":
-      return status === "PRESENT" ? "success" : "secondary"
+      return status === "PRESENT" ? "success" : "secondary";
 
     case "leave":
-      if (status === "APPROVED") return "success"
-      if (status === "PENDING") return "secondary"
-      if (status === "CANCELLED") return "cancelled"
-      return "destructive" // REJECTED
+      if (status === "APPROVED") return "success";
+      if (status === "PENDING") return "secondary";
+      if (status === "CANCELLED") return "cancelled";
+      return "destructive"; // REJECTED
 
     case "role":
-      return status === "ADMIN" ? "default" : "secondary"
+      return status === "ADMIN" ? "default" : "secondary";
 
     default:
-      return "secondary"
+      return "secondary";
   }
 }
 
-export { Badge, badgeVariants }
+export { Badge, badgeVariants };

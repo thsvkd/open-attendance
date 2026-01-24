@@ -7,7 +7,11 @@ import {
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";
-import { getLeaveMinutes, rangesOverlap, calculateDays } from "@/lib/leave-utils";
+import {
+  getLeaveMinutes,
+  rangesOverlap,
+  calculateDays,
+} from "@/lib/leave-utils";
 import type { LeaveType } from "@/types";
 
 export async function GET() {
@@ -46,7 +50,14 @@ export async function POST(req: Request) {
     return errorResponse("Invalid request body", 400);
   }
 
-  const { startDate, endDate, reason, leaveType = "FULL_DAY", startTime, endTime } = body;
+  const {
+    startDate,
+    endDate,
+    reason,
+    leaveType = "FULL_DAY",
+    startTime,
+    endTime,
+  } = body;
 
   if (!startDate) {
     return errorResponse("Start date is required", 400);
@@ -61,7 +72,8 @@ export async function POST(req: Request) {
     if (leaveType === "QUARTER_DAY" && startTime && endTime) {
       const [startHour, startMin] = startTime.split(":").map(Number);
       const [endHour, endMin] = endTime.split(":").map(Number);
-      const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+      const durationMinutes =
+        endHour * 60 + endMin - (startHour * 60 + startMin);
 
       if (durationMinutes !== 120) {
         return errorResponse("Quarter day leave must be exactly 2 hours.", 400);
@@ -83,7 +95,7 @@ export async function POST(req: Request) {
     if (days > remainingLeaves) {
       return errorResponse(
         `Insufficient leave balance. You have ${remainingLeaves} days remaining.`,
-        400
+        400,
       );
     }
 
@@ -96,7 +108,13 @@ export async function POST(req: Request) {
       },
     });
 
-    const newRanges = getLeaveMinutes(leaveType as LeaveType, start, end, startTime, endTime);
+    const newRanges = getLeaveMinutes(
+      leaveType as LeaveType,
+      start,
+      end,
+      startTime,
+      endTime,
+    );
 
     for (const existingLeave of existingLeaves) {
       const existingRanges = getLeaveMinutes(
@@ -104,7 +122,7 @@ export async function POST(req: Request) {
         new Date(existingLeave.startDate),
         new Date(existingLeave.endDate),
         existingLeave.startTime || undefined,
-        existingLeave.endTime || undefined
+        existingLeave.endTime || undefined,
       );
 
       for (const newRange of newRanges) {
@@ -112,7 +130,7 @@ export async function POST(req: Request) {
           if (rangesOverlap(newRange, existingRange)) {
             return errorResponse(
               `This leave request overlaps with an existing ${existingLeave.status.toLowerCase()} request from ${format(new Date(existingLeave.startDate), "MM/dd")} to ${format(new Date(existingLeave.endDate), "MM/dd")}.`,
-              400
+              400,
             );
           }
         }

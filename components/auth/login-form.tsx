@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,19 +16,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1, "Password is required"),
-})
+});
 
 export function LoginForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,33 +43,35 @@ export function LoginForm() {
       email: "",
       password: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+    setIsLoading(true);
 
     const result = await signIn("credentials", {
       email: values.email,
       password: values.password,
       redirect: false,
-    })
+    });
 
     if (result?.error) {
-      toast.error("Invalid credentials")
+      toast.error("Invalid credentials");
     } else {
-      toast.success("Logged in!")
-      router.push("/dashboard")
-      router.refresh()
+      toast.success("Logged in!");
+      router.push("/dashboard");
+      router.refresh();
     }
 
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   return (
     <Card className="w-[350px]">
       <CardHeader>
         <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your email below to login to your account.</CardDescription>
+        <CardDescription>
+          Enter your email below to login to your account.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -101,11 +110,9 @@ export function LoginForm() {
       </CardContent>
       <CardFooter>
         <Button variant="link" className="w-full" asChild>
-          <Link href="/register">
-            Don&apos;t have an account? Register
-          </Link>
+          <Link href="/register">Don&apos;t have an account? Register</Link>
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

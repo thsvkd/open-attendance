@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Globe, Check } from "lucide-react";
@@ -21,9 +21,13 @@ export function LanguageSwitcher() {
   };
 
   // Getting current locale from cookie
-  const currentLocale = typeof document !== 'undefined'
-    ? document.cookie.split('; ').find(row => row.startsWith('NEXT_LOCALE='))?.split('=')[1] || 'en'
-    : 'en';
+  const currentLocale =
+    typeof document !== "undefined"
+      ? document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("NEXT_LOCALE="))
+          ?.split("=")[1] || "en"
+      : "en";
 
   return (
     <DropdownMenu>
@@ -34,13 +38,19 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => switchLanguage('ko')} className="flex items-center justify-between">
+        <DropdownMenuItem
+          onClick={() => switchLanguage("ko")}
+          className="flex items-center justify-between"
+        >
           KO (한국어)
-          {currentLocale === 'ko' && <Check className="ml-2 h-4 w-4" />}
+          {currentLocale === "ko" && <Check className="ml-2 h-4 w-4" />}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => switchLanguage('en')} className="flex items-center justify-between">
+        <DropdownMenuItem
+          onClick={() => switchLanguage("en")}
+          className="flex items-center justify-between"
+        >
           EN (English)
-          {currentLocale === 'en' && <Check className="ml-2 h-4 w-4" />}
+          {currentLocale === "en" && <Check className="ml-2 h-4 w-4" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -36,8 +36,12 @@ export function TimePickerField({
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
-        const hourEl = hourRef.current?.querySelector(`[data-value="${selectedHour}"]`);
-        const minEl = minuteRef.current?.querySelector(`[data-value="${selectedMinute}"]`);
+        const hourEl = hourRef.current?.querySelector(
+          `[data-value="${selectedHour}"]`,
+        );
+        const minEl = minuteRef.current?.querySelector(
+          `[data-value="${selectedMinute}"]`,
+        );
 
         hourEl?.scrollIntoView({ block: "center", behavior: "auto" });
         minEl?.scrollIntoView({ block: "center", behavior: "auto" });
@@ -58,24 +62,33 @@ export function TimePickerField({
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-muted-foreground">{label}</Label>
+      <Label className="text-sm font-medium text-muted-foreground">
+        {label}
+      </Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             className={cn(
               "w-full h-11 justify-start text-left font-normal bg-background hover:bg-accent/50 transition-colors border-muted-foreground/20",
-              !value && "text-muted-foreground"
+              !value && "text-muted-foreground",
             )}
           >
             <Clock className="mr-2 h-4 w-4 opacity-50" />
-            <span className="text-base font-medium">{value || placeholder}</span>
+            <span className="text-base font-medium">
+              {value || placeholder}
+            </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-0 bg-background border rounded-md shadow-lg" align="start">
+        <PopoverContent
+          className="w-64 p-0 bg-background border rounded-md shadow-lg"
+          align="start"
+        >
           <div className="flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
-              <div className="text-sm font-medium text-foreground">시간 선택</div>
+              <div className="text-sm font-medium text-foreground">
+                시간 선택
+              </div>
             </div>
             <div className="flex h-56 overflow-hidden relative">
               <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-9 bg-accent/30 pointer-events-none rounded-sm mx-2 z-0" />
@@ -94,7 +107,7 @@ export function TimePickerField({
                       "w-full h-9 flex items-center justify-center text-sm transition-all snap-center select-none cursor-pointer",
                       hour === selectedHour
                         ? "text-primary font-semibold text-base"
-                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/10"
+                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/10",
                     )}
                   >
                     {String(hour).padStart(2, "0")}
@@ -102,7 +115,9 @@ export function TimePickerField({
                 ))}
               </div>
 
-              <div className="flex items-center justify-center text-muted-foreground pb-1 z-10">:</div>
+              <div className="flex items-center justify-center text-muted-foreground pb-1 z-10">
+                :
+              </div>
 
               {/* Minutes Column */}
               <div
@@ -118,7 +133,7 @@ export function TimePickerField({
                       "w-full h-9 flex items-center justify-center text-sm transition-all snap-center select-none cursor-pointer",
                       minute === selectedMinute
                         ? "text-primary font-semibold text-base"
-                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/10"
+                        : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/10",
                     )}
                   >
                     {String(minute).padStart(2, "0")}

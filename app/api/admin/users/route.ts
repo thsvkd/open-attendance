@@ -8,7 +8,14 @@ import {
   successResponse,
 } from "@/lib/api-utils";
 
-const ALLOWED_UPDATE_FIELDS = ["name", "email", "password", "role", "joinDate", "totalLeaves"] as const;
+const ALLOWED_UPDATE_FIELDS = [
+  "name",
+  "email",
+  "password",
+  "role",
+  "joinDate",
+  "totalLeaves",
+] as const;
 
 export async function GET() {
   const { error } = await requireAdmin();
@@ -123,12 +130,17 @@ export async function PATCH(req: Request) {
         return errorResponse("Current password required for self-update", 400);
       }
 
-      const currentUser = await db.user.findUnique({ where: { id: session!.user.id } });
+      const currentUser = await db.user.findUnique({
+        where: { id: session!.user.id },
+      });
       if (!currentUser?.password) {
         return errorResponse("User not found", 404);
       }
 
-      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      const isPasswordValid = await bcrypt.compare(
+        currentPassword,
+        currentUser.password,
+      );
       if (!isPasswordValid) {
         return errorResponse("Incorrect current password", 403);
       }
@@ -145,7 +157,11 @@ export async function PATCH(req: Request) {
     }
 
     // role 값 검증
-    if (updateData.role && updateData.role !== "ADMIN" && updateData.role !== "USER") {
+    if (
+      updateData.role &&
+      updateData.role !== "ADMIN" &&
+      updateData.role !== "USER"
+    ) {
       return errorResponse("Invalid role value", 400);
     }
 
