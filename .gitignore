@@ -36,12 +36,16 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+.env*
+!.env.local.example
 .env.local*
 !.env.local.example
 
 # database
 *.db
 *.db-journal
+*.sqlite
+*.sqlite3
 
 # vercel
 .vercel
@@ -50,10 +54,42 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma
 /app/generated/prisma
+
+# IDE
 .ca
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# AI agents (internal development)
 .github/skills
 .gemini
 .agent
 .agents
 .claude
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Logs
+logs/
+*.log
+
+# Security
+*.key
+*.cert
+*.pem

@@ -178,15 +178,27 @@ npx prisma migrate reset
 - 📝 문서 개선
 - 🔧 코드 기여
 
-이슈를 열거나 풀 리퀘스트를 자유롭게 제출해주세요.
+자세한 내용은 [기여 가이드](CONTRIBUTING.md)를 참조하세요.
 
-### 개발 환경 설정
+### 기여자를 위한 빠른 시작
 
 1. 저장소 포크
 2. 기능 브랜치 생성: `git checkout -b feature/amazing-feature`
 3. 변경사항 커밋: `git commit -m 'Add amazing feature'`
 4. 브랜치에 푸시: `git push origin feature/amazing-feature`
 5. 풀 리퀘스트 열기
+
+자세한 가이드라인은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요.
+
+---
+
+## 📚 문서
+
+- [기여 가이드](CONTRIBUTING.md) - 기여 방법
+- [보안 정책](SECURITY.md) - 보안 모범 사례
+- [테스트 가이드](docs/TESTING.md) - 테스트 문서
+- [배포 가이드](docs/DEPLOYMENT.md) - 프로덕션 배포
+- [아키텍처](docs/ARCHITECTURE.md) - 시스템 아키텍처 개요
 
 ---
 
