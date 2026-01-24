@@ -14,8 +14,9 @@ function loadEnvFile() {
   const envPath = path.join(__dirname, '..', '.env.local');
 
   if (!fs.existsSync(envPath)) {
-    console.error('Error: .env.local file not found');
-    process.exit(1);
+    // If no .env.local, return empty object (rely on process.env)
+    console.log('No .env.local file found, using environment variables.');
+    return {};
   }
 
   const envContent = fs.readFileSync(envPath, 'utf-8');
@@ -70,10 +71,10 @@ console.log(`  NEXTAUTH_URL: ${updatedVars.NEXTAUTH_URL}`);
 // Determine if production mode
 const isProd = process.argv.includes('--prod');
 
-// Merge with current process.env for inherited variables
+// Merge: .env file values as defaults, process.env takes precedence
 const fullEnv = {
-  ...process.env,
   ...updatedVars,
+  ...process.env,
 };
 
 // Run init-db.js first

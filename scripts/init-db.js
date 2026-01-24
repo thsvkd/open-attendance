@@ -14,8 +14,9 @@ function loadEnvFile() {
   }
 
   if (!fs.existsSync(envPath)) {
-    console.error('Error: .env or .env.local file not found');
-    process.exit(1);
+    // If no env file found, return empty object (rely on process.env)
+    console.log('No .env.local or .env file found, using environment variables.');
+    return {};
   }
 
   const envContent = fs.readFileSync(envPath, 'utf-8');
@@ -73,6 +74,12 @@ function getDatabasePath(envVars) {
 
 // Check if database exists and has the correct schema
 let envVars = loadEnvFile();
+
+// Environment variables take precedence over .env file values
+if (process.env.DATABASE_URL) {
+  envVars.DATABASE_URL = process.env.DATABASE_URL;
+}
+
 envVars = applyDynamicEnvVars(envVars);
 const dbPath = getDatabasePath(envVars);
 

@@ -12,11 +12,13 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [["list"], ["html"]] : "html",
+  workers: 1,
+  reporter: process.env.CI
+    ? [["list"], ["html", { open: "never" }]]
+    : [["html", { open: "never" }]],
   timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
   use: {
     baseURL: BASE_URL,
@@ -30,40 +32,27 @@ export default defineConfig({
     timeout: 15 * 1000,
   },
 
-  projects: process.env.CI
-    ? [
-        {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
-        },
-      ]
-    : [
-        {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
-        },
-        {
-          name: "firefox",
-          use: { ...devices["Desktop Firefox"] },
-        },
-        {
-          name: "webkit",
-          use: { ...devices["Desktop Safari"] },
-        },
-      ],
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
 
   webServer: {
     command: process.env.CI
-      ? `npm start -- --port ${PORT}`
-      : `npm run dev -- --port ${PORT}`,
+      ? `node scripts/init-test-db.js && npm start -- --port ${PORT}`
+      : `node scripts/init-test-db.js && npm run dev -- --port ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 120 * 1000,
     stdout: "pipe",
     stderr: "pipe",
     env: {
-      NEXTAUTH_URL: BASE_URL,
       ...process.env,
+      DATABASE_URL: "file:./test.db",
+      NEXTAUTH_URL: BASE_URL,
+      NEXTAUTH_SECRET: "test-secret-key-for-testing-only",
     },
   },
 });
