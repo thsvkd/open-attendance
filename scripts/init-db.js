@@ -6,10 +6,15 @@ const path = require('path');
 
 // Parse DATABASE_URL from .env file to get relative path
 function getDatabasePath() {
-  const envPath = path.join(__dirname, '..', '.env');
+  // Try .env.local first, then .env
+  let envPath = path.join(__dirname, '..', '.env.local');
 
   if (!fs.existsSync(envPath)) {
-    console.error('Error: .env file not found');
+    envPath = path.join(__dirname, '..', '.env');
+  }
+
+  if (!fs.existsSync(envPath)) {
+    console.error('Error: .env or .env.local file not found');
     process.exit(1);
   }
 
