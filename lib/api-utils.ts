@@ -5,15 +5,15 @@ import { db } from "@/lib/db";
 import { startOfDay, endOfDay } from "date-fns";
 
 /**
- * 인증된 세션을 가져옵니다. 인증되지 않은 경우 null을 반환합니다.
+ * Retrieves authenticated session. Returns null if not authenticated.
  */
 export async function getAuthSession() {
   return await getServerSession(authOptions);
 }
 
 /**
- * 인증된 세션을 가져오고, 인증되지 않은 경우 401 응답을 반환합니다.
- * 성공 시 session 객체, 실패 시 NextResponse를 반환합니다.
+ * Retrieves authenticated session, returns 401 response if not authenticated.
+ * Returns session object on success, NextResponse on failure.
  */
 export async function requireAuth() {
   const session = await getAuthSession();
@@ -24,7 +24,7 @@ export async function requireAuth() {
 }
 
 /**
- * 관리자 세션을 가져오고, 관리자가 아닌 경우 401 응답을 반환합니다.
+ * Retrieves admin session, returns 401 response if not an admin.
  */
 export async function requireAdmin() {
   const session = await getAuthSession();
@@ -35,36 +35,36 @@ export async function requireAdmin() {
 }
 
 /**
- * 401 Unauthorized 응답을 반환합니다.
+ * Returns 401 Unauthorized response.
  */
 export function unauthorizedResponse() {
   return new NextResponse("Unauthorized", { status: 401 });
 }
 
 /**
- * JSON 에러 응답을 반환합니다.
+ * Returns a JSON error response.
  */
 export function errorResponse(message: string, status: number) {
   return NextResponse.json({ message }, { status });
 }
 
 /**
- * 500 Internal Error 응답을 반환합니다.
+ * Returns a 500 Internal Error response.
  */
 export function internalErrorResponse() {
   return new NextResponse("Internal Error", { status: 500 });
 }
 
 /**
- * JSON 성공 응답을 반환합니다.
+ * Returns a JSON success response.
  */
 export function successResponse(data: unknown) {
   return NextResponse.json(data);
 }
 
 /**
- * 요청 body의 JSON을 안전하게 파싱합니다.
- * 파싱 실패 시 null을 반환합니다.
+ * Safely parses JSON from the request body.
+ * Returns null on failure.
  */
 export async function parseJsonBody<T = unknown>(
   req: Request,
@@ -77,7 +77,7 @@ export async function parseJsonBody<T = unknown>(
 }
 
 /**
- * 현재 사용자의 오늘 출석 기록을 조회합니다.
+ * Retrieves today's attendance record for the current user.
  */
 export async function findTodayAttendance(userId: string) {
   const today = new Date();

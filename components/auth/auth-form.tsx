@@ -27,6 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const formSchema = z
   .object({
@@ -49,7 +50,7 @@ interface AuthFormProps {
 const CONFIG = {
   register: {
     title: "Register",
-    description: "Create an account to get started.",
+    description: "",
     emailPlaceholder: "m@example.com",
     submitLabel: "Register",
     loadingLabel: "Creating account...",
@@ -73,6 +74,7 @@ export function AuthForm({ variant }: AuthFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const config = CONFIG[variant];
+  const t = useTranslations("auth");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -104,7 +106,9 @@ export function AuthForm({ variant }: AuthFormProps) {
     <Card className={config.width}>
       <CardHeader>
         <CardTitle>{config.title}</CardTitle>
-        <CardDescription>{config.description}</CardDescription>
+        <CardDescription>
+          {config.description || t("createAccount")}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -153,7 +157,7 @@ export function AuthForm({ variant }: AuthFormProps) {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>{t("confirmPassword")}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -170,7 +174,7 @@ export function AuthForm({ variant }: AuthFormProps) {
       {config.showFooter && (
         <CardFooter>
           <Button variant="link" className="w-full" asChild>
-            <Link href="/login">Already have an account? Login</Link>
+            <Link href="/login">{t("alreadyHaveAccount")}</Link>
           </Button>
         </CardFooter>
       )}

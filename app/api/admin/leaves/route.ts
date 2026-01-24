@@ -48,7 +48,7 @@ export async function PATCH(req: Request) {
     return errorResponse("Leave request ID required", 400);
   }
 
-  // status 값 검증
+  // Validate status value
   if (!status || !VALID_ADMIN_LEAVE_ACTIONS.includes(status as LeaveStatus)) {
     return errorResponse("Invalid status. Must be APPROVED or REJECTED", 400);
   }
@@ -62,7 +62,7 @@ export async function PATCH(req: Request) {
       },
     });
 
-    // 연차(ANNUAL)인 경우 사용자의 usedLeaves 업데이트
+    // Update user's usedLeaves if leave type is ANNUAL
     if (updatedLeave.type === "ANNUAL") {
       const approvedLeaves = await db.leaveRequest.findMany({
         where: {

@@ -98,7 +98,26 @@ initDbProcess.on("close", (code) => {
   const nextProcess = spawn("next", [nextCommand], {
     cwd: path.join(__dirname, ".."),
     env: fullEnv,
-    stdio: "inherit",
+    stdio: ["inherit", "pipe", "pipe"],
+  });
+
+  // Filter and forward stdout
+  nextProcess.stdout.on("data", (data) => {
+    const output = data.toString();
+    // Filter out standard request logs (e.g., "GET / 200 ...")
+    // Keep build logs, errors, and ready signals
+    if (
+      !output.match(/GET .* \d\d\d in \d+ms/) &&
+      !output.match(/POST .* \d\d\d in \d+ms/) &&
+      !output.match(/\sGET \/.*\s/) // Basic GET logs
+    ) {
+      process.stdout.write(output);
+    }
+  });
+
+  // Forward stderr completely
+  nextProcess.stderr.on("data", (data) => {
+    process.stderr.write(data);
   });
 
   // Handle signals

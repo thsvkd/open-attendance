@@ -18,11 +18,11 @@ model User {
   image         String?
   password      String?   // For credentials provider if needed
   role          String    @default("USER") // ADMIN, USER
-  joinDate      DateTime  @default(now()) // 입사일
+  joinDate      DateTime  @default(now()) // Join date
   
   // Annual Leave Info
-  totalLeaves   Float     @default(15) // 총 연차 (기본 15일)
-  usedLeaves    Float     @default(0)  // 사용한 연차
+  totalLeaves   Float     @default(15) // Total annual leave (default 15 days)
+  usedLeaves    Float     @default(0)  // Used annual leave
   
   accounts      Account[]
   sessions      Session[]
@@ -71,20 +71,20 @@ model VerificationToken {
 model Attendance {
   id        String    @id @default(cuid())
   userId    String
-  date      DateTime  // 근무 날짜 (시간 제외)
+  date      DateTime  // Work date (excluding time)
   
-  checkIn   DateTime? // 출근 시간
-  checkOut  DateTime? // 퇴근 시간
+  checkIn   DateTime? // Check-in time
+  checkOut  DateTime? // Check-out time
   
   status    String    @default("PRESENT") // PRESENT, ABSENT, LEAVE, HOLIDAY
-  note      String?   // 비고 (지각 사유 등)
+  note      String?   // Remarks (e.g., late reason)
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@unique([userId, date]) // 한 유저는 하루에 하나의 출석 기록만 가짐
+  @@unique([userId, date]) // A user has only one attendance record per day
 }
 
 model LeaveRequest {
@@ -102,7 +102,7 @@ model LeaveRequest {
   reason    String?
   status    String      @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
   
-  approvedBy String?    // 승인자 ID
+  approvedBy String?    // Approver ID
   rejectedReason String?
 
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)

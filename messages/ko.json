@@ -5,7 +5,11 @@
     "loading": "로딩 중...",
     "profile": "프로필",
     "settings": "설정",
-    "actions": "작업"
+    "actions": "작업",
+    "selectTime": "시간 선택",
+    "confirm": "확인",
+    "pickDate": "날짜 선택",
+    "toggleLanguage": "언어 전환"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -195,5 +199,10 @@
       "role": "권한",
       "joinedAt": "입사일"
     }
+  },
+  "auth": {
+    "confirmPassword": "비밀번호 확인",
+    "alreadyHaveAccount": "이미 계정이 있으신가요? 로그인",
+    "createAccount": "시작하려면 계정을 생성하세요."
   }
 }

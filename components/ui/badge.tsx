@@ -32,17 +32,17 @@ export interface BadgeProps
     React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
   /**
-   * 상태의 유형에 따라 자동으로 variant를 결정합니다.
+   * Automatically determines variant based on status type.
    * "attendance" | "leave" | "role" | undefined
    */
   statusType?: "attendance" | "leave" | "role";
   /**
-   * 상태값 (statusType과 함께 사용 시)
-   * 예: PRESENT, PENDING, APPROVED, REJECTED, CANCELLED, ADMIN, USER
+   * Status value (used with statusType)
+   * Example: PRESENT, PENDING, APPROVED, REJECTED, CANCELLED, ADMIN, USER
    */
   status?: string;
   /**
-   * 직접 지정되는 표시 텍스트
+   * Manually specified display text
    */
   label?: React.ReactNode;
 }
@@ -56,7 +56,7 @@ function Badge({
   children,
   ...props
 }: BadgeProps) {
-  // statusType과 status가 전달된 경우 variant를 자동으로 결정
+  // Determine variant automatically if statusType and status are provided
   const computedVariant =
     statusType && status ? getStatusVariant(status, statusType) : variant;
 
@@ -71,7 +71,7 @@ function Badge({
 }
 
 /**
- * 상태값과 타입에 따라 올바른 뱃지 variant를 결정합니다.
+ * Determines the correct badge variant based on status value and type.
  */
 function getStatusVariant(
   status: string,

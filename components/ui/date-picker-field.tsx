@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DatePickerFieldProps {
   label: string;
@@ -24,8 +25,9 @@ export function DatePickerField({
   label,
   selected,
   onSelect,
-  placeholder = "Pick a date",
+  placeholder,
 }: DatePickerFieldProps) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
   const handleSelect = (date: Date | undefined) => {
@@ -49,7 +51,7 @@ export function DatePickerField({
             {selected ? (
               format(selected, "yyyy-MM-dd")
             ) : (
-              <span>{placeholder}</span>
+              <span>{placeholder || t("pickDate")}</span>
             )}
           </Button>
         </PopoverTrigger>

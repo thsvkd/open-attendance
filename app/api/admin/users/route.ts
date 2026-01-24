@@ -116,7 +116,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    // 허용된 필드만 추출 (mass assignment 방지)
+    // Extract only allowed fields (prevent mass assignment)
     const updateData: Record<string, unknown> = {};
     for (const field of ALLOWED_UPDATE_FIELDS) {
       if (field in rawUpdateData && rawUpdateData[field] !== undefined) {
@@ -124,7 +124,7 @@ export async function PATCH(req: Request) {
       }
     }
 
-    // 자기 자신을 수정할 때 비밀번호 변경 시 현재 비밀번호 확인
+    // Verify current password when changing password for self-update
     if (id === session!.user.id && updateData.password) {
       if (!currentPassword || typeof currentPassword !== "string") {
         return errorResponse("Current password required for self-update", 400);
@@ -156,7 +156,7 @@ export async function PATCH(req: Request) {
       delete updateData.password;
     }
 
-    // role 값 검증
+    // Validate role value
     if (
       updateData.role &&
       updateData.role !== "ADMIN" &&

@@ -34,7 +34,7 @@ describe("/api/leaves", () => {
   });
 
   describe("GET", () => {
-    it("인증된 사용자의 휴가 요청 목록을 반환해야 함", async () => {
+    it("should return the list of leave requests for an authenticated user", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -48,7 +48,7 @@ describe("/api/leaves", () => {
           startDate: new Date("2024-01-15"),
           endDate: new Date("2024-01-15"),
           days: 1,
-          reason: "개인 사유",
+          reason: "personal grounds",
           status: "PENDING",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -75,7 +75,7 @@ describe("/api/leaves", () => {
       });
     });
 
-    it("인증되지 않은 경우 401을 반환해야 함", async () => {
+    it("should return 401 if not authenticated", async () => {
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(null);
 
@@ -84,7 +84,12 @@ describe("/api/leaves", () => {
       expect(response.status).toBe(401);
     });
 
-    it("DB 오류 시 500을 반환해야 함", async () => {
+    it("should return 500 on database error", async () => {
+      // Suppress expected error log
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -96,11 +101,13 @@ describe("/api/leaves", () => {
       const response = await GET();
 
       expect(response.status).toBe(500);
+
+      consoleSpy.mockRestore();
     });
   });
 
   describe("POST", () => {
-    it("유효한 휴가 요청을 생성해야 함", async () => {
+    it("should create a valid leave request", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -130,7 +137,7 @@ describe("/api/leaves", () => {
           type: "ANNUAL",
           startDate: "2024-01-15",
           endDate: "2024-01-15",
-          reason: "개인 사유",
+          reason: "personal grounds",
         }),
       } as unknown as Request;
 
@@ -145,7 +152,7 @@ describe("/api/leaves", () => {
       expect(db.leaveRequest.create).toHaveBeenCalled();
     });
 
-    it("필수 필드가 없으면 400을 반환해야 함", async () => {
+    it("should return 400 if required fields are missing", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -153,7 +160,7 @@ describe("/api/leaves", () => {
       const mockRequest = {
         json: vi.fn().mockResolvedValue({
           type: "ANNUAL",
-          // startDate, endDate 누락
+          // missing startDate, endDate
         }),
       } as unknown as Request;
 
@@ -162,7 +169,7 @@ describe("/api/leaves", () => {
       expect(response.status).toBe(400);
     });
 
-    it("잘못된 JSON 형식이면 400을 반환해야 함", async () => {
+    it("should return 400 if JSON format is invalid", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -178,7 +185,7 @@ describe("/api/leaves", () => {
   });
 
   describe("PATCH", () => {
-    it("대기 중인 휴가 요청을 취소할 수 있어야 함", async () => {
+    it("should be able to cancel a pending leave request", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -219,7 +226,7 @@ describe("/api/leaves", () => {
       expect(data.status).toBe("CANCELLED");
     });
 
-    it("휴가 요청 ID가 없으면 400을 반환해야 함", async () => {
+    it("should return 400 if leave request ID is missing", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -233,7 +240,7 @@ describe("/api/leaves", () => {
       expect(response.status).toBe(400);
     });
 
-    it("존재하지 않는 휴가 요청이면 404를 반환해야 함", async () => {
+    it("should return 404 if leave request does not exist", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -249,14 +256,14 @@ describe("/api/leaves", () => {
       expect(response.status).toBe(404);
     });
 
-    it("다른 사용자의 휴가 요청이면 403을 반환해야 함", async () => {
+    it("should return 403 if it is another user's leave request", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
       const mockLeave = {
         id: "leave-1",
-        userId: "other-user-id", // 다른 사용자
+        userId: "other-user-id", // different user
         status: "PENDING",
         type: "ANNUAL",
         leaveType: "FULL_DAY",
@@ -283,7 +290,7 @@ describe("/api/leaves", () => {
       expect(response.status).toBe(403);
     });
 
-    it("대기 중이 아닌 요청은 취소할 수 없어야 함", async () => {
+    it("should not be able to cancel a request that is not pending", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -291,7 +298,7 @@ describe("/api/leaves", () => {
       const mockLeave = {
         id: "leave-1",
         userId: mockSession.user.id,
-        status: "APPROVED", // 이미 승인됨
+        status: "APPROVED", // already approved
         type: "ANNUAL",
         leaveType: "FULL_DAY",
         startDate: new Date(),

@@ -5,7 +5,11 @@
     "loading": "Loading...",
     "profile": "Profile",
     "settings": "Settings",
-    "actions": "Actions"
+    "actions": "Actions",
+    "selectTime": "Select time",
+    "confirm": "Confirm",
+    "pickDate": "Pick a date",
+    "toggleLanguage": "Toggle language"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -195,5 +199,10 @@
       "role": "Role",
       "joinedAt": "Joined At"
     }
+  },
+  "auth": {
+    "confirmPassword": "Confirm Password",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "createAccount": "Create an account to get started."
   }
 }

@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     const end = leaveType === "FULL_DAY" && endDate ? new Date(endDate) : start;
     const days = calculateDays(leaveType as LeaveType, start, end);
 
-    // 반반차 시간 범위 검증 (정확히 2시간)
+    // Validate quarter-day leave time range (exactly 2 hours)
     if (leaveType === "QUARTER_DAY" && startTime && endTime) {
       const [startHour, startMin] = startTime.split(":").map(Number);
       const [endHour, endMin] = endTime.split(":").map(Number);
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 잔여 연차 확인
+    // Check remaining leave balance
     const user = await db.user.findUnique({
       where: { id: session!.user.id },
       select: { totalLeaves: true, usedLeaves: true },
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 겹치는 휴가 요청 확인
+    // Check for overlapping leave requests
     const existingLeaves = await db.leaveRequest.findMany({
       where: {
         userId: session!.user.id,

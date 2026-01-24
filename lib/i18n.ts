@@ -23,16 +23,16 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const headersList = await headers();
 
-  // 쿠키에서 저장된 언어 설정 확인
+  // Check saved language setting in cookies
   let locale = cookieStore.get("NEXT_LOCALE")?.value as Locale | undefined;
 
-  // 쿠키가 없으면 Accept-Language 헤더에서 자동으로 감지
+  // If no cookie, detect automatically from Accept-Language header
   if (!locale) {
     const acceptLanguage = headersList.get("accept-language");
     locale = getLocaleFromAcceptLanguage(acceptLanguage);
   }
 
-  // 유효한 locale 확인
+  // Verify valid locale
   if (!locale || !locales.includes(locale as Locale)) {
     locale = "en";
   }

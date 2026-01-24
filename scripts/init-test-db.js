@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * E2E 테스트용 test.db 초기화 스크립트
- * - 기존 test.db를 삭제하고 빈 스키마로 새로 생성
- * - webServer 시작 전에 실행되어야 함
+ * Script to initialize test.db for E2E tests
+ * - Deletes existing test.db and creates a new one with an empty schema
+ * - Must be run before starting the webServer
  */
 
 const { execSync } = require("child_process");
