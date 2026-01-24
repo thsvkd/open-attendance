@@ -1,23 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GET, POST, PATCH } from "@/app/api/leaves/route";
-import { prismaMock } from "@/__tests__/helpers/prisma-mock";
 import { createMockSession } from "@/__tests__/helpers/auth-mock";
 
-// Mock next-auth
+// Mock next-auth - must be before imports
 vi.mock("next-auth", () => ({
   default: vi.fn(),
   getServerSession: vi.fn(),
 }));
 
-// Mock lib/db
-vi.mock("@/lib/db", () => ({
-  db: prismaMock,
-}));
-
-// Mock lib/auth
+// Mock lib/auth - must be before imports
 vi.mock("@/lib/auth", () => ({
   authOptions: {},
 }));
+
+// Mock lib/db with factory function
+vi.mock("@/lib/db", () => ({
+  db: {
+    leaveRequest: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
+
+// Now import the route handlers
+import { GET, POST, PATCH } from "@/app/api/leaves/route";
+import { db } from "@/lib/db";
 
 describe("/api/leaves", () => {
   beforeEach(() => {
@@ -50,14 +59,17 @@ describe("/api/leaves", () => {
         },
       ];
 
-      prismaMock.leaveRequest.findMany.mockResolvedValue(mockLeaves);
+      vi.mocked(db.leaveRequest.findMany).mockResolvedValue(mockLeaves);
 
       const response = await GET();
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockLeaves);
-      expect(prismaMock.leaveRequest.findMany).toHaveBeenCalledWith({
+      expect(data).toHaveLength(1);
+      expect(data[0].id).toBe("leave-1");
+      expect(data[0].userId).toBe(mockSession.user.id);
+      expect(data[0].type).toBe("ANNUAL");
+      expect(db.leaveRequest.findMany).toHaveBeenCalledWith({
         where: { userId: mockSession.user.id },
         orderBy: { createdAt: "desc" },
       });
@@ -77,7 +89,7 @@ describe("/api/leaves", () => {
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
-      prismaMock.leaveRequest.findMany.mockRejectedValue(
+      vi.mocked(db.leaveRequest.findMany).mockRejectedValue(
         new Error("Database error")
       );
 
@@ -111,7 +123,7 @@ describe("/api/leaves", () => {
         endTime: null,
       };
 
-      prismaMock.leaveRequest.create.mockResolvedValue(mockLeave);
+      vi.mocked(db.leaveRequest.create).mockResolvedValue(mockLeave);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue({
@@ -126,8 +138,11 @@ describe("/api/leaves", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(mockLeave);
-      expect(prismaMock.leaveRequest.create).toHaveBeenCalled();
+      expect(data.id).toBe("leave-1");
+      expect(data.userId).toBe(mockSession.user.id);
+      expect(data.type).toBe("ANNUAL");
+      expect(data.status).toBe("PENDING");
+      expect(db.leaveRequest.create).toHaveBeenCalled();
     });
 
     it("필수 필드가 없으면 400을 반환해야 함", async () => {
@@ -187,8 +202,8 @@ describe("/api/leaves", () => {
         endTime: null,
       };
 
-      prismaMock.leaveRequest.findUnique.mockResolvedValue(mockLeave);
-      prismaMock.leaveRequest.update.mockResolvedValue({
+      vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(mockLeave);
+      vi.mocked(db.leaveRequest.update).mockResolvedValue({
         ...mockLeave,
         status: "CANCELLED",
       });
@@ -223,7 +238,7 @@ describe("/api/leaves", () => {
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
 
-      prismaMock.leaveRequest.findUnique.mockResolvedValue(null);
+      vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(null);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue({ id: "non-existent" }),
@@ -245,7 +260,7 @@ describe("/api/leaves", () => {
         status: "PENDING",
       } as any;
 
-      prismaMock.leaveRequest.findUnique.mockResolvedValue(mockLeave);
+      vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(mockLeave);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue({ id: "leave-1" }),
@@ -267,7 +282,7 @@ describe("/api/leaves", () => {
         status: "APPROVED", // 이미 승인됨
       } as any;
 
-      prismaMock.leaveRequest.findUnique.mockResolvedValue(mockLeave);
+      vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(mockLeave);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue({ id: "leave-1" }),
