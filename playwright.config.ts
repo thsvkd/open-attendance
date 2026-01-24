@@ -20,6 +20,10 @@ export default defineConfig({
     actionTimeout: 10 * 1000,
   },
 
+  expect: {
+    timeout: 15 * 1000,
+  },
+
   projects: process.env.CI
     ? [
         {
@@ -42,21 +46,12 @@ export default defineConfig({
         },
       ],
 
-  webServer: process.env.CI
-    ? {
-        command: "npm start",
-        url: "http://localhost:3000",
-        reuseExistingServer: false,
-        timeout: 120 * 1000,
-        stdout: "pipe",
-        stderr: "pipe",
-      }
-    : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-        timeout: 120 * 1000,
-        stdout: "ignore",
-        stderr: "pipe",
-      },
+  webServer: {
+    command: process.env.CI ? "npm start" : "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: false,
+    timeout: 120 * 1000,
+    stdout: "pipe",
+    stderr: "pipe",
+  },
 });

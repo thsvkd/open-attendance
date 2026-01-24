@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Authentication", () => {
   test.describe("로그인 페이지", () => {
     test("로그인 페이지가 올바르게 렌더링되어야 함", async ({ page }) => {
-      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
 
       // 로그인 폼이 표시되는지 확인
       await expect(page.getByPlaceholder("m@example.com")).toBeVisible({
@@ -19,7 +19,7 @@ test.describe("Authentication", () => {
     });
 
     test("빈 필드로 로그인 시도 시 실패해야 함", async ({ page }) => {
-      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
 
       // 빈 필드로 제출 시도
       await page.getByRole("button", { name: /login/i }).click();
@@ -38,7 +38,7 @@ test.describe("Authentication", () => {
     test("잘못된 자격 증명으로 로그인 시도 시 오류 메시지가 표시되어야 함", async ({
       page,
     }) => {
-      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
 
       // 존재하지 않는 계정 정보 입력
       await page
@@ -61,7 +61,7 @@ test.describe("Authentication", () => {
 
   test.describe("회원가입 페이지", () => {
     test("회원가입 페이지가 올바르게 렌더링되어야 함", async ({ page }) => {
-      await page.goto("/register", { waitUntil: "networkidle" });
+      await page.goto("/register", { waitUntil: "domcontentloaded" });
 
       // 회원가입 폼이 표시되는지 확인
       await expect(page.getByPlaceholder("John Doe")).toBeVisible({
@@ -79,7 +79,7 @@ test.describe("Authentication", () => {
     });
 
     test("빈 필드로 회원가입 시도 시 실패해야 함", async ({ page }) => {
-      await page.goto("/register", { waitUntil: "networkidle" });
+      await page.goto("/register", { waitUntil: "domcontentloaded" });
 
       // 빈 필드로 제출 시도
       await page.getByRole("button", { name: /register/i }).click();
@@ -102,7 +102,7 @@ test.describe("Authentication", () => {
 
       // 설정 페이지가 렌더링되는지 확인
       // (이미 설정이 완료되었을 수 있으므로 URL만 확인)
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       expect(page.url()).toContain("localhost:3000");
     });
   });
@@ -132,7 +132,7 @@ test.describe("Authentication", () => {
 
       // 로그아웃 버튼이나 메뉴가 있는지 확인
       // (실제로는 로그인 후에만 표시됨)
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       expect(page.url()).toContain("localhost:3000");
     });
   });
