@@ -84,21 +84,21 @@ jobs:
         run: npx prisma generate
       
       - name: Initialize test database
-        run: npx prisma db push
+        run: npx prisma db push --skip-generate
         env:
           DATABASE_URL: file:./test.db
-      
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests with verbose output
-        run: npm run test:e2e -- --reporter=verbose
+        run: npm run test:e2e -- --reporter=verbose --max-workers=1
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
-        timeout-minutes: 10
+        timeout-minutes: 15
       
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
