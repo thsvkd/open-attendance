@@ -90,14 +90,15 @@ jobs:
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-      
-      - name: Run E2E tests
-        run: npm run test:e2e
+
+      - name: Run E2E tests with verbose output
+        run: npm run test:e2e -- --reporter=verbose
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
           NEXTAUTH_URL: http://localhost:3000
           NEXTAUTH_SECRET: test-secret-for-ci
+        timeout-minutes: 10
       
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
