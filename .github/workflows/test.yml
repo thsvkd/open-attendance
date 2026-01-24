@@ -88,8 +88,8 @@ jobs:
         env:
           DATABASE_URL: file:./test.db
 
-      - name: Run E2E tests with verbose output
-        run: npm run test:e2e -- --reporter=verbose
+      - name: Run E2E tests
+        run: npm run test:e2e
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
