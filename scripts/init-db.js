@@ -23,7 +23,7 @@ function loadEnvFile() {
   
   // Parse environment variables
   envContent.split('\n').forEach(line => {
-    const match = line.match(/^([A-Z_][A-Z0-9_]*)="?([^"]*)"?$/);
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)="?([^"]*)"?$/);
     if (match) {
       envVars[match[1]] = match[2];
     }
@@ -33,8 +33,7 @@ function loadEnvFile() {
 }
 
 // Parse DATABASE_URL from .env file to get relative path
-function getDatabasePath() {
-  const envVars = loadEnvFile();
+function getDatabasePath(envVars) {
   const databaseUrl = envVars.DATABASE_URL;
 
   if (!databaseUrl) {
@@ -53,8 +52,8 @@ function getDatabasePath() {
 }
 
 // Check if database exists and has the correct schema
-const dbPath = getDatabasePath();
 const envVars = loadEnvFile();
+const dbPath = getDatabasePath(envVars);
 
 // Function to check if database has required tables
 function hasRequiredTables() {
