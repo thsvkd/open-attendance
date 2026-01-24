@@ -2,8 +2,10 @@
 
 # Run script for open-attendance project
 # Usage:
-#   ./scripts/run.sh         - Run in development mode
-#   ./scripts/run.sh --prod  - Build and run in production mode
+#   ./scripts/run.sh                - Run in development mode (port from .env.local)
+#   ./scripts/run.sh --port 3001    - Run in development mode with custom port
+#   ./scripts/run.sh --prod         - Build and run in production mode
+#   ./scripts/run.sh --prod --port  - Build and run in production mode with custom port
 
 set -e
 
@@ -54,23 +56,42 @@ fi
 
 # Parse command line arguments
 MODE="dev"
-if [ "$1" = "--prod" ] || [ "$1" = "-p" ]; then
-  MODE="prod"
+PORT=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --prod|-p)
+      MODE="prod"
+      shift
+      ;;
+    --port)
+      PORT="$2"
+      shift 2
+      ;;
+    *)
+      echo -e "${RED}Unknown option: $1${NC}"
+      exit 1
+      ;;
+  esac
+done
+
+# Get default port from .env.local if not specified
+if [ -z "$PORT" ]; then
+  PORT=$(grep -E "^PORT=" ".env.local" | cut -d '=' -f 2 | tr -d '"' || echo "3000")
 fi
 
 if [ "$MODE" = "prod" ]; then
   echo -e "${GREEN}🏗️  Building for production...${NC}"
   npm run build
-  
+
   echo ""
   echo -e "${GREEN}🚀 Starting production server...${NC}"
-  echo -e "${YELLOW}Server will be available at: http://localhost:3000${NC}"
+  echo -e "${YELLOW}Server will be available at: http://localhost:${PORT}${NC}"
   echo ""
-  npm start
+  PORT="$PORT" npm start -- --prod
 else
   echo -e "${GREEN}🔧 Starting development server...${NC}"
-  echo -e "${YELLOW}Server will be available at: http://localhost:3000${NC}"
+  echo -e "${YELLOW}Server will be available at: http://localhost:${PORT}${NC}"
   echo -e "${YELLOW}Press Ctrl+C to stop the server${NC}"
   echo ""
-  npm run dev
+  PORT="$PORT" npm run dev
 fi

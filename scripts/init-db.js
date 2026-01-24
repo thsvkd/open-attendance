@@ -20,14 +20,34 @@ function loadEnvFile() {
 
   const envContent = fs.readFileSync(envPath, 'utf-8');
   const envVars = {};
-  
+
   // Parse environment variables
   envContent.split('\n').forEach(line => {
-    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)="?([^"]*)"?$/);
+    // Skip comments and empty lines
+    if (line.startsWith('#') || !line.trim()) return;
+
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
     if (match) {
-      envVars[match[1]] = match[2];
+      let value = match[2].trim();
+      // Remove surrounding quotes if present
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      envVars[match[1]] = value;
     }
   });
+
+  return envVars;
+}
+
+// Update NEXTAUTH_URL based on PORT
+function applyDynamicEnvVars(envVars) {
+  // Get PORT from environment variable or .env file
+  const port = process.env.PORT || envVars.PORT || '3000';
+
+  // Update NEXTAUTH_URL to use the same port
+  envVars.NEXTAUTH_URL = `http://localhost:${port}`;
 
   return envVars;
 }
@@ -52,7 +72,8 @@ function getDatabasePath(envVars) {
 }
 
 // Check if database exists and has the correct schema
-const envVars = loadEnvFile();
+let envVars = loadEnvFile();
+envVars = applyDynamicEnvVars(envVars);
 const dbPath = getDatabasePath(envVars);
 
 // Function to check if database has required tables

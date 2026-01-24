@@ -1,0 +1,16 @@
+{
+  "debug.javascript.autoAttachFilter": "smart",
+  "debug.javascript.terminalPersistentHistory": true,
+  "debug.javascript.usePreviewJs": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}

@@ -61,5 +61,9 @@ export default defineConfig({
     timeout: 120 * 1000,
     stdout: "pipe",
     stderr: "pipe",
+    env: {
+      NEXTAUTH_URL: BASE_URL,
+      ...process.env,
+    },
   },
 });

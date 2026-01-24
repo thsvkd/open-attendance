@@ -100,9 +100,12 @@ test.describe("Authentication", () => {
       await page.goto("/setup");
 
       // 설정 페이지가 렌더링되는지 확인
-      // (이미 설정이 완료되었을 수 있으므로 URL만 확인)
+      // (이미 설정이 완료되었을 수 있으므로 setup 또는 login 중 하나여야 함)
       await page.waitForLoadState("domcontentloaded");
-      expect(page.url()).toContain("/setup");
+      const currentUrl = page.url();
+      expect(
+        currentUrl.includes("/setup") || currentUrl.includes("/login"),
+      ).toBe(true);
     });
   });
 
