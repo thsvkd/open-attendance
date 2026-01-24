@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { AuthForm } from "./auth-form"
+import { AuthForm } from "./auth-form";
 
 export function SetupForm() {
-  return <AuthForm variant="setup" />
+  return <AuthForm variant="setup" />;
 }

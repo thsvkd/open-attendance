@@ -16,9 +16,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
+  maxFailures: process.env.CI ? 0 : 1, // Stop on first failure in local dev
   reporter: process.env.CI
     ? [["list"], ["html", { open: "never" }]]
-    : [["html", { open: "never" }]],
+    : [
+        ["./playwright-reporter.js", {}],
+        ["html", { open: "never" }],
+      ],
   timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
   use: {
     baseURL: BASE_URL,

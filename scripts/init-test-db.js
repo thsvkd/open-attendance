@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * E2E 테스트용 test.db 초기화 스크립트
- * - 기존 test.db를 삭제하고 빈 스키마로 새로 생성
- * - webServer 시작 전에 실행되어야 함
+ * Script to initialize test.db for E2E tests
+ * - Deletes existing test.db and creates a new one with an empty schema
+ * - Must be run before starting the webServer
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
-const PROJECT_ROOT = path.resolve(__dirname, '..');
-const DB_PATH = path.join(PROJECT_ROOT, 'prisma', 'test.db');
-const SCHEMA_SQL_PATH = path.join(PROJECT_ROOT, 'prisma', 'schema.sql');
+const PROJECT_ROOT = path.resolve(__dirname, "..");
+const DB_PATH = path.join(PROJECT_ROOT, "prisma", "test.db");
+const SCHEMA_SQL_PATH = path.join(PROJECT_ROOT, "prisma", "schema.sql");
 
 const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS "User" (
@@ -104,7 +104,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "Holiday_date_key" ON "Holiday"("date");
 // Remove existing test.db
 if (fs.existsSync(DB_PATH)) {
   fs.unlinkSync(DB_PATH);
-  console.log('Removed existing test.db');
+  console.log("Removed existing test.db");
 }
 
 // Write schema SQL to temp file and execute
@@ -113,10 +113,10 @@ fs.writeFileSync(SCHEMA_SQL_PATH, SCHEMA_SQL);
 try {
   execSync(`sqlite3 "${DB_PATH}" < "${SCHEMA_SQL_PATH}"`, {
     cwd: PROJECT_ROOT,
-    stdio: 'pipe',
-    shell: '/bin/bash',
+    stdio: "pipe",
+    shell: "/bin/bash",
   });
-  console.log('test.db initialized with empty schema.');
+  console.log("test.db initialized with empty schema.");
 } finally {
   fs.unlinkSync(SCHEMA_SQL_PATH);
 }

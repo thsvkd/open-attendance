@@ -17,8 +17,12 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "user@example.com" },
-        password: { label: "Password", type: "password" }
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "user@example.com",
+        },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -28,7 +32,7 @@ export const authOptions: NextAuthOptions = {
         const user = await db.user.findUnique({
           where: {
             email: credentials.email,
-          }
+          },
         });
 
         if (!user || !user.password) {
@@ -37,7 +41,7 @@ export const authOptions: NextAuthOptions = {
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isPasswordValid) {
@@ -50,8 +54,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           role: user.role,
         };
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async session({ token, session }) {
@@ -75,7 +79,7 @@ export const authOptions: NextAuthOptions = {
 
       // On subsequent requests, refresh user data from database using ID
       // This ensures email changes are properly reflected
-      if (token.id && typeof token.id === 'string') {
+      if (token.id && typeof token.id === "string") {
         const dbUser = await db.user.findUnique({
           where: {
             id: token.id,
@@ -94,6 +98,6 @@ export const authOptions: NextAuthOptions = {
 
       // If user not found, return existing token
       return token;
-    }
-  }
+    },
+  },
 };

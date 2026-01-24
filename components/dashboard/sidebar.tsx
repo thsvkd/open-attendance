@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Clock, CalendarDays, CalendarClock, ShieldCheck } from "lucide-react";
+import {
+  LayoutDashboard,
+  Clock,
+  CalendarDays,
+  CalendarClock,
+  ShieldCheck,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -15,29 +21,29 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const t = useTranslations('nav');
+  const t = useTranslations("nav");
 
   const routes = [
     {
-      label: t('dashboard'),
+      label: t("dashboard"),
       icon: LayoutDashboard,
       href: "/dashboard",
       color: "text-sky-500",
     },
     {
-      label: t('myAttendance'),
+      label: t("myAttendance"),
       icon: Clock,
       href: "/dashboard/attendance",
       color: "text-violet-500",
     },
     {
-      label: t('earlyLeave'),
+      label: t("earlyLeave"),
       icon: CalendarDays,
       href: "/dashboard/leaves",
       color: "text-pink-700",
     },
     {
-      label: t('annualLeave'),
+      label: t("annualLeave"),
       icon: CalendarClock,
       href: "/dashboard/annual-leave",
       color: "text-green-600",
@@ -46,7 +52,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
   const adminRoutes = [
     {
-      label: t('adminPanel'),
+      label: t("adminPanel"),
       icon: ShieldCheck,
       href: "/dashboard/admin",
       color: "text-orange-700",
@@ -58,9 +64,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       {/* Header Area */}
       <div className="px-6 py-6 flex items-center justify-start h-16">
         <Link href="/dashboard" className="flex items-center flex-1">
-          <h1 className="text-2xl font-bold leading-none">
-            OpenAttendance
-          </h1>
+          <h1 className="text-2xl font-bold leading-none">OpenAttendance</h1>
         </Link>
       </div>
 
@@ -74,7 +78,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
               onClick={onNavigate}
               className={cn(
                 "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
-                pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
+                pathname === route.href
+                  ? "text-white bg-white/10"
+                  : "text-zinc-400",
               )}
             >
               <div className="flex items-center flex-1">
@@ -93,7 +99,9 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                   onClick={onNavigate}
                   className={cn(
                     "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
-                    pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
+                    pathname === route.href
+                      ? "text-white bg-white/10"
+                      : "text-zinc-400",
                   )}
                 >
                   <div className="flex items-center flex-1">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DatePickerFieldProps {
   label: string;
@@ -24,8 +25,9 @@ export function DatePickerField({
   label,
   selected,
   onSelect,
-  placeholder = "Pick a date",
+  placeholder,
 }: DatePickerFieldProps) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
 
   const handleSelect = (date: Date | undefined) => {
@@ -42,19 +44,19 @@ export function DatePickerField({
             variant="outline"
             className={cn(
               "w-full h-12 justify-start text-left font-normal",
-              !selected && "text-muted-foreground"
+              !selected && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {selected ? format(selected, "yyyy-MM-dd") : <span>{placeholder}</span>}
+            {selected ? (
+              format(selected, "yyyy-MM-dd")
+            ) : (
+              <span>{placeholder || t("pickDate")}</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={selected}
-            onSelect={handleSelect}
-          />
+          <Calendar mode="single" selected={selected} onSelect={handleSelect} />
         </PopoverContent>
       </Popover>
     </div>

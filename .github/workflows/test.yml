@@ -17,9 +17,9 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: "npm"
@@ -34,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint # Lint가 성공해야 테스트 시작
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: "npm"
@@ -56,7 +56,7 @@ jobs:
           DATABASE_URL: file:./test.db
           NEXTAUTH_SECRET: test-secret-for-ci
       - name: Upload test coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: test-coverage
@@ -70,9 +70,9 @@ jobs:
     needs: unit-and-integration-tests # 유닛 테스트 통과 후 실행 (자원 절약)
     timeout-minutes: 30 # 기존 60분에서 현실적으로 단축
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: "npm"
@@ -112,7 +112,7 @@ jobs:
           NEXTAUTH_URL: http://localhost:3001
           NEXTAUTH_SECRET: test-secret-for-ci
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-report
@@ -120,7 +120,7 @@ jobs:
           retention-days: 7
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-results

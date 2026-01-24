@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,19 +16,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1, "Password is required"),
-})
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function LoginForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const t = useTranslations("auth.login");
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const formSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(1, t("passwordRequired")),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,33 +45,33 @@ export function LoginForm() {
       email: "",
       password: "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+    setIsLoading(true);
 
     const result = await signIn("credentials", {
       email: values.email,
       password: values.password,
       redirect: false,
-    })
+    });
 
     if (result?.error) {
-      toast.error("Invalid credentials")
+      toast.error(t("invalidCredentials"));
     } else {
-      toast.success("Logged in!")
-      router.push("/dashboard")
-      router.refresh()
+      toast.success(t("loginSuccess"));
+      router.push("/dashboard");
+      router.refresh();
     }
 
-    setIsLoading(false)
+    setIsLoading(false);
   }
 
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your email below to login to your account.</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -72,9 +81,9 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("email")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="m@example.com" {...field} />
+                    <Input placeholder="user@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,7 +94,7 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("password")}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -94,18 +103,16 @@ export function LoginForm() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? t("submitting") : t("submit")}
             </Button>
           </form>
         </Form>
       </CardContent>
       <CardFooter>
         <Button variant="link" className="w-full" asChild>
-          <Link href="/register">
-            Don&apos;t have an account? Register
-          </Link>
+          <Link href="/register">{t("noAccount")}</Link>
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }

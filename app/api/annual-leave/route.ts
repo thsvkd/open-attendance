@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { format } from "date-fns";
+import { getTranslations } from "next-intl/server";
 import {
   requireAuth,
   parseJsonBody,
@@ -7,7 +8,11 @@ import {
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";
-import { getLeaveMinutes, rangesOverlap, calculateDays } from "@/lib/leave-utils";
+import {
+  getLeaveMinutes,
+  rangesOverlap,
+  calculateDays,
+} from "@/lib/leave-utils";
 import type { LeaveType } from "@/types";
 
 export async function GET() {
@@ -33,6 +38,8 @@ export async function POST(req: Request) {
   const { session, error } = await requireAuth();
   if (error) return error;
 
+  const t = await getTranslations("annualLeave");
+
   const body = await parseJsonBody<{
     startDate?: string;
     endDate?: string;
@@ -46,7 +53,14 @@ export async function POST(req: Request) {
     return errorResponse("Invalid request body", 400);
   }
 
-  const { startDate, endDate, reason, leaveType = "FULL_DAY", startTime, endTime } = body;
+  const {
+    startDate,
+    endDate,
+    reason,
+    leaveType = "FULL_DAY",
+    startTime,
+    endTime,
+  } = body;
 
   if (!startDate) {
     return errorResponse("Start date is required", 400);
@@ -57,18 +71,19 @@ export async function POST(req: Request) {
     const end = leaveType === "FULL_DAY" && endDate ? new Date(endDate) : start;
     const days = calculateDays(leaveType as LeaveType, start, end);
 
-    // 반반차 시간 범위 검증 (정확히 2시간)
+    // Validate quarter-day leave time range (exactly 2 hours)
     if (leaveType === "QUARTER_DAY" && startTime && endTime) {
       const [startHour, startMin] = startTime.split(":").map(Number);
       const [endHour, endMin] = endTime.split(":").map(Number);
-      const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+      const durationMinutes =
+        endHour * 60 + endMin - (startHour * 60 + startMin);
 
       if (durationMinutes !== 120) {
         return errorResponse("Quarter day leave must be exactly 2 hours.", 400);
       }
     }
 
-    // 잔여 연차 확인
+    // Check remaining leave balance
     const user = await db.user.findUnique({
       where: { id: session!.user.id },
       select: { totalLeaves: true, usedLeaves: true },
@@ -82,12 +97,12 @@ export async function POST(req: Request) {
 
     if (days > remainingLeaves) {
       return errorResponse(
-        `Insufficient leave balance. You have ${remainingLeaves} days remaining.`,
-        400
+        t("insufficientBalance", { remaining: remainingLeaves }),
+        400,
       );
     }
 
-    // 겹치는 휴가 요청 확인
+    // Check for overlapping leave requests
     const existingLeaves = await db.leaveRequest.findMany({
       where: {
         userId: session!.user.id,
@@ -96,7 +111,13 @@ export async function POST(req: Request) {
       },
     });
 
-    const newRanges = getLeaveMinutes(leaveType as LeaveType, start, end, startTime, endTime);
+    const newRanges = getLeaveMinutes(
+      leaveType as LeaveType,
+      start,
+      end,
+      startTime,
+      endTime,
+    );
 
     for (const existingLeave of existingLeaves) {
       const existingRanges = getLeaveMinutes(
@@ -104,15 +125,20 @@ export async function POST(req: Request) {
         new Date(existingLeave.startDate),
         new Date(existingLeave.endDate),
         existingLeave.startTime || undefined,
-        existingLeave.endTime || undefined
+        existingLeave.endTime || undefined,
       );
 
       for (const newRange of newRanges) {
         for (const existingRange of existingRanges) {
           if (rangesOverlap(newRange, existingRange)) {
+            const statusKey = existingLeave.status as keyof typeof t;
             return errorResponse(
-              `This leave request overlaps with an existing ${existingLeave.status.toLowerCase()} request from ${format(new Date(existingLeave.startDate), "MM/dd")} to ${format(new Date(existingLeave.endDate), "MM/dd")}.`,
-              400
+              t("overlapError", {
+                status: t(`statuses.${statusKey}`),
+                start: format(new Date(existingLeave.startDate), "MM/dd"),
+                end: format(new Date(existingLeave.endDate), "MM/dd"),
+              }),
+              400,
             );
           }
         }

@@ -24,13 +24,13 @@ export async function POST(req: Request) {
     return errorResponse("Missing required fields", 400);
   }
 
-  // 이메일 형식 검증
+  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return errorResponse("Invalid email format", 400);
   }
 
-  // 비밀번호 길이 검증
+  // Validate password length
   if (password.length < 6) {
     return errorResponse("Password must be at least 6 characters", 400);
   }

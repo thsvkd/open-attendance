@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { AuthForm } from "./auth-form"
+import { AuthForm } from "./auth-form";
 
 export function RegisterForm() {
-  return <AuthForm variant="register" />
+  return <AuthForm variant="register" />;
 }

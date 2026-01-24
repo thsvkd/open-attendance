@@ -1,7 +1,7 @@
 import { Session } from "next-auth";
 
 /**
- * 테스트용 Mock Session 생성 헬퍼
+ * Helper to create a mock session for testing
  */
 export function createMockSession(overrides?: Partial<Session>): Session {
   return {
@@ -18,7 +18,7 @@ export function createMockSession(overrides?: Partial<Session>): Session {
 }
 
 /**
- * 테스트용 Mock Admin Session 생성 헬퍼
+ * Helper to create a mock admin session for testing
  */
 export function createMockAdminSession(overrides?: Partial<Session>): Session {
   return createMockSession({
