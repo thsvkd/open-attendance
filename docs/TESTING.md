@@ -1,239 +1,354 @@
-# 테스트 가이드
+# Testing Guide
 
-이 문서는 Open Attendance 프로젝트의 테스트 환경 및 실행 방법을 설명합니다.
+This document explains the testing environment, setup, and execution methods for the Open Attendance project.
 
-## 📋 목차
+## 📋 Table of Contents
 
-- [테스트 스택](#테스트-스택)
-- [테스트 실행](#테스트-실행)
-- [테스트 구조](#테스트-구조)
-- [테스트 작성 가이드](#테스트-작성-가이드)
+- [Testing Stack](#testing-stack)
+- [Test Structure](#test-structure)
+- [Running Tests](#running-tests)
+- [Writing Tests](#writing-tests)
 - [CI/CD](#cicd)
+- [Test Coverage](#test-coverage)
 
-## 🛠 테스트 스택
+## 🛠 Testing Stack
 
-### 단위/통합 테스트
+### Unit & Integration Tests
 
-- **Vitest**: 빠르고 현대적인 테스트 프레임워크
-- **Testing Library**: React 컴포넌트 테스트
-- **vitest-mock-extended**: Prisma 및 의존성 모킹
+- **Vitest**: Fast and modern testing framework
+- **Testing Library**: React component testing
+- **vitest-mock-extended**: Prisma and dependency mocking
 
-### E2E 테스트
+### E2E Tests
 
-- **Playwright**: 크로스 브라우저 E2E 테스트
-  - Chromium, Firefox, WebKit 지원
+- **Playwright**: Cross-browser E2E testing
+  - Supports Chromium, Firefox, and WebKit
 
-## 🚀 테스트 실행
+## 📁 Test Structure
 
-### 환경 제약사항
+```
+tests/
+├── unit/                  # Unit tests
+│   └── lib/              # Library function tests
+├── integration/          # Integration tests
+│   └── api/             # API route tests
+├── e2e/                 # End-to-end tests
+│   └── auth.spec.ts     # Authentication flow tests
+└── helpers/             # Test utilities
+    ├── prisma-mock.ts   # Prisma client mocking
+    └── auth-mock.ts     # NextAuth session mocking
+```
 
-**참고**: 샌드박스 환경에서는 Playwright 브라우저 다운로드가 차단될 수 있습니다. 이 경우 E2E 테스트는 로컬 개발 환경이나 CI/CD 환경에서 실행해야 합니다.
+### Test Categories
 
-### NPM 스크립트 사용
+#### Unit Tests (15 tests)
+
+- **`tests/unit/lib/leave-utils.test.ts`**
+  - `getLeaveMinutes` function tests
+  - `rangesOverlap` function tests
+  - `calculateDays` function tests
+
+- **`tests/unit/lib/api-utils.test.ts`**
+  - `errorResponse` tests
+  - `successResponse` tests
+  - `parseJsonBody` tests
+  - Other utility function tests
+
+#### Integration Tests (11 tests)
+
+- **`tests/integration/api/leaves.test.ts`**
+  - GET /api/leaves - Leave list retrieval
+  - POST /api/leaves - Leave request creation
+  - PATCH /api/leaves - Leave request cancellation
+  - Authentication and authorization validation
+
+#### E2E Tests (11 tests)
+
+- **`tests/e2e/auth.spec.ts`**
+  - Database initialization
+  - User registration flow
+  - User login flow
+  - Session persistence
+
+## 🚀 Running Tests
+
+### Prerequisites
+
+Ensure you have Node.js 20+ and npm installed. Install dependencies first:
 
 ```bash
-# 모든 단위/통합 테스트 실행
+npm ci
+```
+
+### NPM Scripts
+
+```bash
+# Run all unit/integration tests
 npm run test
 
-# 테스트 watch 모드 (개발 중 추천)
+# Run tests in watch mode (recommended during development)
 npm run test:watch
 
-# 테스트 UI로 실행
+# Run tests with UI
 npm run test:ui
 
-# 코드 커버리지 포함
+# Run tests with code coverage
 npm run test:coverage
 
-# E2E 테스트 실행
+# Run E2E tests
 npm run test:e2e
 
-# E2E 테스트 UI 모드
+# Run E2E tests in UI mode
 npm run test:e2e:ui
 
-# E2E 테스트 headed 모드 (브라우저 보이기)
+# Run E2E tests in headed mode (see browser)
 npm run test:e2e:headed
 
-# 모든 테스트 실행 (단위 + E2E)
+# Run all tests (unit + E2E)
 npm run test:all
 ```
 
-### Shell 스크립트 사용
+### Environment Constraints
 
-프로젝트 루트에서 실행:
+**Note**: In sandboxed environments, Playwright browser downloads may be blocked. In such cases, E2E tests should be run in a local development environment or CI/CD environment.
 
-```bash
-# 모든 테스트 실행
-./scripts/test.sh all
+## ✍️ Writing Tests
 
-# 단위/통합 테스트만 실행
-./scripts/test.sh unit
-
-# E2E 테스트만 실행
-./scripts/test.sh e2e
-
-# Watch 모드로 실행
-./scripts/test.sh watch
-```
-
-## 📁 테스트 구조
-
-```
-open-attendance/
-├── __tests__/              # 단위 및 통합 테스트
-│   ├── helpers/           # 테스트 헬퍼 유틸리티
-│   │   ├── prisma-mock.ts   # Prisma 모킹 헬퍼
-│   │   └── auth-mock.ts     # 인증 모킹 헬퍼
-│   ├── lib/              # 비즈니스 로직 테스트
-│   │   ├── leave-utils.test.ts
-│   │   └── api-utils.test.ts
-│   └── api/              # API 라우트 통합 테스트
-│       └── leaves.test.ts
-├── e2e/                   # E2E 테스트
-│   └── auth.spec.ts      # 인증 플로우 테스트
-├── vitest.config.ts      # Vitest 설정
-├── vitest.setup.ts       # Vitest 전역 설정
-└── playwright.config.ts  # Playwright 설정
-```
-
-## 📝 테스트 작성 가이드
-
-### 단위 테스트 예제
+### Unit Test Example
 
 ```typescript
 import { describe, it, expect } from "vitest";
 import { calculateDays } from "@/lib/leave-utils";
 
 describe("calculateDays", () => {
-  it("전일 휴가의 일수를 올바르게 계산해야 함", () => {
-    const startDate = new Date("2024-01-15");
-    const endDate = new Date("2024-01-17");
+  it("should calculate days correctly", () => {
+    const startDate = new Date("2024-01-01");
+    const endDate = new Date("2024-01-05");
 
-    const days = calculateDays("FULL_DAY", startDate, endDate);
+    const result = calculateDays(startDate, endDate);
 
-    expect(days).toBe(3);
+    expect(result).toBe(5);
   });
 });
 ```
 
-### API 통합 테스트 예제
+### Integration Test Example
 
 ```typescript
 import { describe, it, expect, vi } from "vitest";
 import { GET } from "@/app/api/leaves/route";
-import { prismaMock } from "@/__tests__/helpers/prisma-mock";
-import { createMockSession } from "@/__tests__/helpers/auth-mock";
+import { prismaMock } from "@/tests/helpers/prisma-mock";
 
-vi.mock("next-auth", () => ({
-  getServerSession: vi.fn(),
-}));
+describe("GET /api/leaves", () => {
+  it("should return leave requests", async () => {
+    prismaMock.leave.findMany.mockResolvedValue([]);
 
-vi.mock("@/lib/db", () => ({
-  db: prismaMock,
-}));
+    const response = await GET(new Request("http://localhost/api/leaves"));
+    const data = await response.json();
 
-describe("/api/leaves GET", () => {
-  it("인증된 사용자의 휴가 목록을 반환해야 함", async () => {
-    const mockSession = createMockSession();
-    const { getServerSession } = await import("next-auth");
-    vi.mocked(getServerSession).mockResolvedValue(mockSession);
-
-    const mockLeaves = [
-      /* ... */
-    ];
-    prismaMock.leaveRequest.findMany.mockResolvedValue(mockLeaves);
-
-    const response = await GET();
     expect(response.status).toBe(200);
+    expect(data.leaves).toEqual([]);
   });
 });
 ```
 
-### E2E 테스트 예제
+### E2E Test Example
 
 ```typescript
 import { test, expect } from "@playwright/test";
 
-test("로그인 페이지가 올바르게 렌더링되어야 함", async ({ page }) => {
-  await page.goto("/login");
+test.describe("Authentication", () => {
+  test("should login successfully", async ({ page }) => {
+    await page.goto("/");
 
-  await expect(page.locator('input[type="email"]')).toBeVisible();
-  await expect(page.locator('input[type="password"]')).toBeVisible();
+    await page.fill('input[name="email"]', "test@example.com");
+    await page.fill('input[name="password"]', "password");
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL("/dashboard");
+  });
 });
 ```
 
-## 🔧 테스트 모범 사례
+## 🧪 Test Configuration
 
-### 1. 테스트 격리
+### Vitest Configuration
 
-- 각 테스트는 독립적으로 실행되어야 합니다
-- 테스트 간 상태 공유를 피합니다
-- `beforeEach`와 `afterEach`를 사용하여 상태를 초기화합니다
+The project uses `vitest.config.ts` for unit and integration test configuration:
 
-### 2. 명확한 테스트 케이스
-
-- 테스트 이름은 무엇을 테스트하는지 명확히 설명해야 합니다
-- 한국어로 작성하여 가독성을 높입니다
-- Given-When-Then 패턴을 따릅니다
-
-### 3. Mock 사용
-
-- 외부 의존성(DB, API 등)은 모킹합니다
-- `vitest-mock-extended`를 사용하여 Prisma를 모킹합니다
-- 테스트 헬퍼를 활용하여 재사용 가능한 모킹 로직을 작성합니다
-
-### 4. 의미 있는 Assertion
-
-- 구체적이고 명확한 assertion을 작성합니다
-- 에러 메시지를 포함하여 실패 원인을 쉽게 파악할 수 있도록 합니다
-
-## 🎯 CI/CD
-
-### GitHub Actions
-
-`.github/workflows/test.yml` 파일을 통해 자동화된 테스트가 실행됩니다:
-
-- **Push/PR 시 자동 실행**: `main`, `develop` 브랜치
-- **병렬 실행**: 단위/통합 테스트와 E2E 테스트가 별도 Job으로 실행
-- **아티팩트 업로드**: 테스트 결과, 커버리지, Playwright 리포트 저장
-
-### 실행 환경
-
-- Node.js 20.x
-- Ubuntu Latest
-- Playwright Chromium 브라우저
-
-## 🐛 트러블슈팅
-
-### 테스트 실패 시
-
-1. **로컬에서 재현**: 동일한 환경에서 테스트를 실행해 보세요
-2. **로그 확인**: 테스트 출력과 에러 메시지를 자세히 읽어보세요
-3. **격리 테스트**: 실패한 테스트만 단독으로 실행해 보세요
-
-```bash
-# 특정 테스트 파일만 실행
-npx vitest run __tests__/lib/leave-utils.test.ts
-
-# 특정 E2E 테스트만 실행
-npx playwright test e2e/auth.spec.ts
+```typescript
+export default defineConfig({
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: "./vitest.setup.ts",
+  },
+});
 ```
 
-### E2E 테스트 디버깅
+### Playwright Configuration
+
+The project uses `playwright.config.ts` for E2E test configuration:
+
+```typescript
+export default defineConfig({
+  testDir: "./tests/e2e",
+  use: {
+    baseURL: "http://localhost:3001",
+  },
+  webServer: {
+    command: "npm run dev",
+    port: 3001,
+  },
+});
+```
+
+## 🔧 Test Helpers
+
+### Prisma Mock Helper
+
+Located at `tests/helpers/prisma-mock.ts`, provides mocked Prisma client for testing:
+
+```typescript
+import { prismaMock } from "@/tests/helpers/prisma-mock";
+
+prismaMock.user.findUnique.mockResolvedValue({
+  id: "1",
+  email: "test@example.com",
+  // ... other fields
+});
+```
+
+### Auth Mock Helper
+
+Located at `tests/helpers/auth-mock.ts`, provides mocked NextAuth sessions:
+
+```typescript
+import { mockSession } from "@/tests/helpers/auth-mock";
+
+const session = mockSession({
+  user: { id: "1", email: "test@example.com" },
+});
+```
+
+## 📊 Test Coverage
+
+Run tests with coverage to see code coverage metrics:
 
 ```bash
-# UI 모드로 실행 (단계별 확인 가능)
-npm run test:e2e:ui
+npm run test:coverage
+```
 
-# Headed 모드로 실행 (브라우저 보이기)
+This generates a coverage report showing which parts of the codebase are covered by tests.
+
+### Coverage Thresholds
+
+The project aims for:
+
+- **Lines**: 80%+
+- **Functions**: 80%+
+- **Branches**: 75%+
+- **Statements**: 80%+
+
+## 🔄 CI/CD
+
+Tests are automatically run in GitHub Actions on:
+
+- Every push to main branch
+- Every pull request
+
+### CI Test Workflow
+
+```yaml
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test
+      - run: npm run test:e2e
+```
+
+## 🐛 Debugging Tests
+
+### Debug Unit/Integration Tests
+
+```bash
+# Run tests in watch mode with verbose output
+npm run test:watch -- --reporter=verbose
+
+# Run specific test file
+npm run test -- tests/unit/lib/leave-utils.test.ts
+
+# Run tests matching a pattern
+npm run test -- -t "calculateDays"
+```
+
+### Debug E2E Tests
+
+```bash
+# Run in headed mode to see browser
 npm run test:e2e:headed
 
-# 특정 브라우저만 사용
-npx playwright test --project=chromium
+# Run with Playwright Inspector
+npx playwright test --debug
+
+# Run specific test file
+npx playwright test tests/e2e/auth.spec.ts
 ```
 
-## 📚 참고 자료
+## 📝 Testing Best Practices
 
-- [Vitest 공식 문서](https://vitest.dev/)
-- [Playwright 공식 문서](https://playwright.dev/)
-- [Testing Library 공식 문서](https://testing-library.com/)
-- [Prisma Testing 가이드](https://www.prisma.io/docs/guides/testing)
+1. **Write descriptive test names**: Test names should clearly describe what is being tested
+2. **Follow AAA pattern**: Arrange, Act, Assert
+3. **Keep tests independent**: Each test should be able to run independently
+4. **Mock external dependencies**: Use mocks for database, APIs, etc.
+5. **Test edge cases**: Don't just test the happy path
+6. **Maintain test readability**: Tests should be easy to understand
+7. **Keep tests fast**: Unit tests should run quickly
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Issue**: Tests fail with "Cannot find module"
+
+```bash
+# Solution: Ensure all dependencies are installed
+npm ci
+```
+
+**Issue**: Playwright browsers not installed
+
+```bash
+# Solution: Install Playwright browsers
+npx playwright install --with-deps
+```
+
+**Issue**: Database connection errors in tests
+
+```bash
+# Solution: Tests use mocked Prisma client, ensure mocks are properly configured
+```
+
+**Issue**: E2E tests timeout
+
+```bash
+# Solution: Increase timeout in playwright.config.ts
+timeout: 60000 // 60 seconds
+```
+
+## 📚 Additional Resources
+
+- [Vitest Documentation](https://vitest.dev/)
+- [Testing Library Documentation](https://testing-library.com/)
+- [Playwright Documentation](https://playwright.dev/)
+- [React Testing Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
+
+---
+
+For more information about the project, see the [main README](../README.md).
