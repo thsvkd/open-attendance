@@ -20,6 +20,8 @@ export default defineConfig({
         "**/*.config.*",
         "**/types/**",
         "**/*.d.ts",
+        "**/__tests__/**",
+        "**/helpers/**",
       ],
     },
   },
