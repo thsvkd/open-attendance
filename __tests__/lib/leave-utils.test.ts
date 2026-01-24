@@ -4,7 +4,6 @@ import {
   rangesOverlap,
   calculateDays,
 } from "@/lib/leave-utils";
-import type { LeaveType } from "@/types";
 
 describe("leave-utils", () => {
   describe("getLeaveMinutes", () => {

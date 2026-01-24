@@ -258,7 +258,19 @@ describe("/api/leaves", () => {
         id: "leave-1",
         userId: "other-user-id", // 다른 사용자
         status: "PENDING",
-      } as any;
+        type: "ANNUAL",
+        leaveType: "FULL_DAY",
+        startDate: new Date(),
+        endDate: new Date(),
+        days: 1,
+        reason: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        approvedBy: null,
+        rejectedReason: null,
+        startTime: null,
+        endTime: null,
+      };
 
       vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(mockLeave);
 
@@ -280,7 +292,19 @@ describe("/api/leaves", () => {
         id: "leave-1",
         userId: mockSession.user.id,
         status: "APPROVED", // 이미 승인됨
-      } as any;
+        type: "ANNUAL",
+        leaveType: "FULL_DAY",
+        startDate: new Date(),
+        endDate: new Date(),
+        days: 1,
+        reason: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        approvedBy: null,
+        rejectedReason: null,
+        startTime: null,
+        endTime: null,
+      };
 
       vi.mocked(db.leaveRequest.findUnique).mockResolvedValue(mockLeave);
 
