@@ -89,7 +89,7 @@ jobs:
           DATABASE_URL: file:./test.db
 
       - name: Run E2E tests with verbose output
-        run: npm run test:e2e -- --reporter=verbose --max-workers=1
+        run: npm run test:e2e -- --reporter=verbose
         env:
           NODE_ENV: test
           DATABASE_URL: file:./test.db
