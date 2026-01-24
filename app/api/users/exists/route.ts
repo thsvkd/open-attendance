@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { internalErrorResponse, successResponse } from "@/lib/api-utils";
 
 export async function GET() {
   try {
     const count = await db.user.count();
-    return NextResponse.json({ exists: count > 0, count });
-  } catch (error) {
-    console.error("USER_EXISTS_CHECK_ERROR", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse({ exists: count > 0, count });
+  } catch (e) {
+    console.error("USER_EXISTS_CHECK_ERROR", e);
+    return internalErrorResponse();
   }
 }

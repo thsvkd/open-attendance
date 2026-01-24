@@ -98,7 +98,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
       } else {
         toast.error(t('error'));
       }
-    } catch (error) {
+    } catch {
       toast.error(t('error'));
     } finally {
       setLoading(false);

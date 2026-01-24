@@ -1,39 +1,64 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import {
+  requireAdmin,
+  parseJsonBody,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
+import { VALID_ADMIN_LEAVE_ACTIONS } from "@/types";
+import type { LeaveStatus } from "@/types";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   try {
     const leaves = await db.leaveRequest.findMany({
-      include: { user: true },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(leaves);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(leaves);
+  } catch (e) {
+    console.error("[ADMIN_LEAVES_GET]", e);
+    return internalErrorResponse();
   }
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const { session, error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await parseJsonBody<{ id?: string; status?: string }>(req);
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
+  }
+
+  const { id, status } = body;
+
+  if (!id || typeof id !== "string") {
+    return errorResponse("Leave request ID required", 400);
+  }
+
+  // status 값 검증
+  if (!status || !VALID_ADMIN_LEAVE_ACTIONS.includes(status as LeaveStatus)) {
+    return errorResponse("Invalid status. Must be APPROVED or REJECTED", 400);
   }
 
   try {
-    const { id, status } = await req.json();
-
     const updatedLeave = await db.leaveRequest.update({
       where: { id },
       data: {
         status,
-        approvedBy: session.user.id
+        approvedBy: session!.user.id,
       },
     });
 
@@ -43,20 +68,21 @@ export async function PATCH(req: Request) {
         where: {
           userId: updatedLeave.userId,
           type: "ANNUAL",
-          status: "APPROVED"
-        }
+          status: "APPROVED",
+        },
       });
 
       const totalUsed = approvedLeaves.reduce((sum, item) => sum + item.days, 0);
 
       await db.user.update({
         where: { id: updatedLeave.userId },
-        data: { usedLeaves: totalUsed }
+        data: { usedLeaves: totalUsed },
       });
     }
 
-    return NextResponse.json(updatedLeave);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(updatedLeave);
+  } catch (e) {
+    console.error("[ADMIN_LEAVES_PATCH]", e);
+    return internalErrorResponse();
   }
 }

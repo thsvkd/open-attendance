@@ -1,36 +1,67 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import {
+  requireAdmin,
+  parseJsonBody,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
+
+const ALLOWED_UPDATE_FIELDS = ["name", "email", "password", "role", "joinDate", "totalLeaves"] as const;
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   try {
     const users = await db.user.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        joinDate: true,
+        totalLeaves: true,
+        usedLeaves: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
-    return NextResponse.json(users);
-  } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(users);
+  } catch (e) {
+    console.error("[USERS_GET]", e);
+    return internalErrorResponse();
   }
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await parseJsonBody<{
+    name?: string;
+    email?: string;
+    password?: string;
+    role?: string;
+    joinDate?: string;
+  }>(req);
+
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
+  }
+
+  const { name, email, password, role, joinDate } = body;
+
+  if (!email || !password || !name) {
+    return errorResponse("Missing required fields", 400);
   }
 
   try {
-    const { name, email, password, role, joinDate } = await req.json();
-
-    if (!email || !password || !name) {
-      return new NextResponse("Missing required fields", { status: 400 });
+    const existingUser = await db.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return errorResponse("Email already in use", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -40,61 +71,103 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
-        role: role || "USER",
+        role: role === "ADMIN" ? "ADMIN" : "USER",
         joinDate: joinDate ? new Date(joinDate) : new Date(),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        joinDate: true,
+        totalLeaves: true,
+        usedLeaves: true,
+        createdAt: true,
       },
     });
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("[USERS_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(user);
+  } catch (e) {
+    console.error("[USERS_POST]", e);
+    return internalErrorResponse();
   }
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return new NextResponse("Unauthorized", { status: 401 });
+  const { session, error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await parseJsonBody<Record<string, unknown>>(req);
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
+  }
+
+  const { id, currentPassword, ...rawUpdateData } = body;
+
+  if (!id || typeof id !== "string") {
+    return errorResponse("User ID required", 400);
   }
 
   try {
-    const body = await req.json();
-    const { id, currentPassword, ...updateData } = body;
-
-    if (!id) {
-      return new NextResponse("User ID required", { status: 400 });
+    // 허용된 필드만 추출 (mass assignment 방지)
+    const updateData: Record<string, unknown> = {};
+    for (const field of ALLOWED_UPDATE_FIELDS) {
+      if (field in rawUpdateData && rawUpdateData[field] !== undefined) {
+        updateData[field] = rawUpdateData[field];
+      }
     }
 
-    // Security: If an admin is editing themselves, require current password for password changes
-    if (id === session.user.id && updateData.password) {
-      if (!currentPassword) {
-        return new NextResponse("Current password required for self-update", { status: 400 });
+    // 자기 자신을 수정할 때 비밀번호 변경 시 현재 비밀번호 확인
+    if (id === session!.user.id && updateData.password) {
+      if (!currentPassword || typeof currentPassword !== "string") {
+        return errorResponse("Current password required for self-update", 400);
       }
 
-      const currentUser = await db.user.findUnique({ where: { id: session.user.id } });
-      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser!.password!);
+      const currentUser = await db.user.findUnique({ where: { id: session!.user.id } });
+      if (!currentUser?.password) {
+        return errorResponse("User not found", 404);
+      }
+
+      const isPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
       if (!isPasswordValid) {
-        return new NextResponse("Incorrect current password", { status: 403 });
+        return errorResponse("Incorrect current password", 403);
       }
     }
 
-    if (updateData.joinDate) {
+    if (updateData.joinDate && typeof updateData.joinDate === "string") {
       updateData.joinDate = new Date(updateData.joinDate);
     }
 
-    if (updateData.password) {
+    if (updateData.password && typeof updateData.password === "string") {
       updateData.password = await bcrypt.hash(updateData.password, 10);
+    } else {
+      delete updateData.password;
+    }
+
+    // role 값 검증
+    if (updateData.role && updateData.role !== "ADMIN" && updateData.role !== "USER") {
+      return errorResponse("Invalid role value", 400);
     }
 
     const user = await db.user.update({
       where: { id },
       data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        joinDate: true,
+        totalLeaves: true,
+        usedLeaves: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("[USERS_PATCH]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(user);
+  } catch (e) {
+    console.error("[USERS_PATCH]", e);
+    return internalErrorResponse();
   }
 }

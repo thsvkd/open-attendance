@@ -1,23 +1,47 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import {
+  parseJsonBody,
+  errorResponse,
+  internalErrorResponse,
+  successResponse,
+} from "@/lib/api-utils";
 
 export async function POST(req: Request) {
+  const body = await parseJsonBody<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>(req);
+
+  if (!body) {
+    return errorResponse("Invalid request body", 400);
+  }
+
+  const { name, email, password } = body;
+
+  if (!email || !password || !name) {
+    return errorResponse("Missing required fields", 400);
+  }
+
+  // 이메일 형식 검증
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return errorResponse("Invalid email format", 400);
+  }
+
+  // 비밀번호 길이 검증
+  if (password.length < 6) {
+    return errorResponse("Password must be at least 6 characters", 400);
+  }
+
   try {
-    const { name, email, password } = await req.json();
-
-    if (!email || !password || !name) {
-      return new NextResponse("Missing data", { status: 400 });
-    }
-
     const exists = await db.user.findUnique({
-      where: {
-        email,
-      },
+      where: { email },
     });
 
     if (exists) {
-      return new NextResponse("User already exists", { status: 400 });
+      return errorResponse("User already exists", 400);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,14 +51,19 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
-        // First user is Admin, others are User
         role: (await db.user.count()) === 0 ? "ADMIN" : "USER",
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
       },
     });
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("REGISTRATION_ERROR", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return successResponse(user);
+  } catch (e) {
+    console.error("REGISTRATION_ERROR", e);
+    return internalErrorResponse();
   }
 }

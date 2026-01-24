@@ -1,9 +1,9 @@
-import { withAuth } from "next-auth/middleware"
+import { withAuth } from "next-auth/middleware";
 
-export const proxy = withAuth({
+export default withAuth({
   pages: {
     signIn: "/login",
   },
-})
+});
 
-export const config = { matcher: ["/dashboard/:path*"] }
+export const config = { matcher: ["/dashboard/:path*"] };

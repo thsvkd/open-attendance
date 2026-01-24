@@ -23,41 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "sonner";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
-import { cn } from "@/lib/utils";
-
-type LeaveType = "FULL_DAY" | "HALF_DAY_AM" | "HALF_DAY_PM" | "QUARTER_DAY";
-type LeaveTypeSelection = "FULL_DAY" | "HALF_DAY" | "QUARTER_DAY";
-type HalfDayPeriod = "AM" | "PM";
-
-interface UserInfo {
-  totalLeaves: number;
-  usedLeaves: number;
-  joinDate: string;
-}
-
-interface LeaveRequest {
-  id: string;
-  startDate: string;
-  endDate: string;
-  days: number;
-  status: string;
-  leaveType: LeaveType;
-  startTime?: string;
-  endTime?: string;
-}
+import { DatePickerField } from "@/components/ui/date-picker-field";
+import { TimePickerField } from "@/components/ui/time-picker-field";
+import { PageLoading } from "@/components/ui/page-loading";
+import type { LeaveType, LeaveTypeSelection, HalfDayPeriod, UserBalance, LeaveRequestRecord } from "@/types";
 
 export default function AnnualLeavePage() {
-  const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [leaves, setLeaves] = useState<LeaveRequestRecord[]>([]);
+  const [userInfo, setUserInfo] = useState<UserBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [leaveTypeSelection, setLeaveTypeSelection] = useState<LeaveTypeSelection>("FULL_DAY");
@@ -69,12 +45,29 @@ export default function AnnualLeavePage() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const t = useTranslations('annualLeave');
 
-  // Compute actual leaveType based on selection and period
   const getActualLeaveType = (): LeaveType => {
     if (leaveTypeSelection === "HALF_DAY") {
       return halfDayPeriod === "AM" ? "HALF_DAY_AM" : "HALF_DAY_PM";
     }
     return leaveTypeSelection as LeaveType;
+  };
+
+  const handleStartTimeChange = (newStartTime: string) => {
+    setStartTime(newStartTime);
+    // 2시간 이후를 종료 시간으로 자동 설정
+    const [hours, minutes] = newStartTime.split(":").map(Number);
+    const endHours = (hours + 2) % 24;
+    const endTimeStr = `${String(endHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    setEndTime(endTimeStr);
+  };
+
+  const handleEndTimeChange = (newEndTime: string) => {
+    setEndTime(newEndTime);
+    // 2시간 전을 시작 시간으로 자동 설정
+    const [hours, minutes] = newEndTime.split(":").map(Number);
+    const startHours = (hours - 2 + 24) % 24;
+    const startTimeStr = `${String(startHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    setStartTime(startTimeStr);
   };
 
   const fetchData = async () => {
@@ -157,11 +150,7 @@ export default function AnnualLeavePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <PageLoading />;
   }
 
   const remainingLeaves = userInfo ? userInfo.totalLeaves - userInfo.usedLeaves : 0;
@@ -222,7 +211,7 @@ export default function AnnualLeavePage() {
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label>{t('leaveType')}</Label>
-                <Select value={leaveTypeSelection} onValueChange={(value: LeaveTypeSelection) => setLeaveTypeSelection(value)}>
+                <Select value={leaveTypeSelection} onValueChange={(value: string) => setLeaveTypeSelection(value as LeaveTypeSelection)}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('selectLeaveType')} />
                   </SelectTrigger>
@@ -236,89 +225,32 @@ export default function AnnualLeavePage() {
 
               {leaveTypeSelection === "FULL_DAY" ? (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>{t('startDate')}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full h-12 justify-start text-left font-normal",
-                            !startDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={startDate}
-                          onSelect={setStartDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{t('endDate')}</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full h-12 justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {endDate ? format(endDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={endDate}
-                          onSelect={setEndDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                  <DatePickerField
+                    label={t('startDate')}
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    placeholder={t('pickDate')}
+                  />
+                  <DatePickerField
+                    label={t('endDate')}
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    placeholder={t('pickDate')}
+                  />
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Label>{t('date')}</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full h-12 justify-start text-left font-normal",
-                          !startDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "yyyy-MM-dd") : <span>{t('pickDate')}</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={startDate}
-                        onSelect={setStartDate}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DatePickerField
+                  label={t('date')}
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  placeholder={t('pickDate')}
+                />
               )}
 
               {leaveTypeSelection === "HALF_DAY" && (
                 <div className="space-y-2">
                   <Label>{t('halfDayPeriod')}</Label>
-                  <Select value={halfDayPeriod} onValueChange={(value: HalfDayPeriod) => setHalfDayPeriod(value)}>
+                  <Select value={halfDayPeriod} onValueChange={(value: string) => setHalfDayPeriod(value as HalfDayPeriod)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -331,29 +263,50 @@ export default function AnnualLeavePage() {
               )}
 
               {leaveTypeSelection === "QUARTER_DAY" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startTime">{t('startTime')}</Label>
-                    <Input
-                      type="time"
-                      id="startTime"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="h-12 px-4 text-base"
-                      required
-                    />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">{t('duration')}</Label>
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      2시간 고정
+                    </Badge>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="endTime">{t('endTime')}</Label>
-                    <Input
-                      type="time"
-                      id="endTime"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="h-12 px-4 text-base"
-                      required
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <TimePickerField
+                        label={t('startTime')}
+                        value={startTime}
+                        onChange={handleStartTimeChange}
+                        placeholder={t('selectTime') || "Select time"}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-end h-[68px] pb-3 text-muted-foreground font-light">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="m13 18 6-6-6-6" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <TimePickerField
+                        label={t('endTime')}
+                        value={endTime}
+                        onChange={handleEndTimeChange}
+                        placeholder={t('selectTime') || "Select time"}
+                      />
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이 맞춰집니다.
+                  </p>
                 </div>
               )}
 
