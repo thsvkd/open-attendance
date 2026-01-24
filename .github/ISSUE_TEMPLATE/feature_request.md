@@ -1,9 +1,9 @@
 ---
 name: Feature Request
 about: Suggest an idea for this project
-title: '[FEATURE] '
+title: "[FEATURE] "
 labels: enhancement
-assignees: ''
+assignees: ""
 ---
 
 ## 💡 Feature Description
@@ -27,6 +27,7 @@ Describe any alternative solutions or features you've considered.
 Describe specific use cases where this feature would be helpful.
 
 **Example scenario:**
+
 1. As a [user type]
 2. I want to [do something]
 3. So that [achieve goal]

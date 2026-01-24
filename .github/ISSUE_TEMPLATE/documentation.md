@@ -1,9 +1,9 @@
 ---
 name: Documentation Improvement
 about: Suggest improvements to documentation
-title: '[DOCS] '
+title: "[DOCS] "
 labels: documentation
-assignees: ''
+assignees: ""
 ---
 
 ## 📚 Documentation Issue
@@ -18,7 +18,7 @@ Which documentation needs improvement?
 - [ ] docs/ARCHITECTURE.md
 - [ ] Code comments
 - [ ] API documentation
-- [ ] Other: ___________
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 📝 Current State
 
