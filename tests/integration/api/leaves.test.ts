@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createMockSession } from "@/__tests__/helpers/auth-mock";
+import { createMockSession } from "@/tests/helpers/auth-mock";
 
 // Mock next-auth - must be before imports
 vi.mock("next-auth", () => ({

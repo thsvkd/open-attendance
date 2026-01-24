@@ -9,24 +9,24 @@ test.describe("Authentication", () => {
       await page.goto("/login");
 
       // 로그인 폼이 표시되는지 확인
-      await expect(page.locator('input[type="email"]')).toBeVisible();
-      await expect(page.locator('input[type="password"]')).toBeVisible();
-      await expect(page.locator('button[type="submit"]')).toBeVisible();
+      await expect(page.getByPlaceholder("m@example.com")).toBeVisible();
+      await expect(page.getByLabel("Password")).toBeVisible();
+      await expect(page.getByRole('button', { name: /login/i })).toBeVisible();
     });
 
     test("빈 필드로 로그인 시도 시 실패해야 함", async ({ page }) => {
       await page.goto("/login");
 
       // 빈 필드로 제출 시도
-      await page.locator('button[type="submit"]').click();
+      await page.getByRole('button', { name: /login/i }).click();
 
       // 폼 유효성 검사가 작동하는지 확인
       // HTML5 폼 유효성 검사 또는 커스텀 에러 메시지가 표시되어야 함
-      const emailInput = page.locator('input[type="email"]');
-      
+      const emailInput = page.getByPlaceholder("m@example.com");
+
       // 이메일 필드가 여전히 포커스 가능하거나 에러 상태인지 확인
       await expect(emailInput).toBeVisible();
-      
+
       // 여전히 로그인 페이지에 있어야 함 (성공하지 못함)
       await expect(page).toHaveURL(/.*login.*/);
     });
@@ -37,9 +37,9 @@ test.describe("Authentication", () => {
       await page.goto("/login");
 
       // 존재하지 않는 계정 정보 입력
-      await page.locator('input[type="email"]').fill("nonexistent@example.com");
-      await page.locator('input[type="password"]').fill("wrongpassword");
-      await page.locator('button[type="submit"]').click();
+      await page.getByPlaceholder("m@example.com").fill("nonexistent@example.com");
+      await page.getByLabel("Password").fill("wrongpassword");
+      await page.getByRole('button', { name: /login/i }).click();
 
       // 오류 메시지 또는 로그인 페이지 유지 확인
       await page.waitForTimeout(2000);
@@ -57,24 +57,24 @@ test.describe("Authentication", () => {
       await page.goto("/register");
 
       // 회원가입 폼이 표시되는지 확인
-      await expect(page.locator('input[name="name"]')).toBeVisible();
-      await expect(page.locator('input[type="email"]')).toBeVisible();
-      await expect(page.locator('input[type="password"]')).toBeVisible();
-      await expect(page.locator('button[type="submit"]')).toBeVisible();
+      await expect(page.getByPlaceholder("John Doe")).toBeVisible();
+      await expect(page.getByPlaceholder("m@example.com")).toBeVisible();
+      await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: /register/i })).toBeVisible();
     });
 
     test("빈 필드로 회원가입 시도 시 실패해야 함", async ({ page }) => {
       await page.goto("/register");
 
       // 빈 필드로 제출 시도
-      await page.locator('button[type="submit"]').click();
+      await page.getByRole('button', { name: /register/i }).click();
 
       // 폼 유효성 검사가 작동하는지 확인
-      const nameInput = page.locator('input[name="name"]');
-      
+      const nameInput = page.getByPlaceholder("John Doe");
+
       // 이름 필드가 여전히 포커스 가능하거나 에러 상태인지 확인
       await expect(nameInput).toBeVisible();
-      
+
       // 여전히 회원가입 페이지에 있어야 함
       await expect(page).toHaveURL(/.*register.*/);
     });
