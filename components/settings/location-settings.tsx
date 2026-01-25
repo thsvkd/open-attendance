@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search, Crosshair } from "lucide-react";
 import dynamic from "next/dynamic";
-import { getBestLocation } from "@/lib/location-utils";
+import { getPreciseLocation } from "@/lib/location-utils";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -72,6 +72,7 @@ export function LocationSettings() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [newWifiSsid, setNewWifiSsid] = useState("");
   const [newWifiBssid, setNewWifiBssid] = useState("");
+  const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isManualChange = useRef(false);
 
@@ -244,13 +245,21 @@ export function LocationSettings() {
 
   const handleUseCurrentLocation = async () => {
     try {
-      toast.info(t("gettingLocation"));
-      const coords = await getBestLocation();
+      setSearchResults([]);
+      setShowDropdown(false);
+      const coords = await getPreciseLocation(
+        (acc) => setCurrentAccuracy(acc),
+        {
+          ignoreCache: true,
+        },
+      );
       reverseGeocode(coords.latitude, coords.longitude);
       toast.success(t("currentLocationSet"));
+      setCurrentAccuracy(null);
     } catch (error) {
       console.error("Failed to get current location:", error);
       toast.error(t("failedToGetCurrentLocation"));
+      setCurrentAccuracy(null);
     }
   };
 
@@ -402,10 +411,27 @@ export function LocationSettings() {
               <Button
                 variant="outline"
                 onClick={handleUseCurrentLocation}
-                className="shrink-0"
+                className="shrink-0 relative min-w-[120px]"
+                disabled={!!currentAccuracy}
               >
-                <MapPin className="h-4 w-4 mr-2" />
-                {t("currentLocation")}
+                {currentAccuracy ? (
+                  <div className="flex flex-col items-center leading-none py-1">
+                    <span className="text-[11px] text-primary font-mono font-bold animate-pulse mb-0.5">
+                      {Math.round(currentAccuracy)}m
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                      <span className="text-[9px] uppercase font-bold tracking-tighter opacity-70">
+                        Locating
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {t("currentLocation")}
+                  </>
+                )}
               </Button>
             </div>
           </div>

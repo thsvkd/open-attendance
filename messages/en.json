@@ -47,7 +47,8 @@
     "locationNotConfigured": "Company location is not configured.",
     "goToSettings": "Go to settings",
     "failedToCreateSession": "Failed to create verification session",
-    "failedToGetLocation": "Failed to get location"
+    "failedToGetLocation": "Failed to get location",
+    "locationAccuracy": "Location Accuracy: {accuracy}m"
   },
   "earlyLeave": {
     "common": {
@@ -265,7 +266,8 @@
       "wifiSsidPlaceholder": "Company WiFi",
       "kakaoLoadFailed": "Failed to load Kakao Maps",
       "kakaoLoadErrorDescription": "Please check if the JavaScript key is correct and if the current domain is registered in the Kakao Developers console.",
-      "goKakaoConsole": "Go to Kakao Console"
+      "goKakaoConsole": "Go to Kakao Console",
+      "locationAccuracy": "Location Accuracy: {accuracy}m"
     },
     "appearance": {
       "title": "Appearance",
@@ -327,6 +329,7 @@
     "checkOutSuccess": "Check-out successful!",
     "verifyFailed": "Verification failed",
     "closePage": "You can close this page now. Your {action} has been recorded.",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "locationAccuracy": "Location Accuracy: {accuracy}m"
   }
 }

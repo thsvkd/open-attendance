@@ -121,6 +121,125 @@ export function isWithinRadius(
   };
 }
 
+// Cache for location results
+let locationCache: {
+  position: { latitude: number; longitude: number; accuracy: number };
+  timestamp: number;
+} | null = null;
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get the precise location by watching for updates and filtering by accuracy.
+ * This is better than getCurrentPosition because it gives the GPS time to "warm up".
+ *
+ * @param onProgress - Optional callback for real-time accuracy updates
+ * @param options - Configuration for accuracy thresholds and timeout. Set ignoreCache to true to force a new reading.
+ */
+export async function getPreciseLocation(
+  onProgress?: (accuracy: number) => void,
+  options: {
+    targetAccuracy?: number; // meters (default: 20m)
+    minWaitTime?: number; // ms (default: 2000ms)
+    timeout?: number; // ms (default: 10000ms)
+    ignoreCache?: boolean;
+  } = {},
+): Promise<{
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+}> {
+  // Check cache first
+  if (!options.ignoreCache && locationCache) {
+    const age = Date.now() - locationCache.timestamp;
+    if (age < CACHE_DURATION) {
+      if (onProgress) onProgress(locationCache.position.accuracy);
+      return locationCache.position;
+    }
+  }
+
+  const targetAccuracy = options.targetAccuracy ?? 20;
+  const minWaitTime = options.minWaitTime ?? 2000;
+  const timeout = options.timeout ?? 10000;
+
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by your browser"));
+      return;
+    }
+
+    let bestPosition: GeolocationPosition | null = null;
+    let watchId: number | null = null;
+    const startTime = Date.now();
+
+    const cleanup = () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+
+    const handleSuccess = (position: GeolocationPosition) => {
+      const accuracy = position.coords.accuracy;
+      if (onProgress) onProgress(accuracy);
+
+      if (!bestPosition || accuracy < bestPosition.coords.accuracy) {
+        bestPosition = position;
+      }
+
+      const timeElapsed = Date.now() - startTime;
+
+      const result = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: accuracy,
+      };
+
+      // Finish early if we met the strict target accuracy
+      if (accuracy <= targetAccuracy) {
+        cleanup();
+        locationCache = { position: result, timestamp: Date.now() };
+        resolve(result);
+        return;
+      }
+
+      // Finish if we've waited enough and accuracy is "good enough" (e.g., < 50m)
+      if (timeElapsed >= minWaitTime && accuracy <= 50) {
+        cleanup();
+        locationCache = { position: result, timestamp: Date.now() };
+        resolve(result);
+        return;
+      }
+    };
+
+    const handleError = (error: GeolocationPositionError) => {
+      cleanup();
+      reject(error);
+    };
+
+    // Set a global timeout to return the best we found so far
+    setTimeout(() => {
+      cleanup();
+      if (bestPosition) {
+        const result = {
+          latitude: bestPosition.coords.latitude,
+          longitude: bestPosition.coords.longitude,
+          accuracy: bestPosition.coords.accuracy,
+        };
+        locationCache = { position: result, timestamp: Date.now() };
+        resolve(result);
+      } else {
+        reject(new Error("Location request timed out"));
+      }
+    }, timeout);
+
+    watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: timeout,
+    });
+  });
+}
+
 /**
  * Detect if the user is on a mobile device
  * @returns True if mobile, false otherwise

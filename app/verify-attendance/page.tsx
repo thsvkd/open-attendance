@@ -13,7 +13,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, XCircle, Loader2, MapPin } from "lucide-react";
 import axios from "axios";
-import { getBestLocation } from "@/lib/location-utils";
+import { getPreciseLocation } from "@/lib/location-utils";
 import { useTranslations } from "next-intl";
 
 export default function VerifyAttendancePage() {
@@ -29,6 +29,7 @@ export default function VerifyAttendancePage() {
     !token ? t("invalidLink") : "",
   );
   const [action, setAction] = useState<"CHECK_IN" | "CHECK_OUT" | null>(null);
+  const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
 
   const verifyLocation = async () => {
     if (!token) {
@@ -42,7 +43,7 @@ export default function VerifyAttendancePage() {
       setMessage(t("gettingLocation"));
 
       // Get current location
-      const coords = await getBestLocation();
+      const coords = await getPreciseLocation((acc) => setCurrentAccuracy(acc));
 
       setMessage(t("verifyingLocation"));
 
@@ -100,7 +101,16 @@ export default function VerifyAttendancePage() {
           {status === "loading" && (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <AlertDescription>{message}</AlertDescription>
+              <AlertDescription className="flex flex-col gap-1">
+                <span>{message}</span>
+                {currentAccuracy && (
+                  <span className="text-xs font-mono text-primary animate-pulse">
+                    {t("locationAccuracy", {
+                      accuracy: Math.round(currentAccuracy),
+                    })}
+                  </span>
+                )}
+              </AlertDescription>
             </Alert>
           )}
 

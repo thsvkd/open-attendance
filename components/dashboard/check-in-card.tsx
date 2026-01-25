@@ -20,7 +20,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
-import { getBestLocation, isMobileDevice } from "@/lib/location-utils";
+import { getPreciseLocation, isMobileDevice } from "@/lib/location-utils";
 import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -58,6 +58,7 @@ export function CheckInCard({
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
     null,
   );
+  const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
 
   const t = useTranslations("dashboard");
   const formatter = useFormatter();
@@ -95,12 +96,17 @@ export function CheckInCard({
     }
   };
 
-  const checkLocation = async () => {
+  const checkLocation = async (ignoreCache = false) => {
     setCheckingLocation(true);
     setLocationError(null);
 
     try {
-      const coords = await getBestLocation();
+      const coords = await getPreciseLocation(
+        (acc) => setCurrentAccuracy(acc),
+        {
+          ignoreCache,
+        },
+      );
 
       // Validate location with server
       const res = await axios.post("/api/location/validate", {
@@ -123,7 +129,7 @@ export function CheckInCard({
   };
 
   const getLocationData = async () => {
-    const coords = await getBestLocation();
+    const coords = await getPreciseLocation((acc) => setCurrentAccuracy(acc));
     return {
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -290,62 +296,85 @@ export function CheckInCard({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Location Status */}
-          {checkingLocation && (
-            <Alert>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <AlertDescription>
-                {t("grantLocationPermission")}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {!isLocationConfigured && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {t("locationNotConfigured")}
-                {isAdmin && (
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto ml-2 font-bold underline"
-                    onClick={() =>
-                      (window.location.href = "/dashboard/settings")
-                    }
-                  >
-                    {t("goToSettings")}
-                  </Button>
+          {/* Unified Location Status Alert */}
+          {(checkingLocation ||
+            locationError ||
+            locationValidation ||
+            !isLocationConfigured) && (
+            <Alert
+              variant={
+                locationError ||
+                (locationValidation && !locationValidation.isWithinRadius) ||
+                !isLocationConfigured
+                  ? "destructive"
+                  : "default"
+              }
+            >
+              {checkingLocation ? (
+                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+              ) : locationError ||
+                (locationValidation && !locationValidation.isWithinRadius) ||
+                !isLocationConfigured ? (
+                <AlertCircle className="h-4 w-4 shrink-0" />
+              ) : (
+                <MapPin className="h-4 w-4 shrink-0" />
+              )}
+              <AlertDescription className="flex flex-col gap-1 w-full text-balance">
+                {/* 1. Configuration Error */}
+                {!isLocationConfigured && (
+                  <div className="flex flex-col">
+                    <span>
+                      {t("locationNotConfigured")}
+                      {isAdmin && (
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto ml-2 font-bold underline align-baseline"
+                          onClick={() =>
+                            (window.location.href = "/dashboard/settings")
+                          }
+                        >
+                          {t("goToSettings")}
+                        </Button>
+                      )}
+                    </span>
+                  </div>
                 )}
-              </AlertDescription>
-            </Alert>
-          )}
 
-          {isLocationConfigured && locationError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{locationError}</AlertDescription>
-            </Alert>
-          )}
+                {/* 2. Location Error */}
+                {isLocationConfigured && locationError && (
+                  <span className="font-medium">{locationError}</span>
+                )}
 
-          {locationValidation && !locationValidation.isWithinRadius && (
-            <Alert variant="destructive">
-              <MapPin className="h-4 w-4" />
-              <AlertDescription>
-                {t("tooFarFromOffice")} -{" "}
-                {t("distanceFromOffice", {
-                  distance: locationValidation.distance,
-                })}
-              </AlertDescription>
-            </Alert>
-          )}
+                {/* 3. Validation Status */}
+                {isLocationConfigured && locationValidation && (
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      {!locationValidation.isWithinRadius &&
+                        `${t("tooFarFromOffice")} - `}
+                      {t("distanceFromOffice", {
+                        distance: locationValidation.distance,
+                      })}
+                    </span>
+                  </div>
+                )}
 
-          {locationValidation && locationValidation.isWithinRadius && (
-            <Alert>
-              <MapPin className="h-4 w-4" />
-              <AlertDescription>
-                {t("distanceFromOffice", {
-                  distance: locationValidation.distance,
-                })}
+                {/* 4. Checking Status (Sub-info) */}
+                {checkingLocation && (
+                  <div className="flex flex-col gap-1">
+                    {!locationValidation &&
+                      !locationError &&
+                      !isLocationConfigured && (
+                        <span>{t("grantLocationPermission")}</span>
+                      )}
+                    {currentAccuracy && (
+                      <span className="text-xs font-mono text-primary animate-pulse">
+                        {t("locationAccuracy", {
+                          accuracy: Math.round(currentAccuracy),
+                        })}
+                      </span>
+                    )}
+                  </div>
+                )}
               </AlertDescription>
             </Alert>
           )}
@@ -419,7 +448,7 @@ export function CheckInCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={checkLocation}
+              onClick={() => checkLocation(true)}
               className="w-full"
             >
               <MapPin className="mr-2 h-4 w-4" />
