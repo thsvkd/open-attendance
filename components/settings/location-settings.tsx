@@ -38,11 +38,6 @@ interface CompanyLocation {
   }>;
 }
 
-interface WifiNetwork {
-  ssid: string;
-  bssid?: string;
-}
-
 export function LocationSettings() {
   const t = useTranslations("settings.location");
   const [loading, setLoading] = useState(true);

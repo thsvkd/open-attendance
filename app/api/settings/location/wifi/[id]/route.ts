@@ -1,7 +1,6 @@
 import { db } from "@/lib/db";
 import {
   requireAdmin,
-  errorResponse,
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";

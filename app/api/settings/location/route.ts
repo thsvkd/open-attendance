@@ -9,7 +9,7 @@ import {
 
 // GET - Get current company location settings
 export async function GET() {
-  const { session, error } = await requireAuth();
+  const { error } = await requireAuth();
   if (error) return error;
 
   try {

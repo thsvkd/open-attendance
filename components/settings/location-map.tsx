@@ -26,7 +26,7 @@ function MapEventHandler({
 }: {
   onLocationChange: (lat: number, lng: number) => void;
 }) {
-  const map = useMapEvents({
+  useMapEvents({
     click: (e) => {
       onLocationChange(e.latlng.lat, e.latlng.lng);
     },
