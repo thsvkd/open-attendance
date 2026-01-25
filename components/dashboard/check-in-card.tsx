@@ -308,7 +308,7 @@ export function CheckInCard({
             locationError ||
             locationValidation ||
             !isLocationConfigured) && (
-            <Alert
+             <Alert
               variant={
                 locationError ||
                 (locationValidation && !locationValidation.isWithinRadius) ||
@@ -317,72 +317,77 @@ export function CheckInCard({
                   : "default"
               }
             >
-              {checkingLocation ? (
-                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-              ) : locationError ||
-                (locationValidation && !locationValidation.isWithinRadius) ||
-                !isLocationConfigured ? (
-                <AlertCircle className="h-4 w-4 shrink-0" />
-              ) : (
-                <MapPin className="h-4 w-4 shrink-0" />
-              )}
-              <AlertDescription className="flex flex-col gap-1 w-full text-balance">
-                {/* 1. Configuration Error */}
-                {!isLocationConfigured && (
-                  <div className="flex flex-col">
-                    <span>
-                      {t("locationNotConfigured")}
-                      {isAdmin && (
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto ml-2 font-bold underline align-baseline"
-                          onClick={() =>
-                            (window.location.href = "/dashboard/settings")
-                          }
-                        >
-                          {t("goToSettings")}
-                        </Button>
-                      )}
-                    </span>
-                  </div>
+              <div className="flex items-center gap-2 w-full">
+                {checkingLocation ? (
+                  <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                ) : locationError ||
+                  (locationValidation && !locationValidation.isWithinRadius) ||
+                  !isLocationConfigured ? (
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                ) : (
+                  <MapPin className="h-4 w-4 shrink-0" />
                 )}
-
-                {/* 2. Location Error */}
-                {isLocationConfigured && locationError && (
-                  <span className="font-medium">{locationError}</span>
-                )}
-
-                {/* 3. Validation Status */}
-                {isLocationConfigured && locationValidation && (
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {!locationValidation.isWithinRadius &&
-                        `${t("tooFarFromOffice")} - `}
-                      {t("distanceFromOffice", {
-                        distance: locationValidation.distance,
-                      })}
-                    </span>
-                  </div>
-                )}
-
-                {/* 4. Checking Status (Sub-info) */}
-                {checkingLocation && (
-                  <div className="flex flex-col gap-1">
-                    {!locationValidation &&
-                      !locationError &&
-                      !isLocationConfigured && (
-                        <span>{t("grantLocationPermission")}</span>
-                      )}
-                    {currentAccuracy && (
-                      <span className="text-xs font-mono text-primary animate-pulse">
-                        {t("locationAccuracy", {
-                          accuracy: Math.round(currentAccuracy),
-                        })}
+                <AlertDescription className="flex flex-col gap-1 w-full text-balance">
+                  {/* 1. Configuration Error */}
+                  {!isLocationConfigured && (
+                    <div className="flex flex-col">
+                      <span>
+                        {t("locationNotConfigured")}
+                        {isAdmin && (
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto ml-2 font-bold underline align-baseline"
+                            onClick={() =>
+                              (window.location.href = "/dashboard/settings")
+                            }
+                          >
+                            {t("goToSettings")}
+                          </Button>
+                        )}
                       </span>
-                    )}
-                  </div>
-                )}
-              </AlertDescription>
+                    </div>
+                  )}
+
+                  {/* 2. Location Error */}
+                  {isLocationConfigured && locationError && (
+                    <span className="font-medium">{locationError}</span>
+                  )}
+
+                  {/* 3. Validation Status */}
+                  {isLocationConfigured && locationValidation && (
+                    <div className="flex flex-col">
+                      <span className={checkingLocation ? "animate-pulse font-medium" : "font-medium"}>
+                        {checkingLocation && t("updatingLocation")}
+                        {!checkingLocation && (
+                          <>
+                            {!locationValidation.isWithinRadius &&
+                              `${t("tooFarFromOffice")} - `}
+                            {t("distanceFromOffice", {
+                              distance: locationValidation.distance,
+                            })}
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 4. Checking Status (Sub-info) */}
+                  {checkingLocation && !locationValidation && (
+                    <div className="flex flex-col gap-1">
+                      <span className="animate-pulse font-medium">
+                        {t("updatingLocation")}
+                      </span>
+                      {currentAccuracy && (
+                        <span className="text-xs font-mono text-primary">
+                          {t("locationAccuracy", {
+                            accuracy: Math.round(currentAccuracy),
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 

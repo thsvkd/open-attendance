@@ -422,27 +422,29 @@ export function LocationSettings() {
               <Button
                 variant="outline"
                 onClick={handleUseCurrentLocation}
-                className="shrink-0 relative min-w-[120px]"
+                className="shrink-0 relative"
                 disabled={!!currentAccuracy}
               >
-                {currentAccuracy ? (
-                  <div className="flex flex-col items-center leading-none py-1">
-                    <span className="text-[11px] text-primary font-mono font-bold animate-pulse mb-0.5">
-                      {Math.round(currentAccuracy)}m
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                      <span className="text-[9px] uppercase font-bold tracking-tighter opacity-70">
-                        Locating
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {t("currentLocation")}
-                  </>
-                )}
+                <div className="flex items-center gap-2">
+                  {currentAccuracy ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                      <div className="flex flex-col items-start leading-tight">
+                        <span className="text-sm animate-pulse">
+                          {t("updatingLocation")}
+                        </span>
+                        <span className="text-xs font-mono text-primary">
+                          {t("locationAccuracy", { accuracy: Math.round(currentAccuracy) })}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span>{t("currentLocation")}</span>
+                    </>
+                  )}
+                </div>
               </Button>
             </div>
           </div>

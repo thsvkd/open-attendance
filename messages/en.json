@@ -171,6 +171,7 @@
     "password": "Password",
     "currentPassword": "Current Password",
     "newPassword": "New Password (fill to change)",
+    "confirmNewPassword": "Confirm New Password",
     "role": "Role",
     "joinDate": "Join Date",
     "update": "Update Profile",
@@ -178,6 +179,7 @@
     "error": "An error occurred while updating.",
     "incorrectPassword": "Current password is incorrect.",
     "passwordRequired": "Please enter your current password to change it.",
+    "passwordMismatch": "Passwords do not match.",
     "emailInUse": "Email already in use."
   },
   "admin": {
@@ -256,6 +258,8 @@
       "noWifiNetworks": "No WiFi networks registered",
       "locationNotSet": "Company location not set. Please configure it in settings.",
       "gettingLocation": "Getting your location...",
+      "updatingLocation": "Updating location...",
+      "locationAccuracy": "Location Accuracy: {accuracy}m",
       "noResultsFound": "No results found",
       "wifiSsidRequired": "WiFi SSID is required",
       "wifiAdded": "WiFi network added",

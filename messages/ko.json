@@ -171,6 +171,7 @@
     "password": "비밀번호",
     "currentPassword": "현재 비밀번호",
     "newPassword": "새 비밀번호 (변경 시 입력)",
+    "confirmNewPassword": "새 비밀번호 확인",
     "role": "권한",
     "joinDate": "입사일",
     "update": "정보 수정",
@@ -178,6 +179,7 @@
     "error": "업데이트 중 오류가 발생했습니다.",
     "incorrectPassword": "현재 비밀번호가 올바르지 않습니다.",
     "passwordRequired": "비밀번호 변경을 위해 현재 비밀번호를 입력해주세요.",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다.",
     "emailInUse": "이미 사용 중인 이메일입니다."
   },
   "admin": {
@@ -256,6 +258,8 @@
       "noWifiNetworks": "등록된 WiFi 네트워크가 없습니다",
       "locationNotSet": "회사 위치가 설정되지 않았습니다. 설정에서 구성해주세요.",
       "gettingLocation": "위치를 가져오는 중...",
+      "updatingLocation": "위치 업데이트 중...",
+      "locationAccuracy": "위치 정확도: {accuracy}m",
       "noResultsFound": "검색 결과가 없습니다",
       "wifiSsidRequired": "WiFi SSID가 필요합니다",
       "wifiAdded": "WiFi 네트워크가 추가되었습니다",
