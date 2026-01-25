@@ -48,9 +48,14 @@ A comprehensive solution for tracking employee attendance, leave, and time-off
 
 ### 📅 Attendance Management
 
+- **Location-based check-in/out** - Verify employee location during attendance recording
+- **QR code authentication** - Secure verification via smartphone scanning for web users
+- **100m radius validation** - Ensure employees are within company premises
+- **WiFi network verification** - Additional security layer using registered WiFi networks
 - **Automatic attendance recording** - Assumes attendance on all working days (excluding holidays)
 - **Absence recording** - Record and track reasons for absence
 - **Flexible work hours** - Supports various work schedules
+- **Real-time distance tracking** - Display distance from office location
 
 ### 🏖️ Leave Management
 
@@ -72,6 +77,28 @@ A comprehensive solution for tracking employee attendance, leave, and time-off
   - **User** - Access to personal attendance and leave data
 - **Secure authentication** - Powered by NextAuth.js
 - **User profiles** - Manage personal info and settings
+
+### 📍 Location-Based Attendance (New!)
+
+- **Dual authentication modes**:
+  - **Web**: QR code scanning with smartphone for location verification
+  - **Mobile**: Direct check-in/out with GPS location capture
+- **Company location setup**:
+  - Interactive map interface for setting office location
+  - Configurable radius (default 100m)
+  - Address search functionality
+- **WiFi network registration**:
+  - Register company WiFi networks for additional security
+  - SSID and BSSID verification support
+- **Real-time validation**:
+  - Distance calculation from office location
+  - Visual feedback on location status
+  - Automatic button enabling/disabling based on location
+- **Security features**:
+  - Prevents remote desktop check-in fraud
+  - Session-based QR code with expiration (5 minutes)
+  - Double location verification
+  - Audit trail with location data stored in database
 
 ### 🌐 Internationalization
 
