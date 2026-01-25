@@ -63,10 +63,21 @@ export default function VerifyAttendancePage() {
           : t("checkOutSuccess"),
       );
     } catch (error: unknown) {
-      console.error("Verification error:", error);
-      let errorMsg =
-        (error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || t("verifyFailed");
+      console.error(
+        "Verification error:",
+        error instanceof Error ? error.message : error,
+      );
+
+      const axiosError = error as { response?: { data?: { error?: string } } };
+
+      // If it's a location error (no response from server)
+      if (!axiosError.response) {
+        setStatus("failed");
+        setMessage(td("failedToGetLocation"));
+        return;
+      }
+
+      let errorMsg = axiosError.response?.data?.error || t("verifyFailed");
 
       // Attempt to localize known error messages
       if (errorMsg.includes("expired")) {

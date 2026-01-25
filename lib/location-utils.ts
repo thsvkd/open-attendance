@@ -160,7 +160,7 @@ export async function getPreciseLocation(
 
   const targetAccuracy = options.targetAccuracy ?? 20;
   const minWaitTime = options.minWaitTime ?? 2000;
-  const timeout = options.timeout ?? 10000;
+  const timeout = options.timeout ?? 15000;
 
   return new Promise((resolve, reject) => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -170,11 +170,15 @@ export async function getPreciseLocation(
 
     let bestPosition: GeolocationPosition | null = null;
     let watchId: number | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
     const startTime = Date.now();
 
     const cleanup = () => {
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
 
@@ -212,12 +216,32 @@ export async function getPreciseLocation(
     };
 
     const handleError = (error: GeolocationPositionError) => {
+      // If we already have a position, use it instead of failing
+      if (bestPosition) {
+        cleanup();
+        const result = {
+          latitude: bestPosition.coords.latitude,
+          longitude: bestPosition.coords.longitude,
+          accuracy: bestPosition.coords.accuracy,
+        };
+        locationCache = { position: result, timestamp: Date.now() };
+        resolve(result);
+        return;
+      }
+
       cleanup();
-      reject(error);
+      // Create a more descriptive error object since GeolocationPositionError properties are not enumerable
+      const enhancedError = new Error(error.message) as Error & {
+        code?: number;
+        originalError?: GeolocationPositionError;
+      };
+      enhancedError.code = error.code;
+      enhancedError.originalError = error;
+      reject(enhancedError);
     };
 
     // Set a global timeout to return the best we found so far
-    setTimeout(() => {
+    timeoutId = setTimeout(async () => {
       cleanup();
       if (bestPosition) {
         const result = {
@@ -228,9 +252,29 @@ export async function getPreciseLocation(
         locationCache = { position: result, timestamp: Date.now() };
         resolve(result);
       } else {
-        reject(new Error("Location request timed out"));
+        // Last resort: try getCurrentPosition once with low accuracy
+        try {
+          const fallback = await new Promise<GeolocationPosition>(
+            (res, rej) => {
+              navigator.geolocation.getCurrentPosition(res, rej, {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 30000,
+              });
+            },
+          );
+          const result = {
+            latitude: fallback.coords.latitude,
+            longitude: fallback.coords.longitude,
+            accuracy: fallback.coords.accuracy,
+          };
+          locationCache = { position: result, timestamp: Date.now() };
+          resolve(result);
+        } catch (_fallbackError) {
+          reject(new Error("Location request timed out and fallback failed"));
+        }
       }
-    }, timeout);
+    }, timeout + 500);
 
     watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,

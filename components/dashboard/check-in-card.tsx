@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -69,12 +69,56 @@ export function CheckInCard({
     return () => clearInterval(timer);
   }, []);
 
+  const fetchAttendance = useCallback(async () => {
+    try {
+      const res = await axios.get("/api/attendance/today");
+      setAttendance(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const checkLocation = useCallback(
+    async (ignoreCache = false) => {
+      setCheckingLocation(true);
+      setLocationError(null);
+
+      try {
+        const coords = await getPreciseLocation(
+          (acc) => setCurrentAccuracy(acc),
+          {
+            ignoreCache,
+          },
+        );
+
+        // Validate location with server
+        const res = await axios.post("/api/location/validate", {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+
+        setLocationValidation(res.data);
+      } catch (error: unknown) {
+        console.error(
+          "Location check error:",
+          error instanceof Error ? error.message : error,
+        );
+        setLocationError(t("failedToGetLocation"));
+      } finally {
+        setCheckingLocation(false);
+      }
+    },
+    [isLocationConfigured, t],
+  );
+
   useEffect(() => {
     fetchAttendance();
     if (isLocationConfigured) {
       checkLocation();
     }
-  }, [isLocationConfigured]);
+  }, [isLocationConfigured, checkLocation, fetchAttendance]);
 
   useEffect(() => {
     // Cleanup polling on unmount
@@ -84,49 +128,6 @@ export function CheckInCard({
       }
     };
   }, [pollingInterval]);
-
-  const fetchAttendance = async () => {
-    try {
-      const res = await axios.get("/api/attendance/today");
-      setAttendance(res.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkLocation = async (ignoreCache = false) => {
-    setCheckingLocation(true);
-    setLocationError(null);
-
-    try {
-      const coords = await getPreciseLocation(
-        (acc) => setCurrentAccuracy(acc),
-        {
-          ignoreCache,
-        },
-      );
-
-      // Validate location with server
-      const res = await axios.post("/api/location/validate", {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      });
-
-      setLocationValidation(res.data);
-    } catch (error: unknown) {
-      console.error("Location check error:", error);
-      const data = (
-        error as { response?: { data?: { error?: string; message?: string } } }
-      ).response?.data;
-      setLocationError(
-        data?.error || data?.message || "Failed to get location",
-      );
-    } finally {
-      setCheckingLocation(false);
-    }
-  };
 
   const getLocationData = async () => {
     const coords = await getPreciseLocation((acc) => setCurrentAccuracy(acc));
@@ -166,7 +167,10 @@ export function CheckInCard({
       fetchAttendance();
       checkLocation();
     } catch (error: unknown) {
-      console.error("Check-in error:", error);
+      console.error(
+        "Check-in error:",
+        error instanceof Error ? error.message : error,
+      );
       const data = (
         error as { response?: { data?: { error?: string; message?: string } } }
       ).response?.data;
@@ -186,7 +190,10 @@ export function CheckInCard({
       fetchAttendance();
       checkLocation();
     } catch (error: unknown) {
-      console.error("Check-out error:", error);
+      console.error(
+        "Check-out error:",
+        error instanceof Error ? error.message : error,
+      );
       const data = (
         error as { response?: { data?: { error?: string; message?: string } } }
       ).response?.data;
@@ -451,7 +458,7 @@ export function CheckInCard({
               onClick={() => checkLocation(true)}
               className="w-full"
             >
-              <MapPin className="mr-2 h-4 w-4" />
+              {/* <MapPin className="mr-2 h-4 w-4" /> */}
               {t("refreshLocation")}
             </Button>
           )}

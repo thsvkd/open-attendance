@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X, Search, Crosshair } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getPreciseLocation } from "@/lib/location-utils";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
@@ -257,7 +257,10 @@ export function LocationSettings() {
       toast.success(t("currentLocationSet"));
       setCurrentAccuracy(null);
     } catch (error) {
-      console.error("Failed to get current location:", error);
+      console.error(
+        "Failed to get current location:",
+        error instanceof Error ? error.message : error,
+      );
       toast.error(t("failedToGetCurrentLocation"));
       setCurrentAccuracy(null);
     }
