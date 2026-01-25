@@ -32,11 +32,12 @@ Sets up the development or production environment.
 - Runs database migrations
 
 ### run.sh
-Starts the development or production server.
+Starts the development or production server. **Automatically runs setup if needed.**
 
 **Usage:**
 ```bash
-./scripts/run.sh                    # Development mode
+./scripts/run.sh                    # Development mode (default)
+./scripts/run.sh --dev              # Development mode (explicit)
 ./scripts/run.sh --prod             # Production mode
 ./scripts/run.sh --port 3001        # Custom port
 ./scripts/run.sh --prod --port 8080 # Production with custom port
@@ -44,8 +45,9 @@ Starts the development or production server.
 ```
 
 **What it does:**
-- Checks for `.env.local` file
-- Ensures dependencies are installed
+- Automatically runs `setup.sh` if `.env.local` or `node_modules` is missing
+- Uses the appropriate setup mode (`--dev` or `--prod`) based on run mode
+- Ensures dependencies are up to date
 - Starts the Next.js development or production server
 
 ### test.sh
@@ -140,15 +142,17 @@ This approach maximizes code reusability while keeping the codebase maintainable
 
 ## Development Workflow
 
-1. **Initial Setup:**
+1. **First Time Setup (Optional):**
    ```bash
    ./scripts/setup.sh
    ```
+   Note: `run.sh` will automatically call setup if needed, so this is optional.
 
 2. **Daily Development:**
    ```bash
    ./scripts/run.sh
    ```
+   This will automatically setup if needed and start the dev server.
 
 3. **Testing:**
    ```bash
@@ -157,6 +161,8 @@ This approach maximizes code reusability while keeping the codebase maintainable
 
 4. **Production Deployment:**
    ```bash
-   ./scripts/setup.sh --prod
+   ./scripts/run.sh --prod
+   ```
+   This will automatically run production setup if needed, build, and start the server.
    ./scripts/run.sh --prod
    ```

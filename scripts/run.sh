@@ -3,6 +3,7 @@
 # Run script for open-attendance project
 # Usage:
 #   ./scripts/run.sh                - Run in development mode (port from .env.local)
+#   ./scripts/run.sh --dev          - Run in development mode
 #   ./scripts/run.sh --port 3001    - Run in development mode with custom port
 #   ./scripts/run.sh --prod         - Build and run in production mode
 #   ./scripts/run.sh --prod --port  - Build and run in production mode with custom port
@@ -19,14 +20,15 @@ cd "$PROJECT_ROOT"
 # Load NVM
 load_nvm
 
-# Check if .env.local file exists
-check_env_file
-
 # Parse command line arguments
 MODE="dev"
 PORT=""
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --dev|-d)
+      MODE="dev"
+      shift
+      ;;
     --prod|-p)
       MODE="prod"
       shift
@@ -51,12 +53,25 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Ensure dependencies are installed with npm ci for production-like environment
-if [ "$MODE" = "prod" ]; then
-  ensure_node_modules "npm ci"
+# Run setup.sh with the appropriate mode if needed
+if [ ! -f ".env.local" ] || [ ! -d "node_modules" ]; then
+  print_info "Running setup for the first time or after clean..."
+  if [ "$MODE" = "prod" ]; then
+    "$SCRIPT_DIR/setup.sh" --prod
+  else
+    "$SCRIPT_DIR/setup.sh" --dev
+  fi
 else
-  ensure_node_modules "npm install"
+  # Setup already done, just ensure dependencies are up to date
+  if [ "$MODE" = "prod" ]; then
+    ensure_node_modules "npm ci"
+  else
+    ensure_node_modules "npm install"
+  fi
 fi
+
+# After setup, check if .env.local exists (it should now)
+check_env_file
 
 # Get default port from .env.local if not specified
 if [ -z "$PORT" ]; then
