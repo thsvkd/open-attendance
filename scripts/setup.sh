@@ -26,6 +26,12 @@ while [[ $# -gt 0 ]]; do
       SETUP_MODE="dev"
       shift
       ;;
+    --help|-h)
+      echo "Usage: $0 [--dev|--prod]"
+      echo "  --dev   Development setup (npm install) - default"
+      echo "  --prod  Production setup (npm ci)"
+      exit 0
+      ;;
     *)
       print_error "Unknown option: $1"
       echo ""

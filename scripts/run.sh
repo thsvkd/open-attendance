@@ -35,8 +35,17 @@ while [[ $# -gt 0 ]]; do
       PORT="$2"
       shift 2
       ;;
+    --help|-h)
+      echo "Usage: $0 [--dev|--prod] [--port PORT]"
+      echo "  --dev   Run in development mode (default)"
+      echo "  --prod  Build and run in production mode"
+      echo "  --port  Specify custom port (default: from .env.local or 3000)"
+      exit 0
+      ;;
     *)
       print_error "Unknown option: $1"
+      echo ""
+      echo "Usage: $0 [--dev|--prod] [--port PORT]"
       exit 1
       ;;
   esac

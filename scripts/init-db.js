@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
+/**
+ * Database initialization script
+ * 
+ * This script MUST remain as JavaScript because:
+ * - Complex logic for parsing DATABASE_URL and checking database state
+ * - Needs to interact with SQLite and Prisma programmatically
+ * - Environment variable handling and dynamic path resolution
+ * - Cross-platform compatibility (Windows, macOS, Linux)
+ */
+
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
