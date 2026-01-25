@@ -388,10 +388,10 @@ export function CheckInCard({
 
           <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm text-center font-medium text-muted-foreground">
                 {t("checkIn")}
               </p>
-              <p className="text-xl font-bold">
+              <p className="text-xl text-center font-bold">
                 {attendance?.checkIn
                   ? formatter.dateTime(new Date(attendance.checkIn), {
                       hour: "numeric",
@@ -401,10 +401,10 @@ export function CheckInCard({
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm text-center font-medium text-muted-foreground">
                 {t("checkOut")}
               </p>
-              <p className="text-xl font-bold">
+              <p className="text-xl text-center font-bold">
                 {attendance?.checkOut
                   ? formatter.dateTime(new Date(attendance.checkOut), {
                       hour: "numeric",
