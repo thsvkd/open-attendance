@@ -86,7 +86,7 @@ if [ "$MODE" = "prod" ]; then
   print_success "Starting production server..."
   print_warning "Server will be available at: http://localhost:${PORT}"
   echo ""
-  PORT="$PORT" npm start -- --prod
+  PORT="$PORT" npm start
 else
   print_info "Starting development server..."
   print_warning "Server will be available at: http://localhost:${PORT}"

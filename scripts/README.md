@@ -121,7 +121,7 @@ node scripts/init-db.js --test
 - Initializes with empty schema (all tables and indexes)
 - Used by Playwright before running E2E tests
 
-### start-dev.js
+### start-app.js
 
 Advanced server startup script with environment management.
 
