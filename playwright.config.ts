@@ -49,7 +49,12 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI
-      ? `node scripts/init-db.js --test && npm start -- --port ${PORT}`
+      ? [
+          // Clean DB, build into isolated dist, then start prod server on PORT
+          `node scripts/init-db.js --test`,
+          `NEXT_DIST_DIR=${E2E_DIST_DIR} npm run build`,
+          `NEXT_DIST_DIR=${E2E_DIST_DIR} npm start -- --port ${PORT}`,
+        ].join(" && ")
       : `node scripts/init-db.js --test && npm run dev -- --port ${PORT}`,
     url: BASE_URL,
     // Always start a fresh server for E2E to guarantee a clean test DB
