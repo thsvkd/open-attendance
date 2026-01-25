@@ -28,10 +28,15 @@ export function calculateDistance(
 
 /**
  * Get the current device location using the Geolocation API
- * @param options - Optional Geolocation position options
+ * @param onProgress - Optional callback that receives accuracy when location is obtained
  * @returns Promise with latitude, longitude and accuracy
+ * @throws {InsecureOriginError} When not using HTTPS or localhost
+ * @throws {PermissionDeniedError} When user denies location permission
+ * @throws {GeolocationPositionError} When location cannot be obtained
  */
-export async function getCurrentLocation(options?: PositionOptions): Promise<{
+export async function getCurrentLocation(
+  onProgress?: (accuracy: number) => void,
+): Promise<{
   latitude: number;
   longitude: number;
   accuracy: number;
@@ -56,11 +61,13 @@ export async function getCurrentLocation(options?: PositionOptions): Promise<{
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        resolve({
+        const result = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
-        });
+        };
+        if (onProgress) onProgress(result.accuracy);
+        resolve(result);
       },
       (error) => {
         reject(error);
@@ -69,44 +76,8 @@ export async function getCurrentLocation(options?: PositionOptions): Promise<{
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-        ...options,
       },
     );
-  });
-}
-
-/**
- * Get the best possible location by trying cached location first for speed,
- * then falling back to high accuracy if needed.
- */
-export async function getBestLocation(): Promise<{
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-}> {
-  try {
-    // Try to get a cached position first (within 1 minute)
-    // This is much faster if the device has a recent fix
-    const cached = await getCurrentLocation({
-      enableHighAccuracy: false,
-      maximumAge: 60000,
-      timeout: 2000,
-    });
-
-    // If accuracy is good enough (under 100m), return it immediately
-    if (cached.accuracy < 100) {
-      return cached;
-    }
-  } catch (error) {
-    // Fall through to high accuracy request
-    console.debug("Cached location failed or was inaccurate:", error);
-  }
-
-  // Request fresh high accuracy location
-  return getCurrentLocation({
-    enableHighAccuracy: true,
-    maximumAge: 0,
-    timeout: 15000,
   });
 }
 
@@ -133,182 +104,6 @@ export function isWithinRadius(
   };
 }
 
-// Cache for location results
-let locationCache: {
-  position: { latitude: number; longitude: number; accuracy: number };
-  timestamp: number;
-} | null = null;
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Get the precise location by watching for updates and filtering by accuracy.
- * This is better than getCurrentPosition because it gives the GPS time to "warm up".
- *
- * @param onProgress - Optional callback for real-time accuracy updates
- * @param options - Configuration for accuracy thresholds and timeout. Set ignoreCache to true to force a new reading.
- */
-export async function getPreciseLocation(
-  onProgress?: (accuracy: number) => void,
-  options: {
-    targetAccuracy?: number; // meters (default: 50m)
-    minWaitTime?: number; // ms (default: 3000ms)
-    timeout?: number; // ms (default: 25000ms)
-    ignoreCache?: boolean;
-  } = {},
-): Promise<{
-  latitude: number;
-  longitude: number;
-  accuracy: number;
-}> {
-  if (typeof window === "undefined" || !navigator.geolocation) {
-    throw new Error("Geolocation is not supported by your browser");
-  }
-
-  if (!isSecureLocationContext()) {
-    throw new InsecureOriginError(
-      "Geolocation API blocked: use HTTPS or localhost for location access",
-    );
-  }
-
-  const permissionState = await getGeolocationPermissionState();
-  if (permissionState === "denied") {
-    locationCache = null;
-    throw new PermissionDeniedError(
-      "Geolocation permission denied. Enable location access to continue.",
-    );
-  }
-
-  // Check cache first
-  if (!options.ignoreCache && locationCache) {
-    const age = Date.now() - locationCache.timestamp;
-    if (age < CACHE_DURATION) {
-      if (onProgress) onProgress(locationCache.position.accuracy);
-      return locationCache.position;
-    }
-  }
-
-  const targetAccuracy = options.targetAccuracy ?? 50;
-  const minWaitTime = options.minWaitTime ?? 3000;
-  const timeout = options.timeout ?? 25000;
-
-  return new Promise((resolve, reject) => {
-    let bestPosition: GeolocationPosition | null = null;
-    let watchId: number | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
-    const startTime = Date.now();
-
-    const cleanup = () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-
-    const handleSuccess = (position: GeolocationPosition) => {
-      const accuracy = position.coords.accuracy;
-      if (onProgress) onProgress(accuracy);
-
-      if (!bestPosition || accuracy < bestPosition.coords.accuracy) {
-        bestPosition = position;
-      }
-
-      const timeElapsed = Date.now() - startTime;
-
-      const result = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: accuracy,
-      };
-
-      // Finish early if we met the strict target accuracy
-      if (accuracy <= targetAccuracy) {
-        cleanup();
-        locationCache = { position: result, timestamp: Date.now() };
-        resolve(result);
-        return;
-      }
-
-      // Finish if we've waited enough and accuracy is "good enough" (e.g., < 100m)
-      if (timeElapsed >= minWaitTime && accuracy <= 100) {
-        cleanup();
-        locationCache = { position: result, timestamp: Date.now() };
-        resolve(result);
-        return;
-      }
-    };
-
-    const handleError = (error: GeolocationPositionError) => {
-      // If we already have a position, use it instead of failing
-      if (bestPosition) {
-        cleanup();
-        const result = {
-          latitude: bestPosition.coords.latitude,
-          longitude: bestPosition.coords.longitude,
-          accuracy: bestPosition.coords.accuracy,
-        };
-        locationCache = { position: result, timestamp: Date.now() };
-        resolve(result);
-        return;
-      }
-
-      cleanup();
-      // Create a more descriptive error object since GeolocationPositionError properties are not enumerable
-      const enhancedError = new Error(error.message) as Error & {
-        code?: number;
-        originalError?: GeolocationPositionError;
-      };
-      enhancedError.code = error.code;
-      enhancedError.originalError = error;
-      reject(enhancedError);
-    };
-
-    // Set a global timeout to return the best we found so far
-    timeoutId = setTimeout(async () => {
-      cleanup();
-      if (bestPosition) {
-        const result = {
-          latitude: bestPosition.coords.latitude,
-          longitude: bestPosition.coords.longitude,
-          accuracy: bestPosition.coords.accuracy,
-        };
-        locationCache = { position: result, timestamp: Date.now() };
-        resolve(result);
-      } else {
-        // Last resort: try getCurrentPosition once with low accuracy
-        try {
-          const fallback = await new Promise<GeolocationPosition>(
-            (res, rej) => {
-              navigator.geolocation.getCurrentPosition(res, rej, {
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 60000,
-              });
-            },
-          );
-          const result = {
-            latitude: fallback.coords.latitude,
-            longitude: fallback.coords.longitude,
-            accuracy: fallback.coords.accuracy,
-          };
-          locationCache = { position: result, timestamp: Date.now() };
-          resolve(result);
-        } catch (_fallbackError) {
-          reject(new Error("Location request timed out and fallback failed"));
-        }
-      }
-    }, timeout + 500);
-
-    watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: timeout,
-    });
-  });
-}
-
 /**
  * Detect if the user is on a mobile device
  * @returns True if mobile, false otherwise
@@ -321,6 +116,7 @@ export function isMobileDevice(): boolean {
     navigator.userAgent,
   );
 }
+
 // Error thrown when Geolocation API is blocked due to insecure context
 export class InsecureOriginError extends Error {
   code = "INSECURE_ORIGIN" as const;
@@ -362,7 +158,8 @@ async function getGeolocationPermissionState(): Promise<
       name: "geolocation",
     } as PermissionDescriptor);
     return status.state;
-  } catch (_error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_) {
     return "unknown";
   }
 }

@@ -13,7 +13,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, XCircle, Loader2, MapPin } from "lucide-react";
 import axios from "axios";
-import { getPreciseLocation } from "@/lib/location-utils";
+import { getCurrentLocation } from "@/lib/location-utils";
 import { useTranslations } from "next-intl";
 
 export default function VerifyAttendancePage() {
@@ -43,7 +43,7 @@ export default function VerifyAttendancePage() {
       setMessage(t("gettingLocation"));
 
       // Get current location
-      const coords = await getPreciseLocation((acc) => setCurrentAccuracy(acc));
+      const coords = await getCurrentLocation((acc) => setCurrentAccuracy(acc));
 
       setMessage(t("verifyingLocation"));
 

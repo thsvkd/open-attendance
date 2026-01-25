@@ -20,12 +20,8 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
-import {
-  getPreciseLocation,
-  isMobileDevice,
-  InsecureOriginError,
-  PermissionDeniedError,
-} from "@/lib/location-utils";
+import { isMobileDevice } from "@/lib/location-utils";
+import { useLocation } from "@/hooks/use-location";
 import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -33,12 +29,6 @@ interface Attendance {
   id: string;
   checkIn: string | null;
   checkOut: string | null;
-}
-
-interface LocationValidation {
-  isWithinRadius: boolean;
-  distance: number;
-  allowedRadius: number;
 }
 
 interface CheckInCardProps {
@@ -54,10 +44,6 @@ export function CheckInCard({
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [attendance, setAttendance] = useState<Attendance | null>(null);
-  const [locationValidation, setLocationValidation] =
-    useState<LocationValidation | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [checkingLocation, setCheckingLocation] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrSessionToken, setQrSessionToken] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
@@ -67,6 +53,42 @@ export function CheckInCard({
   const t = useTranslations("dashboard");
   const formatter = useFormatter();
   const isMobile = isMobileDevice();
+
+  // Use the new useLocation hook with @uidotdev/usehooks' useGeolocation
+  const {
+    loading: checkingLocation,
+    accuracy: currentAccuracy,
+    error: locationError,
+    validation: locationValidation,
+    validating,
+    refresh: checkLocation,
+    getLocationData,
+  } = useLocation({
+    enabled: isLocationConfigured,
+    validateOnServer: isLocationConfigured,
+  });
+
+  // Get translated error message
+  const getLocationErrorMessage = useCallback(
+    (error: string | null): string | null => {
+      if (!error) return null;
+      switch (error) {
+        case "PERMISSION_DENIED":
+          return t("locationPermissionDenied");
+        case "POSITION_UNAVAILABLE":
+          return t("failedToGetLocation");
+        case "TIMEOUT":
+          return t("failedToGetLocation");
+        case "INSECURE_ORIGIN":
+          return t("locationRequiresHttps");
+        default:
+          return t("failedToGetLocation");
+      }
+    },
+    [t],
+  );
+
+  const translatedLocationError = getLocationErrorMessage(locationError);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -84,54 +106,9 @@ export function CheckInCard({
     }
   }, []);
 
-  const checkLocation = useCallback(
-    async (ignoreCache = false) => {
-      setCheckingLocation(true);
-      setLocationError(null);
-
-      try {
-        const coords = await getPreciseLocation(undefined, {
-          ignoreCache,
-        });
-
-        // Validate location with server
-        const res = await axios.post("/api/location/validate", {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-        });
-
-        setLocationValidation(res.data);
-      } catch (error: unknown) {
-        console.error(
-          "Location check error:",
-          error instanceof Error ? error.message : error,
-        );
-
-        if (error instanceof InsecureOriginError) {
-          setLocationError(t("locationRequiresHttps"));
-        } else if (
-          error instanceof PermissionDeniedError ||
-          (error as { code?: number }).code === 1
-        ) {
-          setLocationError(t("locationPermissionDenied"));
-        } else {
-          setLocationError(t("failedToGetLocation"));
-        }
-
-        setLocationValidation(null); // 실패 시 캐시된 거리 정보 제거
-      } finally {
-        setCheckingLocation(false);
-      }
-    },
-    [isLocationConfigured, t],
-  );
-
   useEffect(() => {
     fetchAttendance();
-    if (isLocationConfigured) {
-      checkLocation();
-    }
-  }, [isLocationConfigured, checkLocation, fetchAttendance]);
+  }, [fetchAttendance]);
 
   useEffect(() => {
     // Cleanup polling on unmount
@@ -141,14 +118,6 @@ export function CheckInCard({
       }
     };
   }, [pollingInterval]);
-
-  const getLocationData = async () => {
-    const coords = await getPreciseLocation();
-    return {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-    };
-  };
 
   const handleCheckIn = async () => {
     if (isMobile) {
@@ -173,12 +142,16 @@ export function CheckInCard({
   const performCheckIn = async () => {
     setActionLoading(true);
     try {
-      const locationData = await getLocationData();
+      const locationData = getLocationData();
+      if (!locationData) {
+        toast.error(t("failedToGetLocation"));
+        return;
+      }
 
       await axios.post("/api/attendance/check-in", locationData);
       toast.success(t("checkInSuccess"));
       fetchAttendance();
-      checkLocation();
+      await checkLocation();
     } catch (error: unknown) {
       console.error(
         "Check-in error:",
@@ -196,12 +169,16 @@ export function CheckInCard({
   const performCheckOut = async () => {
     setActionLoading(true);
     try {
-      const locationData = await getLocationData();
+      const locationData = getLocationData();
+      if (!locationData) {
+        toast.error(t("failedToGetLocation"));
+        return;
+      }
 
       await axios.post("/api/attendance/check-out", locationData);
       toast.success(t("checkOutSuccess"));
       fetchAttendance();
-      checkLocation();
+      await checkLocation();
     } catch (error: unknown) {
       console.error(
         "Check-out error:",
@@ -241,7 +218,7 @@ export function CheckInCard({
                 : t("checkOutSuccess"),
             );
             fetchAttendance();
-            checkLocation();
+            await checkLocation();
           } else if (
             statusRes.data.status === "EXPIRED" ||
             statusRes.data.status === "FAILED"
@@ -281,6 +258,7 @@ export function CheckInCard({
   const isButtonDisabled: boolean =
     actionLoading ||
     checkingLocation ||
+    validating ||
     !!(locationValidation && !locationValidation.isWithinRadius);
 
   if (loading) {
@@ -318,12 +296,13 @@ export function CheckInCard({
         <CardContent className="space-y-4">
           {/* Unified Location Status Alert */}
           {(checkingLocation ||
-            locationError ||
+            validating ||
+            translatedLocationError ||
             locationValidation ||
             !isLocationConfigured) && (
             <Alert
               variant={
-                locationError ||
+                translatedLocationError ||
                 (locationValidation && !locationValidation.isWithinRadius) ||
                 !isLocationConfigured
                   ? "destructive"
@@ -331,9 +310,9 @@ export function CheckInCard({
               }
             >
               <div className="flex items-center gap-2 w-full">
-                {checkingLocation ? (
+                {checkingLocation || validating ? (
                   <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                ) : locationError ||
+                ) : translatedLocationError ||
                   (locationValidation && !locationValidation.isWithinRadius) ||
                   !isLocationConfigured ? (
                   <AlertCircle className="h-4 w-4 shrink-0" />
@@ -362,14 +341,17 @@ export function CheckInCard({
                   )}
 
                   {/* 2. Location Error */}
-                  {isLocationConfigured && locationError && (
-                    <span className="font-medium">{locationError}</span>
+                  {isLocationConfigured && translatedLocationError && (
+                    <span className="font-medium">
+                      {translatedLocationError}
+                    </span>
                   )}
 
                   {/* 3. Validation Status */}
                   {isLocationConfigured &&
                     locationValidation &&
-                    !checkingLocation && (
+                    !checkingLocation &&
+                    !validating && (
                       <div className="flex flex-col">
                         <span className="font-medium">
                           {!locationValidation.isWithinRadius &&
@@ -384,11 +366,18 @@ export function CheckInCard({
                     )}
 
                   {/* 4. Checking Status (Sub-info) */}
-                  {checkingLocation && !locationValidation && (
+                  {(checkingLocation || validating) && !locationValidation && (
                     <div className="flex flex-col gap-1">
                       <span className="animate-pulse font-medium">
                         {t("updatingLocation")}
                       </span>
+                      {currentAccuracy && (
+                        <span className="text-xs font-mono text-primary animate-pulse">
+                          {t("locationAccuracy", {
+                            accuracy: Math.round(currentAccuracy),
+                          })}
+                        </span>
+                      )}
                     </div>
                   )}
                 </AlertDescription>
@@ -461,11 +450,11 @@ export function CheckInCard({
           )}
 
           {/* Refresh location button */}
-          {!checkingLocation && (
+          {!checkingLocation && !validating && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => checkLocation(true)}
+              onClick={() => checkLocation()}
               className="w-full"
             >
               {/* <MapPin className="mr-2 h-4 w-4" /> */}

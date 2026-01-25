@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { getPreciseLocation } from "@/lib/location-utils";
+import { getCurrentLocation } from "@/lib/location-utils";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -254,9 +254,7 @@ export function LocationSettings() {
       setSearchResults([]);
       setShowDropdown(false);
       setIsUpdatingLocation(true); // 버튼 클릭 시 즉시 로딩 상태 표시
-      const coords = await getPreciseLocation(undefined, {
-        ignoreCache: true,
-      });
+      const coords = await getCurrentLocation();
       reverseGeocode(coords.latitude, coords.longitude);
       toast.success(t("currentLocationSet"));
     } catch (error) {

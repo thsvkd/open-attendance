@@ -51,7 +51,11 @@
     "locationPermissionDenied": "위치 권한이 거부되었습니다. 근태 기능을 사용하려면 권한을 허용해주세요",
     "locationRequiresHttps": "HTTPS(또는 localhost)에서만 위치 접근이 가능합니다",
     "updatingLocation": "위치 업데이트 중...",
-    "locationAccuracy": "위치 정확도: {accuracy}m"
+    "locationAccuracy": "위치 정확도: {accuracy}m",
+    "locationAccuracyLow": "위치 정확도가 너무 낮아 출근할 수 없습니다",
+    "locationAccuracyRequired": "정확도가 {threshold}m 이하여야 합니다 (현재 {current}m)",
+    "waitingForBetterAccuracy": "더 나은 GPS 신호를 기다리는 중...",
+    "tryingToImproveAccuracy": "위치 정확도 개선 중..."
   },
   "earlyLeave": {
     "common": {
