@@ -1,14 +1,18 @@
 #!/bin/bash
 
-# Color definitions
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Test script for open-attendance project
+# Usage: ./scripts/test.sh [unit|e2e|all|watch]
 
-echo -e "${GREEN}======================================${NC}"
-echo -e "${GREEN}  Open Attendance - Test Runner${NC}"
-echo -e "${GREEN}======================================${NC}"
+set -e
+
+# Load utility functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils.sh"
+
+PROJECT_ROOT=$(get_project_root)
+cd "$PROJECT_ROOT"
+
+print_header "Open Attendance - Test Runner"
 echo ""
 
 # Choose test type
@@ -16,7 +20,7 @@ TEST_TYPE=${1:-all}
 
 # Check if valid test type
 if [[ ! "$TEST_TYPE" =~ ^(unit|e2e|all|watch)$ ]]; then
-  echo -e "${RED}Error: Invalid test type '${TEST_TYPE}'${NC}"
+  print_error "Invalid test type '${TEST_TYPE}'"
   echo ""
   echo "Usage: ./scripts/test.sh [unit|e2e|all|watch]"
   echo ""
@@ -29,66 +33,67 @@ if [[ ! "$TEST_TYPE" =~ ^(unit|e2e|all|watch)$ ]]; then
   exit 1
 fi
 
+# Ensure dependencies are installed for testing (use npm ci for production-like environment)
+ensure_node_modules "npm ci"
+
 # Set environment variables
 export NODE_ENV=test
 export DATABASE_URL="file:./test.db"
 export NEXTAUTH_URL="http://localhost:3000"
 export NEXTAUTH_SECRET="test-secret-key-for-testing-only"
 
-echo -e "${YELLOW}Environment: ${NODE_ENV}${NC}"
-echo -e "${YELLOW}Database: ${DATABASE_URL}${NC}"
+print_warning "Environment: ${NODE_ENV}"
+print_warning "Database: ${DATABASE_URL}"
 echo ""
 
 # Execute tests
 case "$TEST_TYPE" in
   unit)
-    echo -e "${GREEN}Running unit and integration tests...${NC}"
+    print_info "Running unit and integration tests..."
     npm run test
     ;;
   e2e)
-    echo -e "${GREEN}Running E2E tests...${NC}"
+    print_info "Running E2E tests..."
     npx playwright test
     E2E_EXIT_CODE=$?
     echo ""
-    echo -e "${YELLOW}To view the test report, run:${NC}"
+    print_warning "To view the test report, run:"
     echo -e "  npx playwright show-report"
     exit $E2E_EXIT_CODE
     ;;
   watch)
-    echo -e "${GREEN}Running tests in watch mode...${NC}"
+    print_info "Running tests in watch mode..."
     npm run test:watch
     ;;
   all)
-    echo -e "${GREEN}Running all tests...${NC}"
+    print_info "Running all tests..."
     echo ""
-    echo -e "${YELLOW}Step 1/2: Unit and Integration Tests${NC}"
+    print_warning "Step 1/2: Unit and Integration Tests"
     npm run test
     UNIT_TEST_EXIT_CODE=$?
     
     echo ""
-    echo -e "${YELLOW}Step 2/2: E2E Tests${NC}"
+    print_warning "Step 2/2: E2E Tests"
     npx playwright test
     E2E_TEST_EXIT_CODE=$?
     
     echo ""
-    echo -e "${GREEN}======================================${NC}"
-    echo -e "${GREEN}  Test Results Summary${NC}"
-    echo -e "${GREEN}======================================${NC}"
+    print_header "Test Results Summary"
     
     if [ $UNIT_TEST_EXIT_CODE -eq 0 ]; then
-      echo -e "${GREEN}✓ Unit/Integration Tests: PASSED${NC}"
+      print_success "Unit/Integration Tests: PASSED"
     else
-      echo -e "${RED}✗ Unit/Integration Tests: FAILED${NC}"
+      print_error "Unit/Integration Tests: FAILED"
     fi
     
     if [ $E2E_TEST_EXIT_CODE -eq 0 ]; then
-      echo -e "${GREEN}✓ E2E Tests: PASSED${NC}"
+      print_success "E2E Tests: PASSED"
     else
-      echo -e "${RED}✗ E2E Tests: FAILED${NC}"
+      print_error "E2E Tests: FAILED"
     fi
     
     echo ""
-    echo -e "${YELLOW}To view the E2E test report, run:${NC}"
+    print_warning "To view the E2E test report, run:"
     echo -e "  npx playwright show-report"
     echo ""
 
@@ -100,4 +105,4 @@ case "$TEST_TYPE" in
 esac
 
 echo ""
-echo -e "${GREEN}Tests completed!${NC}"
+print_success "Tests completed!"
