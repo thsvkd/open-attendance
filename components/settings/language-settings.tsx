@@ -42,8 +42,8 @@ export function LanguageSettings() {
               <SelectValue placeholder={t("selectLanguage")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ko">{t("korean")}</SelectItem>
-              <SelectItem value="en">{t("english")}</SelectItem>
+              <SelectItem value="ko">한국어</SelectItem>
+              <SelectItem value="en">English</SelectItem>
             </SelectContent>
           </Select>
         </div>

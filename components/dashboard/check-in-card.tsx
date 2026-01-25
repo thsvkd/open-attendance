@@ -20,7 +20,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
-import { getCurrentLocation, isMobileDevice } from "@/lib/location-utils";
+import { getBestLocation, isMobileDevice } from "@/lib/location-utils";
 import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -100,7 +100,7 @@ export function CheckInCard({
     setLocationError(null);
 
     try {
-      const coords = await getCurrentLocation();
+      const coords = await getBestLocation();
 
       // Validate location with server
       const res = await axios.post("/api/location/validate", {
@@ -123,7 +123,7 @@ export function CheckInCard({
   };
 
   const getLocationData = async () => {
-    const coords = await getCurrentLocation();
+    const coords = await getBestLocation();
     return {
       latitude: coords.latitude,
       longitude: coords.longitude,

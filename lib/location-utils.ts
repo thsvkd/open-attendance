@@ -28,14 +28,16 @@ export function calculateDistance(
 
 /**
  * Get the current device location using the Geolocation API
- * @returns Promise with latitude and longitude
+ * @param options - Optional Geolocation position options
+ * @returns Promise with latitude, longitude and accuracy
  */
-export async function getCurrentLocation(): Promise<{
+export async function getCurrentLocation(options?: PositionOptions): Promise<{
   latitude: number;
   longitude: number;
+  accuracy: number;
 }> {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
+    if (typeof window === "undefined" || !navigator.geolocation) {
       reject(new Error("Geolocation is not supported by your browser"));
       return;
     }
@@ -45,6 +47,7 @@ export async function getCurrentLocation(): Promise<{
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
         });
       },
       (error) => {
@@ -54,8 +57,44 @@ export async function getCurrentLocation(): Promise<{
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
+        ...options,
       },
     );
+  });
+}
+
+/**
+ * Get the best possible location by trying cached location first for speed,
+ * then falling back to high accuracy if needed.
+ */
+export async function getBestLocation(): Promise<{
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+}> {
+  try {
+    // Try to get a cached position first (within 1 minute)
+    // This is much faster if the device has a recent fix
+    const cached = await getCurrentLocation({
+      enableHighAccuracy: false,
+      maximumAge: 60000,
+      timeout: 2000,
+    });
+
+    // If accuracy is good enough (under 100m), return it immediately
+    if (cached.accuracy < 100) {
+      return cached;
+    }
+  } catch (error) {
+    // Fall through to high accuracy request
+    console.debug("Cached location failed or was inaccurate:", error);
+  }
+
+  // Request fresh high accuracy location
+  return getCurrentLocation({
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 15000,
   });
 }
 

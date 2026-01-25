@@ -3,6 +3,7 @@
 import { Map, MapMarker, useKakaoLoader } from "react-kakao-maps-sdk";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 interface LocationMapProps {
   latitude: number;
@@ -15,6 +16,7 @@ export default function LocationMap({
   longitude,
   onLocationChange,
 }: LocationMapProps) {
+  const t = useTranslations("settings.location");
   const [loading, error] = useKakaoLoader({
     appkey: process.env.NEXT_PUBLIC_KAKAO_API_KEY as string,
     libraries: ["services", "clusterer", "drawing"],
@@ -32,10 +34,9 @@ export default function LocationMap({
     return (
       <div className="h-full w-full flex flex-col items-center justify-center bg-destructive/5 text-destructive rounded-lg border border-destructive/20 p-6 text-center space-y-4">
         <div className="flex flex-col items-center gap-2">
-          <p className="font-bold text-lg">Kakao Maps 로드 실패</p>
+          <p className="font-bold text-lg">{t("kakaoLoadFailed")}</p>
           <p className="text-sm opacity-80 max-w-xs">
-            JavaScript 키가 올바른지, 그리고 Kakao Developers 설정에서 현재
-            도메인(localhost)이 등록되어 있는지 확인해주세요.
+            {t("kakaoLoadErrorDescription")}
           </p>
         </div>
         <Button
@@ -47,7 +48,7 @@ export default function LocationMap({
           }
         >
           <ExternalLink className="h-4 w-4" />
-          카카오 설정으로 이동
+          {t("goKakaoConsole")}
         </Button>
       </div>
     );

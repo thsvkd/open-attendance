@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { getCurrentLocation } from "@/lib/location-utils";
+import { getBestLocation } from "@/lib/location-utils";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -43,6 +43,9 @@ interface SearchResult {
   x: string; // longitude
   y: string; // latitude
   address_name: string;
+  place_name?: string;
+  category_name?: string;
+  type: "address" | "place";
 }
 
 interface ReverseGeocodeResult {
@@ -111,19 +114,66 @@ export function LocationSettings() {
 
     setIsSearching(true);
     try {
-      const ps = new window.kakao.maps.services.Geocoder();
-      ps.addressSearch(query, (data: SearchResult[], status: string) => {
-        if (status === window.kakao.maps.services.Status.OK) {
-          setSearchResults(data);
-          setShowDropdown(data.length > 0);
-        } else {
-          setSearchResults([]);
-          setShowDropdown(false);
-        }
-        setIsSearching(false);
-      });
+      const ps = new window.kakao.maps.services.Places();
+      const geocoder = new window.kakao.maps.services.Geocoder();
+
+      // Run both keyword and address search
+      const [places, addresses] = await Promise.all([
+        new Promise<SearchResult[]>((resolve) => {
+          ps.keywordSearch(query, (data: unknown, status: string) => {
+            if (status === window.kakao.maps.services.Status.OK) {
+              const list = data as Array<{
+                x: string;
+                y: string;
+                address_name: string;
+                road_address_name?: string;
+                place_name?: string;
+                category_name?: string;
+              }>;
+              resolve(
+                list.map((item) => ({
+                  x: item.x,
+                  y: item.y,
+                  address_name: item.road_address_name || item.address_name,
+                  place_name: item.place_name,
+                  category_name: item.category_name?.split(">").pop()?.trim(),
+                  type: "place",
+                })),
+              );
+            } else {
+              resolve([]);
+            }
+          });
+        }),
+        new Promise<SearchResult[]>((resolve) => {
+          geocoder.addressSearch(query, (data: unknown, status: string) => {
+            if (status === window.kakao.maps.services.Status.OK) {
+              const list = data as Array<{
+                x: string;
+                y: string;
+                address_name: string;
+              }>;
+              resolve(
+                list.map((item) => ({
+                  x: item.x,
+                  y: item.y,
+                  address_name: item.address_name,
+                  type: "address",
+                })),
+              );
+            } else {
+              resolve([]);
+            }
+          });
+        }),
+      ]);
+
+      const combined = [...places, ...addresses];
+      setSearchResults(combined);
+      setShowDropdown(combined.length > 0);
+      setIsSearching(false);
     } catch (error) {
-      console.error("Address search error:", error);
+      console.error("Search error:", error);
       setIsSearching(false);
     }
   };
@@ -140,7 +190,7 @@ export function LocationSettings() {
       address: result.address_name,
     }));
 
-    setSearchQuery(result.address_name);
+    setSearchQuery(result.place_name || result.address_name);
     setShowDropdown(false);
     setSearchResults([]);
   };
@@ -195,12 +245,12 @@ export function LocationSettings() {
   const handleUseCurrentLocation = async () => {
     try {
       toast.info(t("gettingLocation"));
-      const coords = await getCurrentLocation();
+      const coords = await getBestLocation();
       reverseGeocode(coords.latitude, coords.longitude);
       toast.success(t("currentLocationSet"));
     } catch (error) {
       console.error("Failed to get current location:", error);
-      toast.error("Failed to get current location");
+      toast.error(t("failedToGetCurrentLocation"));
     }
   };
 
@@ -225,7 +275,7 @@ export function LocationSettings() {
 
   const handleAddWifiNetwork = async () => {
     if (!newWifiSsid.trim()) {
-      toast.error("WiFi SSID is required");
+      toast.error(t("wifiSsidRequired"));
       return;
     }
 
@@ -234,24 +284,24 @@ export function LocationSettings() {
         ssid: newWifiSsid,
         bssid: newWifiBssid || undefined,
       });
-      toast.success("WiFi network added");
+      toast.success(t("wifiAdded"));
       setNewWifiSsid("");
       setNewWifiBssid("");
       fetchLocation();
     } catch (error) {
       console.error("Failed to add WiFi network:", error);
-      toast.error("Failed to add WiFi network");
+      toast.error(t("wifiAddFailed"));
     }
   };
 
   const handleRemoveWifiNetwork = async (wifiId: string) => {
     try {
       await axios.delete(`/api/settings/location/wifi/${wifiId}`);
-      toast.success("WiFi network removed");
+      toast.success(t("wifiRemoved"));
       fetchLocation();
     } catch (error) {
       console.error("Failed to remove WiFi network:", error);
-      toast.error("Failed to remove WiFi network");
+      toast.error(t("wifiRemoveFailed"));
     }
   };
 
@@ -308,9 +358,27 @@ export function LocationSettings() {
                       >
                         <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-primary/70" />
                         <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="font-medium truncate">
-                            {result.address_name}
-                          </span>
+                          {result.place_name ? (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold truncate text-base">
+                                  {result.place_name}
+                                </span>
+                                {result.category_name && (
+                                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider shrink-0">
+                                    {result.category_name}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-muted-foreground truncate leading-relaxed">
+                                {result.address_name}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-medium truncate text-base py-1">
+                              {result.address_name}
+                            </span>
+                          )}
                         </div>
                       </button>
                     ))}
@@ -437,7 +505,7 @@ export function LocationSettings() {
                 <Input
                   value={newWifiSsid}
                   onChange={(e) => setNewWifiSsid(e.target.value)}
-                  placeholder="Company WiFi"
+                  placeholder={t("wifiSsidPlaceholder")}
                 />
               </div>
               <div className="space-y-2">

@@ -13,9 +13,12 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, XCircle, Loader2, MapPin } from "lucide-react";
 import axios from "axios";
-import { getCurrentLocation } from "@/lib/location-utils";
+import { getBestLocation } from "@/lib/location-utils";
+import { useTranslations } from "next-intl";
 
 export default function VerifyAttendancePage() {
+  const t = useTranslations("verification");
+  const td = useTranslations("dashboard");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -23,25 +26,25 @@ export default function VerifyAttendancePage() {
     "loading" | "success" | "failed" | "expired"
   >(() => (!token ? "failed" : "loading"));
   const [message, setMessage] = useState(() =>
-    !token ? "Invalid verification link" : "",
+    !token ? t("invalidLink") : "",
   );
   const [action, setAction] = useState<"CHECK_IN" | "CHECK_OUT" | null>(null);
 
   const verifyLocation = async () => {
     if (!token) {
       setStatus("failed");
-      setMessage("Invalid verification link");
+      setMessage(t("invalidLink"));
       return;
     }
 
     try {
       setStatus("loading");
-      setMessage("Getting your location...");
+      setMessage(t("gettingLocation"));
 
       // Get current location
-      const coords = await getCurrentLocation();
+      const coords = await getBestLocation();
 
-      setMessage("Verifying location...");
+      setMessage(t("verifyingLocation"));
 
       // Submit location for verification
       const res = await axios.post("/api/attendance/qr-verify", {
@@ -51,20 +54,26 @@ export default function VerifyAttendancePage() {
       });
 
       setStatus("success");
-      setAction(res.data.action);
+      const verifiedAction = res.data.action;
+      setAction(verifiedAction);
       setMessage(
-        res.data.action === "CHECK_IN"
-          ? "Check-in successful!"
-          : "Check-out successful!",
+        verifiedAction === "CHECK_IN"
+          ? t("checkInSuccess")
+          : t("checkOutSuccess"),
       );
     } catch (error: unknown) {
       console.error("Verification error:", error);
-      const errorMsg =
+      let errorMsg =
         (error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || "Verification failed";
+          ?.error || t("verifyFailed");
 
+      // Attempt to localize known error messages
       if (errorMsg.includes("expired")) {
         setStatus("expired");
+        errorMsg = td("verificationExpired");
+      } else if (errorMsg.includes("too far")) {
+        setStatus("failed");
+        errorMsg = td("tooFarFromOffice");
       } else {
         setStatus("failed");
       }
@@ -82,9 +91,9 @@ export default function VerifyAttendancePage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center">Attendance Verification</CardTitle>
+          <CardTitle className="text-center">{t("title")}</CardTitle>
           <CardDescription className="text-center">
-            Location-based attendance verification
+            {t("description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -104,31 +113,27 @@ export default function VerifyAttendancePage() {
                 </AlertDescription>
               </Alert>
               <p className="text-sm text-center text-muted-foreground">
-                You can close this page now. Your{" "}
-                {action === "CHECK_IN" ? "check-in" : "check-out"} has been
-                recorded.
+                {t("closePage", {
+                  action:
+                    action === "CHECK_IN" ? td("checkIn") : td("checkOut"),
+                })}
               </p>
             </>
           )}
 
-          {status === "failed" && (
+          {(status === "failed" || status === "expired") && (
             <>
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
-              <Button onClick={verifyLocation} className="w-full">
-                <MapPin className="mr-2 h-4 w-4" />
-                Try Again
-              </Button>
+              {status === "failed" && (
+                <Button onClick={verifyLocation} className="w-full">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  {t("tryAgain")}
+                </Button>
+              )}
             </>
-          )}
-
-          {status === "expired" && (
-            <Alert variant="destructive">
-              <XCircle className="h-4 w-4" />
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
           )}
         </CardContent>
       </Card>

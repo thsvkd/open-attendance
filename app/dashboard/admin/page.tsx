@@ -496,8 +496,12 @@ export default function AdminPage() {
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="USER">USER</SelectItem>
-                          <SelectItem value="ADMIN">ADMIN</SelectItem>
+                          <SelectItem value="USER">
+                            {tc("roles.USER")}
+                          </SelectItem>
+                          <SelectItem value="ADMIN">
+                            {tc("roles.ADMIN")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -573,6 +577,7 @@ export default function AdminPage() {
                             <Badge
                               statusType="role"
                               status={user.role || "USER"}
+                              label={tc(`roles.${user.role || "USER"}`)}
                             />
                           </TableCell>
                           <TableCell className="text-sm">
@@ -628,6 +633,7 @@ export default function AdminPage() {
                               <Badge
                                 statusType="role"
                                 status={user.role || "USER"}
+                                label={tc(`roles.${user.role || "USER"}`)}
                               />
                             </div>
                             <div className="flex items-center justify-between text-sm">
@@ -746,8 +752,8 @@ export default function AdminPage() {
                     <SelectValue placeholder={t("members.form.selectRole")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="USER">USER</SelectItem>
-                    <SelectItem value="ADMIN">ADMIN</SelectItem>
+                    <SelectItem value="USER">{tc("roles.USER")}</SelectItem>
+                    <SelectItem value="ADMIN">{tc("roles.ADMIN")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
