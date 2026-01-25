@@ -16,7 +16,8 @@
     "myAttendance": "My Attendance",
     "earlyLeave": "Early Leave/Absence",
     "annualLeave": "Annual Leave",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "settings": "Settings"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -28,7 +29,15 @@
     "checkInFailed": "Failed to check in.",
     "checkOutSuccess": "Checked out successfully.",
     "checkOutFailed": "Failed to check out.",
-    "dayComplete": "Day Complete"
+    "dayComplete": "Day Complete",
+    "tooFarFromOffice": "You are too far from the office",
+    "distanceFromOffice": "Distance from office: {distance}m",
+    "locationRequired": "Location access required",
+    "grantLocationPermission": "Please grant location permission to check in/out",
+    "scanQrToVerify": "Scan QR code with your phone to verify location",
+    "waitingForVerification": "Waiting for verification...",
+    "verificationExpired": "Verification expired. Please try again.",
+    "locationVerificationFailed": "Location verification failed"
   },
   "earlyLeave": {
     "common": {
@@ -205,6 +214,44 @@
       "employee": "Employee",
       "role": "Role",
       "joinedAt": "Joined At"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your application settings",
+    "tabs": {
+      "location": "Location",
+      "appearance": "Appearance",
+      "language": "Language"
+    },
+    "location": {
+      "title": "Company Location",
+      "description": "Set your company location for location-based attendance",
+      "searchPlaceholder": "Search for an address...",
+      "currentLocation": "Use current location",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "radius": "Allowed radius (meters)",
+      "address": "Address",
+      "saveLocation": "Save Location",
+      "saveSuccess": "Location saved successfully",
+      "saveFailed": "Failed to save location",
+      "wifiNetworks": "Registered WiFi Networks",
+      "addWifiNetwork": "Add WiFi Network",
+      "wifiSsid": "WiFi Network Name (SSID)",
+      "wifiBssid": "MAC Address (BSSID - Optional)",
+      "removeWifi": "Remove",
+      "noWifiNetworks": "No WiFi networks registered",
+      "locationNotSet": "Company location not set. Please configure it in settings.",
+      "gettingLocation": "Getting your location..."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
     }
   },
   "auth": {

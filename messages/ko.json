@@ -16,7 +16,8 @@
     "myAttendance": "내 근태",
     "earlyLeave": "조퇴/결근",
     "annualLeave": "연차 관리",
-    "adminPanel": "관리자 페이지"
+    "adminPanel": "관리자 페이지",
+    "settings": "설정"
   },
   "dashboard": {
     "title": "대시보드",
@@ -28,7 +29,15 @@
     "checkInFailed": "출근 처리에 실패했습니다.",
     "checkOutSuccess": "퇴근 처리가 완료되었습니다.",
     "checkOutFailed": "퇴근 처리에 실패했습니다.",
-    "dayComplete": "오늘 근무 종료"
+    "dayComplete": "오늘 근무 종료",
+    "tooFarFromOffice": "회사와의 거리가 너무 멉니다",
+    "distanceFromOffice": "회사로부터의 거리: {distance}m",
+    "locationRequired": "위치 권한이 필요합니다",
+    "grantLocationPermission": "출퇴근을 하려면 위치 권한을 허용해주세요",
+    "scanQrToVerify": "스마트폰으로 QR 코드를 스캔하여 위치를 인증하세요",
+    "waitingForVerification": "인증 대기 중...",
+    "verificationExpired": "인증 시간이 만료되었습니다. 다시 시도해주세요.",
+    "locationVerificationFailed": "위치 인증에 실패했습니다"
   },
   "earlyLeave": {
     "common": {
@@ -205,6 +214,44 @@
       "employee": "직원",
       "role": "권한",
       "joinedAt": "입사일"
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "description": "애플리케이션 설정을 관리합니다",
+    "tabs": {
+      "location": "위치 설정",
+      "appearance": "화면 설정",
+      "language": "언어 설정"
+    },
+    "location": {
+      "title": "회사 위치",
+      "description": "위치 기반 출퇴근을 위한 회사 위치를 설정합니다",
+      "searchPlaceholder": "주소를 검색하세요...",
+      "currentLocation": "현재 위치 사용",
+      "latitude": "위도",
+      "longitude": "경도",
+      "radius": "허용 반경 (미터)",
+      "address": "주소",
+      "saveLocation": "위치 저장",
+      "saveSuccess": "위치가 저장되었습니다",
+      "saveFailed": "위치 저장에 실패했습니다",
+      "wifiNetworks": "등록된 WiFi 네트워크",
+      "addWifiNetwork": "WiFi 네트워크 추가",
+      "wifiSsid": "WiFi 네트워크 이름 (SSID)",
+      "wifiBssid": "MAC 주소 (BSSID - 선택사항)",
+      "removeWifi": "삭제",
+      "noWifiNetworks": "등록된 WiFi 네트워크가 없습니다",
+      "locationNotSet": "회사 위치가 설정되지 않았습니다. 설정에서 구성해주세요.",
+      "gettingLocation": "위치를 가져오는 중..."
+    },
+    "appearance": {
+      "title": "화면 설정",
+      "description": "테마를 설정합니다",
+      "theme": "테마",
+      "light": "라이트",
+      "dark": "다크",
+      "system": "시스템"
     }
   },
   "auth": {
