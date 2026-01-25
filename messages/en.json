@@ -9,7 +9,8 @@
     "selectTime": "Select time",
     "confirm": "Confirm",
     "pickDate": "Pick a date",
-    "toggleLanguage": "Toggle language"
+    "toggleLanguage": "Toggle language",
+    "comingSoon": "Coming soon"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -38,7 +39,9 @@
     "waitingForVerification": "Waiting for verification...",
     "verificationExpired": "Verification expired. Please try again.",
     "locationVerificationFailed": "Location verification failed",
-    "refreshLocation": "Refresh Location"
+    "refreshLocation": "Refresh Location",
+    "locationNotConfigured": "Company location is not configured.",
+    "goToSettings": "Go to settings"
   },
   "earlyLeave": {
     "common": {
@@ -236,6 +239,7 @@
       "address": "Address",
       "saveLocation": "Save Location",
       "saveSuccess": "Location saved successfully",
+      "currentLocationSet": "Current location set",
       "saveFailed": "Failed to save location",
       "wifiNetworks": "Registered WiFi Networks",
       "addWifiNetwork": "Add WiFi Network",
@@ -244,7 +248,8 @@
       "removeWifi": "Remove",
       "noWifiNetworks": "No WiFi networks registered",
       "locationNotSet": "Company location not set. Please configure it in settings.",
-      "gettingLocation": "Getting your location..."
+      "gettingLocation": "Getting your location...",
+      "noResultsFound": "No results found"
     },
     "appearance": {
       "title": "Appearance",
@@ -253,6 +258,13 @@
       "light": "Light",
       "dark": "Dark",
       "system": "System"
+    },
+    "language": {
+      "title": "Language Settings",
+      "description": "Change the language of the application",
+      "selectLanguage": "Select Language",
+      "korean": "Korean",
+      "english": "English"
     }
   },
   "auth": {

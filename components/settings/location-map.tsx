@@ -1,19 +1,8 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { useEffect } from "react";
-
-// Fix for default marker icon in react-leaflet
-const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+import { Map, MapMarker, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Loader2, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LocationMapProps {
   latitude: number;
@@ -21,55 +10,71 @@ interface LocationMapProps {
   onLocationChange: (lat: number, lng: number) => void;
 }
 
-function MapEventHandler({
-  onLocationChange,
-}: {
-  onLocationChange: (lat: number, lng: number) => void;
-}) {
-  useMapEvents({
-    click: (e) => {
-      onLocationChange(e.latlng.lat, e.latlng.lng);
-    },
-  });
-
-  return null;
-}
-
-function MapUpdater({
-  latitude,
-  longitude,
-}: {
-  latitude: number;
-  longitude: number;
-}) {
-  const map = useMapEvents({});
-
-  useEffect(() => {
-    map.setView([latitude, longitude], map.getZoom());
-  }, [latitude, longitude, map]);
-
-  return null;
-}
-
 export default function LocationMap({
   latitude,
   longitude,
   onLocationChange,
 }: LocationMapProps) {
+  const [loading, error] = useKakaoLoader({
+    appkey: process.env.NEXT_PUBLIC_KAKAO_API_KEY as string,
+    libraries: ["services", "clusterer", "drawing"],
+  });
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-muted rounded-lg">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center bg-destructive/5 text-destructive rounded-lg border border-destructive/20 p-6 text-center space-y-4">
+        <div className="flex flex-col items-center gap-2">
+          <p className="font-bold text-lg">Kakao Maps 로드 실패</p>
+          <p className="text-sm opacity-80 max-w-xs">
+            JavaScript 키가 올바른지, 그리고 Kakao Developers 설정에서 현재
+            도메인(localhost)이 등록되어 있는지 확인해주세요.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() =>
+            window.open("https://developers.kakao.com/console/app", "_blank")
+          }
+        >
+          <ExternalLink className="h-4 w-4" />
+          카카오 설정으로 이동
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <MapContainer
-      center={[latitude, longitude]}
-      zoom={15}
-      style={{ height: "100%", width: "100%" }}
-      scrollWheelZoom={true}
+    <Map
+      center={{ lat: latitude, lng: longitude }}
+      style={{ width: "100%", height: "100%" }}
+      level={3}
+      onClick={(_t, mouseEvent) => {
+        onLocationChange(
+          mouseEvent.latLng.getLat(),
+          mouseEvent.latLng.getLng(),
+        );
+      }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      <MapMarker
+        position={{ lat: latitude, lng: longitude }}
+        draggable={true}
+        onDragEnd={(marker) => {
+          onLocationChange(
+            marker.getPosition().getLat(),
+            marker.getPosition().getLng(),
+          );
+        }}
       />
-      <Marker position={[latitude, longitude]} icon={icon} />
-      <MapEventHandler onLocationChange={onLocationChange} />
-      <MapUpdater latitude={latitude} longitude={longitude} />
-    </MapContainer>
+    </Map>
   );
 }

@@ -4,9 +4,11 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
 import { LocationSettings } from "@/components/settings/location-settings";
+import { LanguageSettings } from "@/components/settings/language-settings";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const [activeTab, setActiveTab] = useState("location");
 
   return (
@@ -20,6 +22,7 @@ export default function SettingsPage() {
         <TabsList>
           <TabsTrigger value="location">{t("tabs.location")}</TabsTrigger>
           <TabsTrigger value="appearance">{t("tabs.appearance")}</TabsTrigger>
+          <TabsTrigger value="language">{t("tabs.language")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="location" className="space-y-4">
@@ -28,8 +31,12 @@ export default function SettingsPage() {
 
         <TabsContent value="appearance" className="space-y-4">
           <div className="text-muted-foreground">
-            {t("appearance.description")} (Coming soon)
+            {t("appearance.description")} ({tCommon("comingSoon")})
           </div>
+        </TabsContent>
+
+        <TabsContent value="language" className="space-y-4">
+          <LanguageSettings />
         </TabsContent>
       </Tabs>
     </div>

@@ -9,7 +9,8 @@
     "selectTime": "시간 선택",
     "confirm": "확인",
     "pickDate": "날짜 선택",
-    "toggleLanguage": "언어 전환"
+    "toggleLanguage": "언어 전환",
+    "comingSoon": "준비 중"
   },
   "nav": {
     "dashboard": "대시보드",
@@ -38,7 +39,9 @@
     "waitingForVerification": "인증 대기 중...",
     "verificationExpired": "인증 시간이 만료되었습니다. 다시 시도해주세요.",
     "locationVerificationFailed": "위치 인증에 실패했습니다",
-    "refreshLocation": "위치 새로고침"
+    "refreshLocation": "위치 새로고침",
+    "locationNotConfigured": "회사 위치가 설정되지 않았습니다.",
+    "goToSettings": "설정으로 이동"
   },
   "earlyLeave": {
     "common": {
@@ -236,6 +239,7 @@
       "address": "주소",
       "saveLocation": "위치 저장",
       "saveSuccess": "위치가 저장되었습니다",
+      "currentLocationSet": "현재 위치로 설정되었습니다",
       "saveFailed": "위치 저장에 실패했습니다",
       "wifiNetworks": "등록된 WiFi 네트워크",
       "addWifiNetwork": "WiFi 네트워크 추가",
@@ -244,7 +248,8 @@
       "removeWifi": "삭제",
       "noWifiNetworks": "등록된 WiFi 네트워크가 없습니다",
       "locationNotSet": "회사 위치가 설정되지 않았습니다. 설정에서 구성해주세요.",
-      "gettingLocation": "위치를 가져오는 중..."
+      "gettingLocation": "위치를 가져오는 중...",
+      "noResultsFound": "검색 결과가 없습니다"
     },
     "appearance": {
       "title": "화면 설정",
@@ -253,6 +258,13 @@
       "light": "라이트",
       "dark": "다크",
       "system": "시스템"
+    },
+    "language": {
+      "title": "언어 설정",
+      "description": "애플리케이션의 언어를 변경합니다",
+      "selectLanguage": "언어 선택",
+      "korean": "한국어",
+      "english": "영어"
     }
   },
   "auth": {

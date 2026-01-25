@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
@@ -37,7 +36,15 @@ interface LocationValidation {
   allowedRadius: number;
 }
 
-export function CheckInCard() {
+interface CheckInCardProps {
+  isCompanyLocationConfigured: boolean;
+  isAdmin: boolean;
+}
+
+export function CheckInCard({
+  isCompanyLocationConfigured: isLocationConfigured,
+  isAdmin,
+}: CheckInCardProps) {
   const [now, setNow] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -48,9 +55,6 @@ export function CheckInCard() {
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrSessionToken, setQrSessionToken] = useState<string | null>(null);
-  const [qrAction, setQrAction] = useState<"CHECK_IN" | "CHECK_OUT" | null>(
-    null,
-  );
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
     null,
   );
@@ -66,8 +70,10 @@ export function CheckInCard() {
 
   useEffect(() => {
     fetchAttendance();
-    checkLocation();
-  }, []);
+    if (isLocationConfigured) {
+      checkLocation();
+    }
+  }, [isLocationConfigured]);
 
   useEffect(() => {
     // Cleanup polling on unmount
@@ -105,9 +111,11 @@ export function CheckInCard() {
       setLocationValidation(res.data);
     } catch (error: unknown) {
       console.error("Location check error:", error);
+      const data = (
+        error as { response?: { data?: { error?: string; message?: string } } }
+      ).response?.data;
       setLocationError(
-        (error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || "Failed to get location",
+        data?.error || data?.message || "Failed to get location",
       );
     } finally {
       setCheckingLocation(false);
@@ -153,10 +161,10 @@ export function CheckInCard() {
       checkLocation();
     } catch (error: unknown) {
       console.error("Check-in error:", error);
-      toast.error(
-        (error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || t("checkInFailed"),
-      );
+      const data = (
+        error as { response?: { data?: { error?: string; message?: string } } }
+      ).response?.data;
+      toast.error(data?.error || data?.message || t("checkInFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -173,10 +181,10 @@ export function CheckInCard() {
       checkLocation();
     } catch (error: unknown) {
       console.error("Check-out error:", error);
-      toast.error(
-        (error as { response?: { data?: { error?: string } } }).response?.data
-          ?.error || t("checkOutFailed"),
-      );
+      const data = (
+        error as { response?: { data?: { error?: string; message?: string } } }
+      ).response?.data;
+      toast.error(data?.error || data?.message || t("checkOutFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -188,7 +196,6 @@ export function CheckInCard() {
       // Create QR session
       const res = await axios.post("/api/attendance/qr-session", { action });
       setQrSessionToken(res.data.sessionToken);
-      setQrAction(action);
       setShowQrModal(true);
 
       // Start polling for verification
@@ -243,7 +250,6 @@ export function CheckInCard() {
     }
     setShowQrModal(false);
     setQrSessionToken(null);
-    setQrAction(null);
   };
 
   const isButtonDisabled: boolean =
@@ -294,7 +300,27 @@ export function CheckInCard() {
             </Alert>
           )}
 
-          {locationError && (
+          {!isLocationConfigured && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {t("locationNotConfigured")}
+                {isAdmin && (
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto ml-2 font-bold underline"
+                    onClick={() =>
+                      (window.location.href = "/dashboard/settings")
+                    }
+                  >
+                    {t("goToSettings")}
+                  </Button>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isLocationConfigured && locationError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{locationError}</AlertDescription>
@@ -331,7 +357,10 @@ export function CheckInCard() {
               </p>
               <p className="text-xl font-bold">
                 {attendance?.checkIn
-                  ? format(new Date(attendance.checkIn), "p")
+                  ? formatter.dateTime(new Date(attendance.checkIn), {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })
                   : "--:--"}
               </p>
             </div>
@@ -341,7 +370,10 @@ export function CheckInCard() {
               </p>
               <p className="text-xl font-bold">
                 {attendance?.checkOut
-                  ? format(new Date(attendance.checkOut), "p")
+                  ? formatter.dateTime(new Date(attendance.checkOut), {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })
                   : "--:--"}
               </p>
             </div>
@@ -409,8 +441,7 @@ export function CheckInCard() {
               <>
                 <QRCodeCanvas value={qrUrl} size={256} level="H" />
                 <p className="text-sm text-muted-foreground text-center">
-                  Scan this QR code with your smartphone to complete{" "}
-                  {qrAction === "CHECK_IN" ? "check-in" : "check-out"}
+                  {t("scanQrToVerify")}
                 </p>
               </>
             )}

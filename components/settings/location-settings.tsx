@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getCurrentLocation } from "@/lib/location-utils";
+import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
 const LocationMap = dynamic(
@@ -38,6 +39,21 @@ interface CompanyLocation {
   }>;
 }
 
+interface SearchResult {
+  x: string; // longitude
+  y: string; // latitude
+  address_name: string;
+}
+
+interface ReverseGeocodeResult {
+  address: {
+    address_name: string;
+  };
+  road_address: {
+    address_name: string;
+  } | null;
+}
+
 export function LocationSettings() {
   const t = useTranslations("settings.location");
   const [loading, setLoading] = useState(true);
@@ -48,8 +64,116 @@ export function LocationSettings() {
     radius: 100,
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [newWifiSsid, setNewWifiSsid] = useState("");
   const [newWifiBssid, setNewWifiBssid] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isManualChange = useRef(false);
+
+  // Load Kakao Maps SDK at the settings level
+  useKakaoLoader({
+    appkey: process.env.NEXT_PUBLIC_KAKAO_API_KEY as string,
+    libraries: ["services"],
+  });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (isManualChange.current && searchQuery.length > 2) {
+        searchAddress(searchQuery);
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const searchAddress = async (query: string) => {
+    if (typeof window === "undefined" || !window.kakao || !window.kakao.maps)
+      return;
+
+    setIsSearching(true);
+    try {
+      const ps = new window.kakao.maps.services.Geocoder();
+      ps.addressSearch(query, (data: SearchResult[], status: string) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          setSearchResults(data);
+          setShowDropdown(data.length > 0);
+        } else {
+          setSearchResults([]);
+          setShowDropdown(false);
+        }
+        setIsSearching(false);
+      });
+    } catch (error) {
+      console.error("Address search error:", error);
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectAddress = (result: SearchResult) => {
+    const lat = parseFloat(result.y);
+    const lon = parseFloat(result.x);
+
+    isManualChange.current = false;
+    setLocation((prev: CompanyLocation) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lon,
+      address: result.address_name,
+    }));
+
+    setSearchQuery(result.address_name);
+    setShowDropdown(false);
+    setSearchResults([]);
+  };
+
+  const reverseGeocode = (lat: number, lng: number) => {
+    if (typeof window === "undefined" || !window.kakao || !window.kakao.maps)
+      return;
+
+    isManualChange.current = false;
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    geocoder.coord2Address(
+      lng,
+      lat,
+      (result: ReverseGeocodeResult[], status: string) => {
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          const addr = result[0].address.address_name;
+          setLocation((prev: CompanyLocation) => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            address: addr,
+          }));
+          setSearchQuery(addr);
+        } else {
+          setLocation((prev: CompanyLocation) => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+          }));
+        }
+      },
+    );
+  };
 
   useEffect(() => {
     fetchLocation();
@@ -72,12 +196,8 @@ export function LocationSettings() {
     try {
       toast.info(t("gettingLocation"));
       const coords = await getCurrentLocation();
-      setLocation((prev) => ({
-        ...prev,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      }));
-      toast.success("Current location set");
+      reverseGeocode(coords.latitude, coords.longitude);
+      toast.success(t("currentLocationSet"));
     } catch (error) {
       console.error("Failed to get current location:", error);
       toast.error("Failed to get current location");
@@ -153,12 +273,64 @@ export function LocationSettings() {
         <CardContent className="space-y-6">
           {/* Search and Current Location */}
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            <div className="flex gap-2 relative">
+              <div className="relative flex-1" ref={dropdownRef}>
+                <div className="relative">
+                  <Input
+                    placeholder={t("searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      isManualChange.current = true;
+                      setSearchQuery(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setShowDropdown(true);
+                    }}
+                    className="pl-10 pr-10"
+                  />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Search Results Dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-2 bg-popover border rounded-xl shadow-2xl max-h-72 overflow-auto py-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {searchResults.map((result, index) => (
+                      <button
+                        key={index}
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-accent hover:text-accent-foreground flex items-start gap-3 transition-all first:pt-2 last:pb-2"
+                        onClick={() => handleSelectAddress(result)}
+                      >
+                        <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-primary/70" />
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="font-medium truncate">
+                            {result.address_name}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {searchQuery.length > 2 &&
+                  !isSearching &&
+                  showDropdown &&
+                  searchResults.length === 0 && (
+                    <div className="absolute z-50 w-full mt-2 bg-popover border rounded-xl shadow-xl py-8 text-center animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col items-center gap-2">
+                        <Search className="h-8 w-8 text-muted-foreground/30" />
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {t("noResultsFound")}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+              </div>
               <Button
                 variant="outline"
                 onClick={handleUseCurrentLocation}
@@ -176,11 +348,7 @@ export function LocationSettings() {
               latitude={location.latitude}
               longitude={location.longitude}
               onLocationChange={(lat, lng) => {
-                setLocation((prev) => ({
-                  ...prev,
-                  latitude: lat,
-                  longitude: lng,
-                }));
+                reverseGeocode(lat, lng);
               }}
             />
           </div>

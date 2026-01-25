@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import axios from "axios";
 import {
   Table,
@@ -83,12 +82,18 @@ export default function AttendancePage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {record.checkIn
-                          ? format(new Date(record.checkIn), "p")
+                          ? formatter.dateTime(new Date(record.checkIn), {
+                              hour: "numeric",
+                              minute: "numeric",
+                            })
                           : "-"}
                       </TableCell>
                       <TableCell className="text-center">
                         {record.checkOut
-                          ? format(new Date(record.checkOut), "p")
+                          ? formatter.dateTime(new Date(record.checkOut), {
+                              hour: "numeric",
+                              minute: "numeric",
+                            })
                           : "-"}
                       </TableCell>
                       <TableCell className="text-center">
@@ -135,7 +140,10 @@ export default function AttendancePage() {
                           </div>
                           <div className="font-medium">
                             {record.checkIn
-                              ? format(new Date(record.checkIn), "p")
+                              ? formatter.dateTime(new Date(record.checkIn), {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                })
                               : "-"}
                           </div>
                         </div>
@@ -145,7 +153,10 @@ export default function AttendancePage() {
                           </div>
                           <div className="font-medium">
                             {record.checkOut
-                              ? format(new Date(record.checkOut), "p")
+                              ? formatter.dateTime(new Date(record.checkOut), {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                })
                               : "-"}
                           </div>
                         </div>
