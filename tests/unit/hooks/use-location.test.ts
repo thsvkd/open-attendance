@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useLocation } from "@/hooks/use-location";
 import axios from "axios";
 
@@ -15,6 +15,12 @@ const mockedAxios = vi.mocked(axios, true);
 // Import the mocked useGeolocation
 import { useGeolocation } from "@uidotdev/usehooks";
 const mockedUseGeolocation = vi.mocked(useGeolocation);
+
+// Helper function to wait for async updates
+const waitForNextUpdate = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 
 describe("useLocation", () => {
   beforeEach(() => {
@@ -72,7 +78,7 @@ describe("useLocation", () => {
       },
     });
 
-    const { result, rerender } = renderHook(() =>
+    const { result } = renderHook(() =>
       useLocation({ enabled: true, validateOnServer: true }),
     );
 
@@ -81,14 +87,8 @@ describe("useLocation", () => {
     expect(result.current.longitude).toBe(126.978);
     expect(result.current.accuracy).toBe(50);
 
-    // Wait for validation to complete
-    await vi.waitFor(
-      () => {
-        rerender();
-        expect(result.current.validation).not.toBe(null);
-      },
-      { timeout: 1000 },
-    );
+    // Wait for validation to complete using act
+    await waitForNextUpdate();
 
     expect(result.current.validation?.isWithinRadius).toBe(true);
   });
@@ -194,7 +194,7 @@ describe("useLocation", () => {
     expect(result.current.error).toBe("INSECURE_ORIGIN");
   });
 
-  it("should allow localhost in insecure context", () => {
+  it("should allow localhost in insecure context", async () => {
     global.window = {
       isSecureContext: false,
       location: {
@@ -215,13 +215,19 @@ describe("useLocation", () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    // Disable server validation to avoid act warnings from async validation
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, validateOnServer: false }),
+    );
 
-    // Should not have insecure origin error
+    // Wait for useEffect to complete
+    await waitForNextUpdate();
+
+    // Should not have insecure origin error for localhost
     expect(result.current.error).not.toBe("INSECURE_ORIGIN");
   });
 
-  it("should return location data via getLocationData", () => {
+  it("should return location data via getLocationData", async () => {
     mockedUseGeolocation.mockReturnValue({
       loading: false,
       accuracy: 50,
@@ -235,7 +241,13 @@ describe("useLocation", () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    // Disable server validation to avoid act warnings
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, validateOnServer: false }),
+    );
+
+    // Wait for useEffect to settle
+    await waitForNextUpdate();
 
     const locationData = result.current.getLocationData();
     expect(locationData).toEqual({
