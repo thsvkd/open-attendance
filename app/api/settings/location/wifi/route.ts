@@ -19,6 +19,13 @@ export async function POST(req: Request) {
       return errorResponse("SSID is required", 400);
     }
 
+    if (bssid && typeof bssid === "string") {
+      const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+      if (!macRegex.test(bssid)) {
+        return errorResponse("Invalid MAC address format", 400);
+      }
+    }
+
     // Get active company location
     const location = await db.companyLocation.findFirst({
       where: { isActive: true },
@@ -33,7 +40,7 @@ export async function POST(req: Request) {
       data: {
         companyLocationId: location.id,
         ssid,
-        bssid: bssid || null,
+        bssid: bssid ? bssid.toUpperCase() : null,
       },
     });
 

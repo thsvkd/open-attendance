@@ -288,10 +288,18 @@ export function LocationSettings() {
       return;
     }
 
+    if (newWifiBssid.trim()) {
+      const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+      if (!macRegex.test(newWifiBssid.trim())) {
+        toast.error(t("invalidMacAddress"));
+        return;
+      }
+    }
+
     try {
       await axios.post("/api/settings/location/wifi", {
         ssid: newWifiSsid,
-        bssid: newWifiBssid || undefined,
+        bssid: newWifiBssid.trim().toUpperCase() || undefined,
       });
       toast.success(t("wifiAdded"));
       setNewWifiSsid("");

@@ -262,6 +262,7 @@
       "wifiAddFailed": "Failed to add WiFi network",
       "wifiRemoved": "WiFi network removed",
       "wifiRemoveFailed": "Failed to remove WiFi network",
+      "invalidMacAddress": "Invalid MAC address format (XX:XX:XX:XX:XX:XX)",
       "failedToGetCurrentLocation": "Failed to get current location",
       "wifiSsidPlaceholder": "Company WiFi",
       "kakaoLoadFailed": "Failed to load Kakao Maps",
