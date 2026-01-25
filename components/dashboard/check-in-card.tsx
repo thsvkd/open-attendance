@@ -58,7 +58,6 @@ export function CheckInCard({
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
     null,
   );
-  const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
 
   const t = useTranslations("dashboard");
   const formatter = useFormatter();
@@ -86,12 +85,9 @@ export function CheckInCard({
       setLocationError(null);
 
       try {
-        const coords = await getPreciseLocation(
-          (acc) => setCurrentAccuracy(acc),
-          {
-            ignoreCache,
-          },
-        );
+        const coords = await getPreciseLocation(undefined, {
+          ignoreCache,
+        });
 
         // Validate location with server
         const res = await axios.post("/api/location/validate", {
@@ -106,6 +102,7 @@ export function CheckInCard({
           error instanceof Error ? error.message : error,
         );
         setLocationError(t("failedToGetLocation"));
+        setLocationValidation(null); // 실패 시 캐시된 거리 정보 제거
       } finally {
         setCheckingLocation(false);
       }
@@ -130,7 +127,7 @@ export function CheckInCard({
   }, [pollingInterval]);
 
   const getLocationData = async () => {
-    const coords = await getPreciseLocation((acc) => setCurrentAccuracy(acc));
+    const coords = await getPreciseLocation();
     return {
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -308,7 +305,7 @@ export function CheckInCard({
             locationError ||
             locationValidation ||
             !isLocationConfigured) && (
-             <Alert
+            <Alert
               variant={
                 locationError ||
                 (locationValidation && !locationValidation.isWithinRadius) ||
@@ -354,22 +351,19 @@ export function CheckInCard({
                   )}
 
                   {/* 3. Validation Status */}
-                  {isLocationConfigured && locationValidation && (
-                    <div className="flex flex-col">
-                      <span className={checkingLocation ? "animate-pulse font-medium" : "font-medium"}>
-                        {checkingLocation && t("updatingLocation")}
-                        {!checkingLocation && (
-                          <>
-                            {!locationValidation.isWithinRadius &&
-                              `${t("tooFarFromOffice")} - `}
-                            {t("distanceFromOffice", {
-                              distance: locationValidation.distance,
-                            })}
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  )}
+                  {isLocationConfigured &&
+                    locationValidation &&
+                    !checkingLocation && (
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {!locationValidation.isWithinRadius &&
+                            `${t("tooFarFromOffice")} - `}
+                          {t("distanceFromOffice", {
+                            distance: locationValidation.distance,
+                          })}
+                        </span>
+                      </div>
+                    )}
 
                   {/* 4. Checking Status (Sub-info) */}
                   {checkingLocation && !locationValidation && (
@@ -377,13 +371,6 @@ export function CheckInCard({
                       <span className="animate-pulse font-medium">
                         {t("updatingLocation")}
                       </span>
-                      {currentAccuracy && (
-                        <span className="text-xs font-mono text-primary">
-                          {t("locationAccuracy", {
-                            accuracy: Math.round(currentAccuracy),
-                          })}
-                        </span>
-                      )}
                     </div>
                   )}
                 </AlertDescription>

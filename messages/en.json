@@ -48,6 +48,7 @@
     "goToSettings": "Go to settings",
     "failedToCreateSession": "Failed to create verification session",
     "failedToGetLocation": "Failed to get location",
+    "updatingLocation": "Updating location...",
     "locationAccuracy": "Location Accuracy: {accuracy}m"
   },
   "earlyLeave": {

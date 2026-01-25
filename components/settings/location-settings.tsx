@@ -72,7 +72,7 @@ export function LocationSettings() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [newWifiSsid, setNewWifiSsid] = useState("");
   const [newWifiBssid, setNewWifiBssid] = useState("");
-  const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isManualChange = useRef(false);
 
@@ -247,22 +247,20 @@ export function LocationSettings() {
     try {
       setSearchResults([]);
       setShowDropdown(false);
-      const coords = await getPreciseLocation(
-        (acc) => setCurrentAccuracy(acc),
-        {
-          ignoreCache: true,
-        },
-      );
+      setIsUpdatingLocation(true); // 버튼 클릭 시 즉시 로딩 상태 표시
+      const coords = await getPreciseLocation(undefined, {
+        ignoreCache: true,
+      });
       reverseGeocode(coords.latitude, coords.longitude);
       toast.success(t("currentLocationSet"));
-      setCurrentAccuracy(null);
     } catch (error) {
       console.error(
         "Failed to get current location:",
         error instanceof Error ? error.message : error,
       );
       toast.error(t("failedToGetCurrentLocation"));
-      setCurrentAccuracy(null);
+    } finally {
+      setIsUpdatingLocation(false);
     }
   };
 
@@ -423,20 +421,15 @@ export function LocationSettings() {
                 variant="outline"
                 onClick={handleUseCurrentLocation}
                 className="shrink-0 relative"
-                disabled={!!currentAccuracy}
+                disabled={isUpdatingLocation}
               >
                 <div className="flex items-center gap-2">
-                  {currentAccuracy ? (
+                  {isUpdatingLocation ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                      <div className="flex flex-col items-start leading-tight">
-                        <span className="text-sm animate-pulse">
-                          {t("updatingLocation")}
-                        </span>
-                        <span className="text-xs font-mono text-primary">
-                          {t("locationAccuracy", { accuracy: Math.round(currentAccuracy) })}
-                        </span>
-                      </div>
+                      <span className="text-sm animate-pulse">
+                        {t("updatingLocation")}
+                      </span>
                     </>
                   ) : (
                     <>

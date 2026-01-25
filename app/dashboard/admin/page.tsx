@@ -137,12 +137,12 @@ export default function AdminPage() {
 
   const onAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast.error(tp("passwordMismatch"));
       return;
     }
-    
+
     try {
       await axios.post("/api/admin/users", formData);
       toast.success(t("members.addSuccess"));
@@ -164,12 +164,12 @@ export default function AdminPage() {
 
   const onEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast.error(tp("passwordMismatch"));
       return;
     }
-    
+
     try {
       await axios.patch("/api/admin/users", {
         id: editingUser!.id,
@@ -507,7 +507,10 @@ export default function AdminPage() {
                         type="password"
                         value={formData.confirmPassword}
                         onChange={(e) =>
-                          setFormData({ ...formData, confirmPassword: e.target.value })
+                          setFormData({
+                            ...formData,
+                            confirmPassword: e.target.value,
+                          })
                         }
                         required
                       />
@@ -537,11 +540,17 @@ export default function AdminPage() {
                     </div>
                     <DatePickerField
                       label={t("members.form.joinDate")}
-                      selected={formData.joinDate ? new Date(formData.joinDate) : undefined}
+                      selected={
+                        formData.joinDate
+                          ? new Date(formData.joinDate)
+                          : undefined
+                      }
                       onSelect={(date) =>
                         setFormData({
                           ...formData,
-                          joinDate: date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+                          joinDate: date
+                            ? format(date, "yyyy-MM-dd")
+                            : format(new Date(), "yyyy-MM-dd"),
                         })
                       }
                     />
@@ -753,9 +762,7 @@ export default function AdminPage() {
                 </div>
               )}
               <div className="grid gap-2">
-                <Label htmlFor="edit-password">
-                  {tp("newPassword")}
-                </Label>
+                <Label htmlFor="edit-password">{tp("newPassword")}</Label>
                 <Input
                   id="edit-password"
                   type="password"
@@ -776,7 +783,10 @@ export default function AdminPage() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) =>
-                      setFormData({ ...formData, confirmPassword: e.target.value })
+                      setFormData({
+                        ...formData,
+                        confirmPassword: e.target.value,
+                      })
                     }
                     placeholder={tp("confirmNewPassword")}
                     required
@@ -802,15 +812,18 @@ export default function AdminPage() {
               </div>
               <DatePickerField
                 label={t("members.form.joinDate")}
-                selected={formData.joinDate ? new Date(formData.joinDate) : undefined}
+                selected={
+                  formData.joinDate ? new Date(formData.joinDate) : undefined
+                }
                 onSelect={(date) =>
                   setFormData({
                     ...formData,
-                    joinDate: date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+                    joinDate: date
+                      ? format(date, "yyyy-MM-dd")
+                      : format(new Date(), "yyyy-MM-dd"),
                   })
                 }
               />
-              </div>
             </div>
             <DialogFooter>
               <Button type="submit">{t("members.form.submitEdit")}</Button>

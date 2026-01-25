@@ -48,6 +48,7 @@
     "goToSettings": "설정으로 이동",
     "failedToCreateSession": "인증 세션을 생성하지 못했습니다",
     "failedToGetLocation": "위치 정보를 가져오지 못했습니다",
+    "updatingLocation": "위치 업데이트 중...",
     "locationAccuracy": "위치 정확도: {accuracy}m"
   },
   "earlyLeave": {
