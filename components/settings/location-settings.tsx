@@ -83,7 +83,7 @@ export function LocationSettings() {
   const isManualChange = useRef(false);
 
   // Load Kakao Maps SDK at the settings level
-  useKakaoLoader({
+  const [isKakaoLoading, kakaoLoadError] = useKakaoLoader({
     appkey: process.env.NEXT_PUBLIC_KAKAO_API_KEY as string,
     libraries: ["services"],
   });
@@ -347,8 +347,11 @@ export function LocationSettings() {
         <CardContent className="space-y-6">
           {/* Search and Current Location */}
           <div className="space-y-4">
-            <div className="flex gap-2 relative">
-              <div className="relative flex-1" ref={dropdownRef}>
+            <div className="flex flex-col gap-2 md:flex-row">
+              <div
+                className="order-2 md:order-1 relative flex-1"
+                ref={dropdownRef}
+              >
                 <div className="relative">
                   <Input
                     placeholder={t("searchPlaceholder")}
@@ -426,7 +429,7 @@ export function LocationSettings() {
               <Button
                 variant="outline"
                 onClick={handleUseCurrentLocation}
-                className="shrink-0 relative"
+                className="order-1 md:order-2 shrink-0 relative"
                 disabled={isUpdatingLocation}
               >
                 <div className="flex items-center gap-2">
@@ -450,13 +453,30 @@ export function LocationSettings() {
 
           {/* Map */}
           <div className="h-96 rounded-lg overflow-hidden border">
-            <LocationMap
-              latitude={location.latitude}
-              longitude={location.longitude}
-              onLocationChange={(lat, lng) => {
-                reverseGeocode(lat, lng);
-              }}
-            />
+            {kakaoLoadError ? (
+              <div className="h-full flex items-center justify-center bg-muted/30 px-6 text-center">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-destructive">
+                    {t("kakaoLoadFailed")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("kakaoLoadErrorDescription")}
+                  </p>
+                </div>
+              </div>
+            ) : isKakaoLoading ? (
+              <div className="h-full flex items-center justify-center bg-muted/20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <LocationMap
+                latitude={location.latitude}
+                longitude={location.longitude}
+                onLocationChange={(lat, lng) => {
+                  reverseGeocode(lat, lng);
+                }}
+              />
+            )}
           </div>
 
           {/* Location Details */}

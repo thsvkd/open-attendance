@@ -36,7 +36,7 @@
     "checkOutFailed": "Failed to check out.",
     "dayComplete": "Day Complete",
     "tooFarFromOffice": "You are too far from the office",
-    "distanceFromOffice": "Distance from office: {distance}m",
+    "distanceFromOffice": "Distance: {distance}m",
     "locationRequired": "Location access required",
     "grantLocationPermission": "Please grant location permission to check in/out",
     "scanQrToVerify": "Scan QR code with your phone to verify location",
@@ -48,6 +48,7 @@
     "goToSettings": "Go to settings",
     "failedToCreateSession": "Failed to create verification session",
     "failedToGetLocation": "Failed to get location",
+    "locationPermissionDenied": "Location permission denied. Allow access to use attendance features",
     "locationRequiresHttps": "Turn on HTTPS (or use localhost) to allow location access",
     "updatingLocation": "Updating location...",
     "locationAccuracy": "Location Accuracy: {accuracy}m"

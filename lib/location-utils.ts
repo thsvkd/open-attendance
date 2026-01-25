@@ -36,21 +36,24 @@ export async function getCurrentLocation(options?: PositionOptions): Promise<{
   longitude: number;
   accuracy: number;
 }> {
+  if (typeof window === "undefined" || !navigator.geolocation) {
+    throw new Error("Geolocation is not supported by your browser");
+  }
+
+  if (!isSecureLocationContext()) {
+    throw new InsecureOriginError(
+      "Geolocation API blocked: use HTTPS or localhost for location access",
+    );
+  }
+
+  const permissionState = await getGeolocationPermissionState();
+  if (permissionState === "denied") {
+    throw new PermissionDeniedError(
+      "Geolocation permission denied. Enable location access to continue.",
+    );
+  }
+
   return new Promise((resolve, reject) => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      reject(new Error("Geolocation is not supported by your browser"));
-      return;
-    }
-
-    if (!isSecureLocationContext()) {
-      reject(
-        new InsecureOriginError(
-          "Geolocation API blocked: use HTTPS or localhost for location access",
-        ),
-      );
-      return;
-    }
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         resolve({
@@ -148,9 +151,9 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 export async function getPreciseLocation(
   onProgress?: (accuracy: number) => void,
   options: {
-    targetAccuracy?: number; // meters (default: 20m)
-    minWaitTime?: number; // ms (default: 2000ms)
-    timeout?: number; // ms (default: 10000ms)
+    targetAccuracy?: number; // meters (default: 50m)
+    minWaitTime?: number; // ms (default: 3000ms)
+    timeout?: number; // ms (default: 25000ms)
     ignoreCache?: boolean;
   } = {},
 ): Promise<{
@@ -158,6 +161,24 @@ export async function getPreciseLocation(
   longitude: number;
   accuracy: number;
 }> {
+  if (typeof window === "undefined" || !navigator.geolocation) {
+    throw new Error("Geolocation is not supported by your browser");
+  }
+
+  if (!isSecureLocationContext()) {
+    throw new InsecureOriginError(
+      "Geolocation API blocked: use HTTPS or localhost for location access",
+    );
+  }
+
+  const permissionState = await getGeolocationPermissionState();
+  if (permissionState === "denied") {
+    locationCache = null;
+    throw new PermissionDeniedError(
+      "Geolocation permission denied. Enable location access to continue.",
+    );
+  }
+
   // Check cache first
   if (!options.ignoreCache && locationCache) {
     const age = Date.now() - locationCache.timestamp;
@@ -167,16 +188,11 @@ export async function getPreciseLocation(
     }
   }
 
-  const targetAccuracy = options.targetAccuracy ?? 20;
-  const minWaitTime = options.minWaitTime ?? 2000;
-  const timeout = options.timeout ?? 15000;
+  const targetAccuracy = options.targetAccuracy ?? 50;
+  const minWaitTime = options.minWaitTime ?? 3000;
+  const timeout = options.timeout ?? 25000;
 
   return new Promise((resolve, reject) => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      reject(new Error("Geolocation is not supported by your browser"));
-      return;
-    }
-
     let bestPosition: GeolocationPosition | null = null;
     let watchId: number | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
@@ -215,8 +231,8 @@ export async function getPreciseLocation(
         return;
       }
 
-      // Finish if we've waited enough and accuracy is "good enough" (e.g., < 50m)
-      if (timeElapsed >= minWaitTime && accuracy <= 50) {
+      // Finish if we've waited enough and accuracy is "good enough" (e.g., < 100m)
+      if (timeElapsed >= minWaitTime && accuracy <= 100) {
         cleanup();
         locationCache = { position: result, timestamp: Date.now() };
         resolve(result);
@@ -267,8 +283,8 @@ export async function getPreciseLocation(
             (res, rej) => {
               navigator.geolocation.getCurrentPosition(res, rej, {
                 enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 30000,
+                timeout: 10000,
+                maximumAge: 60000,
               });
             },
           );
@@ -315,6 +331,16 @@ export class InsecureOriginError extends Error {
   }
 }
 
+// Error thrown when geolocation permission is explicitly denied
+export class PermissionDeniedError extends Error {
+  code = "PERMISSION_DENIED" as const;
+
+  constructor(message = "Geolocation permission denied") {
+    super(message);
+    this.name = "PermissionDeniedError";
+  }
+}
+
 // Determine if current origin is allowed to use Geolocation
 function isSecureLocationContext(): boolean {
   if (typeof window === "undefined") return false;
@@ -322,4 +348,21 @@ function isSecureLocationContext(): boolean {
 
   const host = window.location.hostname;
   return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+}
+
+async function getGeolocationPermissionState(): Promise<
+  PermissionState | "unknown"
+> {
+  if (typeof navigator === "undefined" || !navigator.permissions?.query) {
+    return "unknown";
+  }
+
+  try {
+    const status = await navigator.permissions.query({
+      name: "geolocation",
+    } as PermissionDescriptor);
+    return status.state;
+  } catch (_error) {
+    return "unknown";
+  }
 }

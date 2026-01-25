@@ -36,7 +36,7 @@
     "checkOutFailed": "퇴근 처리에 실패했습니다.",
     "dayComplete": "오늘 근무 종료",
     "tooFarFromOffice": "회사와의 거리가 너무 멉니다",
-    "distanceFromOffice": "회사로부터의 거리: {distance}m",
+    "distanceFromOffice": "거리: {distance}m",
     "locationRequired": "위치 권한이 필요합니다",
     "grantLocationPermission": "출퇴근을 하려면 위치 권한을 허용해주세요",
     "scanQrToVerify": "스마트폰으로 QR 코드를 스캔하여 위치를 인증하세요",
@@ -48,6 +48,7 @@
     "goToSettings": "설정으로 이동",
     "failedToCreateSession": "인증 세션을 생성하지 못했습니다",
     "failedToGetLocation": "위치 정보를 가져오지 못했습니다",
+    "locationPermissionDenied": "위치 권한이 거부되었습니다. 근태 기능을 사용하려면 권한을 허용해주세요",
     "locationRequiresHttps": "HTTPS(또는 localhost)에서만 위치 접근이 가능합니다",
     "updatingLocation": "위치 업데이트 중...",
     "locationAccuracy": "위치 정확도: {accuracy}m"

@@ -24,6 +24,7 @@ import {
   getPreciseLocation,
   isMobileDevice,
   InsecureOriginError,
+  PermissionDeniedError,
 } from "@/lib/location-utils";
 import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -108,6 +109,11 @@ export function CheckInCard({
 
         if (error instanceof InsecureOriginError) {
           setLocationError(t("locationRequiresHttps"));
+        } else if (
+          error instanceof PermissionDeniedError ||
+          (error as { code?: number }).code === 1
+        ) {
+          setLocationError(t("locationPermissionDenied"));
         } else {
           setLocationError(t("failedToGetLocation"));
         }
@@ -367,7 +373,9 @@ export function CheckInCard({
                       <div className="flex flex-col">
                         <span className="font-medium">
                           {!locationValidation.isWithinRadius &&
-                            `${t("tooFarFromOffice")} - `}
+                            `${t("tooFarFromOffice")}`}
+                        </span>
+                        <span className="font-medium">
                           {t("distanceFromOffice", {
                             distance: locationValidation.distance,
                           })}
