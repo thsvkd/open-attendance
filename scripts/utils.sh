@@ -49,7 +49,8 @@ load_nvm() {
       if nvm use default > /dev/null 2>&1; then
         : # Success
       else
-        # Try to find any installed version
+        # Try to find any installed version (alphabetical, not semantic versioning)
+        # This is a best-effort fallback - user should set a default version
         LATEST_VERSION=$(ls "$NVM_DIR/versions/node" 2>/dev/null | head -n 1)
         if [ -n "$LATEST_VERSION" ]; then
           nvm use "$LATEST_VERSION" > /dev/null 2>&1 || true

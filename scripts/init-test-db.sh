@@ -14,7 +14,6 @@ PROJECT_ROOT=$(get_project_root)
 cd "$PROJECT_ROOT"
 
 DB_PATH="$PROJECT_ROOT/prisma/test.db"
-SCHEMA_SQL_PATH="$PROJECT_ROOT/prisma/schema.sql"
 
 # Define schema SQL
 SCHEMA_SQL='
@@ -110,12 +109,6 @@ if [ -f "$DB_PATH" ]; then
   echo "Removed existing test.db"
 fi
 
-# Write schema SQL to temp file and execute
-echo "$SCHEMA_SQL" > "$SCHEMA_SQL_PATH"
-
-# Initialize database with schema
-sqlite3 "$DB_PATH" < "$SCHEMA_SQL_PATH"
+# Initialize database with schema (pipe directly to sqlite3)
+echo "$SCHEMA_SQL" | sqlite3 "$DB_PATH"
 echo "test.db initialized with empty schema."
-
-# Clean up temp file
-rm "$SCHEMA_SQL_PATH"
