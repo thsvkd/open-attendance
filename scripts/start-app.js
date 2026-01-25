@@ -102,8 +102,9 @@ initDbProcess.on("close", (code) => {
   }
 
   // Run next dev or next start
+  const nextBin = path.join(__dirname, "..", "node_modules", ".bin", "next");
   const nextCommand = isProd ? "start" : "dev";
-  const nextProcess = spawn("next", [nextCommand], {
+  const nextProcess = spawn(nextBin, [nextCommand], {
     cwd: path.join(__dirname, ".."),
     env: fullEnv,
     stdio: ["inherit", "pipe", "pipe"],

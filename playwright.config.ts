@@ -10,6 +10,10 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = process.env.E2E_PORT ? parseInt(process.env.E2E_PORT, 10) : 3001;
 const BASE_URL = `http://localhost:${PORT}`;
 
+// E2E 전용 Next 캐시 디렉터리(기본: .next-e2e)
+// distDir은 next.config.ts에서 NEXT_DIST_DIR를 참고하도록 변경됨
+const E2E_DIST_DIR = process.env.NEXT_DIST_DIR || ".next-e2e";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
@@ -48,6 +52,7 @@ export default defineConfig({
       ? `node scripts/init-db.js --test && npm start -- --port ${PORT}`
       : `node scripts/init-db.js --test && npm run dev -- --port ${PORT}`,
     url: BASE_URL,
+    // Always start a fresh server for E2E to guarantee a clean test DB
     reuseExistingServer: false,
     timeout: 120 * 1000,
     stdout: "pipe",
@@ -57,6 +62,7 @@ export default defineConfig({
       DATABASE_URL: "file:./test.db",
       NEXTAUTH_URL: BASE_URL,
       NEXTAUTH_SECRET: "test-secret-key-for-testing-only",
+      NEXT_DIST_DIR: E2E_DIST_DIR,
     },
   },
 });
