@@ -48,6 +48,7 @@
     "goToSettings": "Go to settings",
     "failedToCreateSession": "Failed to create verification session",
     "failedToGetLocation": "Failed to get location",
+    "locationRequiresHttps": "Turn on HTTPS (or use localhost) to allow location access",
     "updatingLocation": "Updating location...",
     "locationAccuracy": "Location Accuracy: {accuracy}m"
   },
@@ -251,7 +252,8 @@
       "saveSuccess": "Location saved successfully",
       "currentLocationSet": "Current location set",
       "saveFailed": "Failed to save location",
-      "wifiNetworks": "Registered WiFi Networks",
+      "wifiNetworks": "WiFi Networks",
+      "wifiDescription": "Register company WiFi networks to use for attendance validation.",
       "addWifiNetwork": "Add WiFi Network",
       "wifiSsid": "WiFi Network Name (SSID)",
       "wifiBssid": "MAC Address (Optional)",
@@ -272,8 +274,7 @@
       "wifiSsidPlaceholder": "Company WiFi",
       "kakaoLoadFailed": "Failed to load Kakao Maps",
       "kakaoLoadErrorDescription": "Please check if the JavaScript key is correct and if the current domain is registered in the Kakao Developers console.",
-      "goKakaoConsole": "Go to Kakao Console",
-      "locationAccuracy": "Location Accuracy: {accuracy}m"
+      "goKakaoConsole": "Go to Kakao Console"
     },
     "appearance": {
       "title": "Appearance",

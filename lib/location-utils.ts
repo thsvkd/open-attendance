@@ -42,6 +42,15 @@ export async function getCurrentLocation(options?: PositionOptions): Promise<{
       return;
     }
 
+    if (!isSecureLocationContext()) {
+      reject(
+        new InsecureOriginError(
+          "Geolocation API blocked: use HTTPS or localhost for location access",
+        ),
+      );
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         resolve({
@@ -295,4 +304,22 @@ export function isMobileDevice(): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent,
   );
+}
+// Error thrown when Geolocation API is blocked due to insecure context
+export class InsecureOriginError extends Error {
+  code = "INSECURE_ORIGIN" as const;
+
+  constructor(message = "Geolocation requires a secure origin") {
+    super(message);
+    this.name = "InsecureOriginError";
+  }
+}
+
+// Determine if current origin is allowed to use Geolocation
+function isSecureLocationContext(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.isSecureContext) return true;
+
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
 }

@@ -4,7 +4,13 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
@@ -527,6 +533,7 @@ export function LocationSettings() {
             <Wifi className="h-5 w-5" />
             {t("wifiNetworks")}
           </CardTitle>
+          <CardDescription>{t("wifiDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Add WiFi Network */}

@@ -20,7 +20,11 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
-import { getPreciseLocation, isMobileDevice } from "@/lib/location-utils";
+import {
+  getPreciseLocation,
+  isMobileDevice,
+  InsecureOriginError,
+} from "@/lib/location-utils";
 import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -101,7 +105,13 @@ export function CheckInCard({
           "Location check error:",
           error instanceof Error ? error.message : error,
         );
-        setLocationError(t("failedToGetLocation"));
+
+        if (error instanceof InsecureOriginError) {
+          setLocationError(t("locationRequiresHttps"));
+        } else {
+          setLocationError(t("failedToGetLocation"));
+        }
+
         setLocationValidation(null); // 실패 시 캐시된 거리 정보 제거
       } finally {
         setCheckingLocation(false);
