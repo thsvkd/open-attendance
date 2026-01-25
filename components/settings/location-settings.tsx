@@ -193,12 +193,15 @@ export function LocationSettings() {
                 type="number"
                 step="any"
                 value={location.latitude}
-                onChange={(e) =>
-                  setLocation((prev) => ({
-                    ...prev,
-                    latitude: parseFloat(e.target.value),
-                  }))
-                }
+                onChange={(e) => {
+                  const lat = parseFloat(e.target.value);
+                  if (!isNaN(lat)) {
+                    setLocation((prev) => ({
+                      ...prev,
+                      latitude: lat,
+                    }));
+                  }
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -207,12 +210,15 @@ export function LocationSettings() {
                 type="number"
                 step="any"
                 value={location.longitude}
-                onChange={(e) =>
-                  setLocation((prev) => ({
-                    ...prev,
-                    longitude: parseFloat(e.target.value),
-                  }))
-                }
+                onChange={(e) => {
+                  const lng = parseFloat(e.target.value);
+                  if (!isNaN(lng)) {
+                    setLocation((prev) => ({
+                      ...prev,
+                      longitude: lng,
+                    }));
+                  }
+                }}
               />
             </div>
             <div className="space-y-2">

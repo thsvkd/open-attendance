@@ -37,7 +37,8 @@
     "scanQrToVerify": "Scan QR code with your phone to verify location",
     "waitingForVerification": "Waiting for verification...",
     "verificationExpired": "Verification expired. Please try again.",
-    "locationVerificationFailed": "Location verification failed"
+    "locationVerificationFailed": "Location verification failed",
+    "refreshLocation": "Refresh Location"
   },
   "earlyLeave": {
     "common": {

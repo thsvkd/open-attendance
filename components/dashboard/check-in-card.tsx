@@ -249,7 +249,7 @@ export function CheckInCard() {
   const isButtonDisabled: boolean =
     actionLoading ||
     checkingLocation ||
-    Boolean(locationValidation && !locationValidation.isWithinRadius);
+    !!(locationValidation && !locationValidation.isWithinRadius);
 
   if (loading) {
     return (
@@ -391,7 +391,7 @@ export function CheckInCard() {
               className="w-full"
             >
               <MapPin className="mr-2 h-4 w-4" />
-              Refresh Location
+              {t("refreshLocation")}
             </Button>
           )}
         </CardContent>
