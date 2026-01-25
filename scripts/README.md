@@ -78,27 +78,11 @@ Runs unit tests, E2E tests, or both.
 - Sets up test environment variables
 - Runs specified test suite(s)
 
-### init-test-db.sh
-
-Initializes a clean test database for E2E tests.
-
-**Usage:**
-
-```bash
-./scripts/init-test-db.sh
-```
-
-**What it does:**
-
-- Removes existing `prisma/test.db` if present
-- Creates a new SQLite database with the application schema
-- Used by Playwright before starting the test server
-
 ## JavaScript/TypeScript Scripts
 
 ### init-db.js
 
-Database initialization script with smart detection.
+Database initialization script with smart detection and dual modes.
 
 **Why JavaScript:**
 
@@ -106,14 +90,36 @@ Database initialization script with smart detection.
 - Needs to check database state programmatically
 - Cross-platform compatibility
 - Dynamic environment variable handling
+- Integrates with Prisma and SQLite
 
 **Usage:**
 
 ```bash
+# Initialize development/production database
 npm run db:init
 # or
 node scripts/init-db.js
+
+# Initialize test database for E2E tests
+node scripts/init-db.js --test
 ```
+
+**What it does:**
+
+**Normal mode (default):**
+
+- Loads environment variables from `.env.local` or `.env`
+- Parses DATABASE_URL to determine database path
+- Checks if database exists and has required tables
+- If not, creates database and runs Prisma migrations
+- Generates Prisma Client
+
+**Test mode (`--test` flag):**
+
+- Creates a clean `test.db` for E2E tests
+- Removes existing test database if present
+- Initializes with empty schema (all tables and indexes)
+- Used by Playwright before running E2E tests
 
 ### start-dev.js
 
