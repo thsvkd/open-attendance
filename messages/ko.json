@@ -264,7 +264,6 @@
       "wifiBssid": "MAC 주소 (선택)",
       "removeWifi": "삭제",
       "noWifiNetworks": "등록된 WiFi 네트워크가 없습니다",
-      "locationNotSet": "회사 위치가 설정되지 않았습니다. 설정에서 구성해주세요.",
       "gettingLocation": "위치를 가져오는 중...",
       "updatingLocation": "위치 업데이트 중...",
       "locationAccuracy": "위치 정확도: {accuracy}m",
