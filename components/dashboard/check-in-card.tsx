@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { Loader2, MapPin, AlertCircle } from "lucide-react";
 import { useTranslations, useFormatter } from "next-intl";
 import { getCurrentLocation, isMobileDevice } from "@/lib/location-utils";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Attendance {
@@ -246,10 +246,10 @@ export function CheckInCard() {
     setQrAction(null);
   };
 
-  const isButtonDisabled =
+  const isButtonDisabled: boolean =
     actionLoading ||
     checkingLocation ||
-    (locationValidation && !locationValidation.isWithinRadius);
+    Boolean(locationValidation && !locationValidation.isWithinRadius);
 
   if (loading) {
     return (
@@ -407,7 +407,7 @@ export function CheckInCard() {
           <div className="flex flex-col items-center space-y-4 py-4">
             {qrUrl && (
               <>
-                <QRCode value={qrUrl} size={256} level="H" />
+                <QRCodeCanvas value={qrUrl} size={256} level="H" />
                 <p className="text-sm text-muted-foreground text-center">
                   Scan this QR code with your smartphone to complete{" "}
                   {qrAction === "CHECK_IN" ? "check-in" : "check-out"}
