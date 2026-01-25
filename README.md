@@ -100,20 +100,27 @@ Run Open Attendance in minutes!
 ### Setup & Run
 
 ```bash
+# Development setup (uses npm install)
 ./scripts/setup.sh
+
+# Or for production setup (uses npm ci)
+./scripts/setup.sh --prod
 ```
 
 ```bash
+# Run in development mode
 ./scripts/run.sh
-```
 
-Or run in production mode:
+# Or run in production mode
+./scripts/run.sh --prod
 
-```bash
-./scripts/run.sh --prod   # build then start
+# Custom port
+./scripts/run.sh --port 3001
 ```
 
 After it starts, open [http://localhost:3000](http://localhost:3000) 🎉
+
+> 💡 **Tip:** For detailed script documentation, see [scripts/README.md](scripts/README.md)
 
 ---
 

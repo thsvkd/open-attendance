@@ -102,22 +102,29 @@ git clone https://github.com/thsvkd/open-attendance.git
 #### 의존성 설치 및 초기 서버 설정
 
 ```bash
+# 개발 설정 (npm install 사용)
 ./scripts/setup.sh
+
+# 또는 프로덕션 설정 (npm ci 사용)
+./scripts/setup.sh --prod
 ```
 
 #### 서버 실행
 
 ```bash
+# 개발 모드로 실행
 ./scripts/run.sh
-```
 
-또는 프로덕션 모드로 실행:
+# 프로덕션 모드로 실행
+./scripts/run.sh --prod
 
-```bash
-./scripts/run.sh --prod   # 빌드 후 실행
+# 커스텀 포트로 실행
+./scripts/run.sh --port 3001
 ```
 
 실행 완료 후, 🎉 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어보세요!
+
+> 💡 **팁:** 스크립트에 대한 자세한 문서는 [scripts/README.md](scripts/README.md)를 참조하세요.
 
 ---
 

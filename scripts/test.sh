@@ -18,6 +18,18 @@ echo ""
 # Choose test type
 TEST_TYPE=${1:-all}
 
+# Check for help flag
+if [[ "$TEST_TYPE" == "--help" ]] || [[ "$TEST_TYPE" == "-h" ]]; then
+  echo "Usage: ./scripts/test.sh [unit|e2e|all|watch]"
+  echo ""
+  echo "Options:"
+  echo "  unit   - Run unit and integration tests with Vitest"
+  echo "  e2e    - Run end-to-end tests with Playwright"
+  echo "  all    - Run all tests (default)"
+  echo "  watch  - Run unit tests in watch mode"
+  exit 0
+fi
+
 # Check if valid test type
 if [[ ! "$TEST_TYPE" =~ ^(unit|e2e|all|watch)$ ]]; then
   print_error "Invalid test type '${TEST_TYPE}'"
