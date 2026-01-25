@@ -1,5 +1,11 @@
 /**
  * Seed script for E2E test database
+ *
+ * This script MUST remain as TypeScript because:
+ * - Uses Prisma Client for type-safe database operations
+ * - Requires bcryptjs for password hashing
+ * - TypeScript provides type safety for database models
+ *
  * Creates a test user to bypass the initial setup requirement
  */
 

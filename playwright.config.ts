@@ -45,8 +45,8 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI
-      ? `node scripts/init-test-db.js && npm start -- --port ${PORT}`
-      : `node scripts/init-test-db.js && npm run dev -- --port ${PORT}`,
+      ? `node scripts/init-db.js --test && npm start -- --port ${PORT}`
+      : `node scripts/init-db.js --test && npm run dev -- --port ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 120 * 1000,

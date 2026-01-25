@@ -2,9 +2,7 @@
 
 # 🕐 Open Attendance
 
-## Open-source Attendance & Leave Management System
-
-A comprehensive solution for tracking employee attendance, leave, and time-off
+## All-in-One Attendance & Leave Management for Startups
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://reactjs.org/)
@@ -31,13 +29,13 @@ A comprehensive solution for tracking employee attendance, leave, and time-off
 
 ## 🎯 Overview
 
-**Open Attendance** is an open-source attendance and leave management system designed for small teams (especially startups). It provides a unified platform to handle attendance tracking, annual leave management, sick leave processing, and insight reporting.
+**Open Attendance** is an open-source attendance and leave management system designed for small to medium-sized teams (especially startups). It provides a unified platform to handle daily check-in/out tracking, annual leave management, sick leave processing, and insight reporting.
 
 ### Why Open Attendance?
 
-- ✅ **Free & Open Source** - No licensing cost, full transparency
+- ✅ **Free & Open Source** - No licensing fees, full transparency
 - 🚀 **Easy Deployment** - Simple setup with automated scripts
-- 🌏 **Multilingual** - Korean and English supported by default
+- 🌏 **Multilingual** - Korean and English support by default
 - 📊 **Comprehensive Reporting** - Track attendance and leave patterns
 - 🔒 **Security** - Strong authentication using NextAuth.js
 - 🎨 **Modern UI** - Beautiful interface built with Tailwind CSS and Radix UI
@@ -48,69 +46,44 @@ A comprehensive solution for tracking employee attendance, leave, and time-off
 
 ### 📅 Attendance Management
 
-- **Location-based check-in/out** - Verify employee location during attendance recording
-- **QR code authentication** - Secure verification via smartphone scanning for web users
-- **100m radius validation** - Ensure employees are within company premises
-- **WiFi network verification** - Additional security layer using registered WiFi networks
-- **Automatic attendance recording** - Assumes attendance on all working days (excluding holidays)
-- **Absence recording** - Record and track reasons for absence
-- **Flexible work hours** - Supports various work schedules
-- **Real-time distance tracking** - Display distance from office location
+- **Attendance Recording** - Record check-in and check-out on all working days (excluding holidays)
+- **Early Leave/Absence** - Record and track reasons for early leave or absence
 
 ### 🏖️ Leave Management
 
-- **Annual leave tracking** - Monitor total, used, and remaining leave days
-- **Leave request workflow** - Submit, approve, and track leave requests
-- **Leave types**:
-  - Annual leave
-  - Sick leave
-  - Official leave
-  - Early leave
-  - Other leave types
-- **Korean labor law compliant** - Applies Korean annual leave regulations
-- **Leave balance dashboard** - Real-time leave status
+- **Leave Tracking** - Monitor total, used, and remaining annual leave
+- **Leave Request Workflow** - Submit, approve, and track leave requests
+- **Diverse Leave Types**:
+  - Annual Leave
+    - Full day (1.0)
+    - Half day (0.5)
+    - Quarter day (0.25)
+  - Sick Leave
+  - Official Leave
+  - Early Leave
+  - Other
+- **Korean Labor Law Compliant** - Applies standard Korean annual leave regulations
+- **Leave Balance Dashboard** - Real-time leave status at a glance
 
 ### 👥 User Management
 
-- **Role-based access control**:
-  - **Admin** - Full access to all features
-  - **User** - Access to personal attendance and leave data
-- **Secure authentication** - Powered by NextAuth.js
-- **User profiles** - Manage personal info and settings
+- **Role-Based Access Control (RBAC)**:
+  - **Admin (ADMIN)** - Full system access and management permissions
+  - **Regular User (USER)** - View and manage personal attendance and leave data
+- **Secure Authentication** - Powered by NextAuth.js
+- **User Profiles** - Manage personal information and settings
 
-### 📍 Location-Based Attendance (New!)
+### 🌐 Internationalization (i18n)
 
-- **Dual authentication modes**:
-  - **Web**: QR code scanning with smartphone for location verification
-  - **Mobile**: Direct check-in/out with GPS location capture
-- **Company location setup**:
-  - Interactive map interface for setting office location
-  - Configurable radius (default 100m)
-  - Address search functionality
-- **WiFi network registration**:
-  - Register company WiFi networks for additional security
-  - SSID and BSSID verification support
-- **Real-time validation**:
-  - Distance calculation from office location
-  - Visual feedback on location status
-  - Automatic button enabling/disabling based on location
-- **Security features**:
-  - Prevents remote desktop check-in fraud
-  - Session-based QR code with expiration (5 minutes)
-  - Double location verification
-  - Audit trail with location data stored in database
-
-### 🌐 Internationalization
-
-- **Korean** - Full Korean support
+- **Korean** - Full Korean language support
 - **English** - Full English translation
-- **Easy language switch** - Seamless language toggling
+- **Easy Toggle** - Seamless language switching
 
 ---
 
 ## 🚀 Quick Start
 
-Run Open Attendance in minutes!
+Get Open Attendance up and running in minutes!
 
 ### Prerequisites
 
@@ -121,26 +94,37 @@ Run Open Attendance in minutes!
 ### Clone the Repository
 
 ```bash
-
+git clone https://github.com/thsvkd/open-attendance.git
 ```
 
-### Setup & Run
+### Setup & Execution
+
+#### Dependency Installation & Initial Setup
 
 ```bash
+# Development setup
 ./scripts/setup.sh
+
+# Or production setup
+./scripts/setup.sh --prod
 ```
 
+#### Running the Server
+
 ```bash
+# Run in development mode
 ./scripts/run.sh
+
+# Or run in production mode
+./scripts/run.sh --prod
+
+# Run on a custom port
+./scripts/run.sh --port 3001
 ```
 
-Or run in production mode:
+After the server starts, open [http://localhost:3000](http://localhost:3000) in your browser! 🎉
 
-```bash
-./scripts/run.sh --prod   # build then start
-```
-
-After it starts, open [http://localhost:3000](http://localhost:3000) 🎉
+> 💡 **Tip:** For detailed documentation on the provided scripts, refer to [scripts/README.md](scripts/README.md).
 
 ---
 
@@ -152,17 +136,17 @@ After it starts, open [http://localhost:3000](http://localhost:3000) 🎉
 | ----------------- | -------------------------- | -------- | ----------------------- |
 | `DATABASE_URL`    | Database connection string | Yes      | `file:./dev.db`         |
 | `NEXTAUTH_URL`    | Application URL            | Yes      | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | NextAuth secret key        | Yes      | -                       |
+| `NEXTAUTH_SECRET` | NextAuth secret key        | Yes      | _`Auto-generated`_      |
 
 ### Database Setup
 
-**Development**: SQLite (default)
+**Development Environment**: SQLite (Default)
 
 ```env
 DATABASE_URL="file:./dev.db"
 ```
 
-**Production**: PostgreSQL (recommended)
+**Production Environment**: PostgreSQL (Recommended)
 
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
@@ -178,13 +162,13 @@ DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
 npx prisma studio
 ```
 
-**Create a migration**:
+**Create a Migration**:
 
 ```bash
 npx prisma migrate dev --name your_migration_name
 ```
 
-**Initialize/Reset database**:
+**Reset Database**:
 
 ```bash
 npx prisma migrate reset
@@ -194,22 +178,22 @@ npx prisma migrate reset
 
 ## 🤝 Contributing
 
-We welcome contributions from the community!
+We welcome community contributions!
 
-- 🐛 Bug reports
-- 💡 Feature requests
-- 📝 Documentation improvements
-- 🔧 Code contributions
+- 🐛 Bug Reports
+- 💡 Feature Requests
+- 📝 Documentation Improvements
+- 🔧 Code Contributions
 
-Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+For details, please refer to the [Contributing Guide](CONTRIBUTING.md).
 
 ### Quick Start for Contributors
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
 4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a pull request
+5. Open a Pull Request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
@@ -227,7 +211,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 🐛 Troubleshooting
 
-### NextAuth configuration error
+### NextAuth Configuration Error
 
 **Error**:
 
@@ -243,17 +227,17 @@ GET /api/auth/error?error=Configuration 500
 ./scripts/setup.sh
 ```
 
-### Database connection issues
+### Database Connection Issues
 
 **Error**: `Can't reach database server`
 
-**Solution**: Check `DATABASE_URL` in `.env.local` and ensure the database server is running.
+**Solution**: Verify the `DATABASE_URL` in `.env.local` and ensure your database server is reachable.
 
-### Port already in use
+### Port Already in Use
 
 **Error**: `Port 3000 is already in use`
 
-**Solution**: Stop the process using port 3000 or use another port:
+**Solution**: Terminate the process using port 3000 or use a different port:
 
 ```bash
 PORT=3001 npm run dev
@@ -263,13 +247,13 @@ PORT=3001 npm run dev
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🛠 Tech Stack
 
-Built with:
+Built with the following modern technologies:
 
 - [Next.js](https://nextjs.org/)
 - [Prisma](https://www.prisma.io/)

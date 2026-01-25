@@ -1,8 +1,25 @@
 #!/usr/bin/env node
 
+/**
+ * Database initialization script
+ * 
+ * Usage:
+ *   node scripts/init-db.js          - Initialize development/production database
+ *   node scripts/init-db.js --test   - Initialize test database for E2E tests
+ * 
+ * This script MUST remain as JavaScript because:
+ * - Complex logic for parsing DATABASE_URL and checking database state
+ * - Needs to interact with SQLite and Prisma programmatically
+ * - Environment variable handling and dynamic path resolution
+ * - Cross-platform compatibility (Windows, macOS, Linux)
+ */
+
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+
+// Parse command line arguments
+const isTestMode = process.argv.includes("--test");
 
 // Load environment variables from .env.local or .env file
 function loadEnvFile() {
@@ -78,7 +95,127 @@ function getDatabasePath(envVars) {
   return path.join(__dirname, "..", "prisma", match[1]);
 }
 
-// Check if database exists and has the correct schema
+// Test mode: Initialize test database with empty schema
+function initTestDatabase() {
+  const testDbPath = path.join(__dirname, "..", "prisma", "test.db");
+  
+  console.log("Initializing test database for E2E tests...");
+  
+  // Remove existing test.db
+  if (fs.existsSync(testDbPath)) {
+    fs.unlinkSync(testDbPath);
+    console.log("Removed existing test.db");
+  }
+  
+  // Define schema SQL
+  const schemaSQL = `
+CREATE TABLE IF NOT EXISTS "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT,
+    "email" TEXT,
+    "emailVerified" DATETIME,
+    "image" TEXT,
+    "password" TEXT,
+    "role" TEXT NOT NULL DEFAULT 'USER',
+    "joinDate" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "totalLeaves" REAL NOT NULL DEFAULT 15,
+    "usedLeaves" REAL NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Account" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "Session" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "sessionToken" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expires" DATETIME NOT NULL,
+    CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Attendance" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "date" DATETIME NOT NULL,
+    "checkIn" DATETIME,
+    "checkOut" DATETIME,
+    "status" TEXT NOT NULL DEFAULT 'PRESENT',
+    "note" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Attendance_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "LeaveRequest" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'ANNUAL',
+    "leaveType" TEXT NOT NULL DEFAULT 'FULL_DAY',
+    "startDate" DATETIME NOT NULL,
+    "endDate" DATETIME NOT NULL,
+    "startTime" TEXT,
+    "endTime" TEXT,
+    "days" REAL NOT NULL,
+    "reason" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "approvedBy" TEXT,
+    "rejectedReason" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "LeaveRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "Holiday" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "date" DATETIME NOT NULL,
+    "name" TEXT NOT NULL,
+    "isPaid" BOOLEAN NOT NULL DEFAULT true
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Session_sessionToken_key" ON "Session"("sessionToken");
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_token_key" ON "VerificationToken"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
+CREATE UNIQUE INDEX IF NOT EXISTS "Attendance_userId_date_key" ON "Attendance"("userId", "date");
+CREATE UNIQUE INDEX IF NOT EXISTS "Holiday_date_key" ON "Holiday"("date");
+`;
+  
+  try {
+    // Create database with schema using sqlite3
+    execSync(`sqlite3 "${testDbPath}"`, {
+      input: schemaSQL,
+      cwd: path.join(__dirname, ".."),
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    console.log("test.db initialized with empty schema.");
+  } catch (error) {
+    console.error("Error initializing test database:", error.message);
+    process.exit(1);
+  }
+}
+
+// If in test mode, initialize test database and exit
+if (isTestMode) {
+  initTestDatabase();
+  process.exit(0);
+}
+
+// Development/Production mode: Initialize database with Prisma
 let envVars = loadEnvFile();
 
 // Environment variables take precedence over .env file values

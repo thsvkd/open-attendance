@@ -1,14 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
-const { spawn } = require("child_process");
-
 /**
  * Start dev/prod server with proper PORT environment variable
+ * 
+ * This script MUST remain as JavaScript because:
+ * - Needs to spawn Next.js server process with proper environment variables
+ * - Handles output filtering for cleaner logs
+ * - Must integrate with init-db.js for database initialization
+ * - Complex signal handling for graceful shutdown
+ * - Cross-platform process management
+ * 
  * This script reads .env.local, sets PORT and NEXTAUTH_URL,
  * then spawns the next dev/start command with those variables
  */
+
+const fs = require("fs");
+const path = require("path");
+const { spawn } = require("child_process");
 
 function loadEnvFile() {
   const envPath = path.join(__dirname, "..", ".env.local");
