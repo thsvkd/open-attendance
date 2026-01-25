@@ -1,68 +1,73 @@
 #!/bin/bash
 
 # Setup script for open-attendance project
-# This script sets up the environment and prepares the application for first run
+# Usage:
+#   ./scripts/setup.sh          - Development setup (npm install)
+#   ./scripts/setup.sh --dev    - Development setup (npm install)
+#   ./scripts/setup.sh --prod   - Production setup (npm ci)
 
 set -e
 
+# Load utility functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils.sh"
+
 echo "🚀 Setting up open-attendance..."
 
-# Get the directory where the script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+# Parse command line arguments
+SETUP_MODE="dev"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --prod|-p)
+      SETUP_MODE="prod"
+      shift
+      ;;
+    --dev|-d)
+      SETUP_MODE="dev"
+      shift
+      ;;
+    --help|-h)
+      echo "Usage: $0 [--dev|--prod]"
+      echo "  --dev   Development setup (npm install) - default"
+      echo "  --prod  Production setup (npm ci)"
+      exit 0
+      ;;
+    *)
+      print_error "Unknown option: $1"
+      echo ""
+      echo "Usage: $0 [--dev|--prod]"
+      echo "  --dev   Development setup (npm install) - default"
+      echo "  --prod  Production setup (npm ci)"
+      exit 1
+      ;;
+  esac
+done
 
+PROJECT_ROOT=$(get_project_root)
 cd "$PROJECT_ROOT"
 
-# Try to load NVM if it exists to ensure we use the correct Node/npm version
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  . "$NVM_DIR/nvm.sh" > /dev/null 2>&1
-  # Use default or first installed version if no version is active or if current is Windows
-  if ! command -v node >/dev/null || ! command -v npm >/dev/null || which node | grep -q "/mnt/c/" || which npm | grep -q "/mnt/c/"; then
-    if nvm use default > /dev/null 2>&1; then
-      : # Success
-    else
-      # Try to find any installed version
-      LATEST_VERSION=$(ls "$NVM_DIR/versions/node" 2>/dev/null | head -n 1)
-      if [ -n "$LATEST_VERSION" ]; then
-        nvm use "$LATEST_VERSION" > /dev/null 2>&1 || true
-      fi
-    fi
-  fi
-fi
-hash -r 2>/dev/null
+# Load NVM
+load_nvm
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Check WSL npm
+check_wsl_npm
 
-# Check if running in WSL and using Windows npm
-if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
-  NPM_PATH=$(which npm 2>/dev/null || true)
-  if [[ "$NPM_PATH" == *"/mnt/c/"* ]] || [[ "$NPM_PATH" == *".cmd" ]] || [[ "$NPM_PATH" == *".exe" ]]; then
-    echo -e "${RED}❌ Error: It seems you are using the Windows version of npm in WSL.${NC}"
-    echo -e "${YELLOW}Please install npm in WSL (sudo apt install npm) or use NVM.${NC}"
-    echo -e "${YELLOW}Current npm path: $NPM_PATH${NC}"
-    exit 1
-  fi
-fi
+print_info "Project directory: $PROJECT_ROOT"
+print_info "Setup mode: $SETUP_MODE"
 
-echo -e "${GREEN}📁 Project directory: $PROJECT_ROOT${NC}"
 
 # Check if .env.local file exists
 if [ -f ".env.local" ]; then
-  echo -e "${YELLOW}⚠️  .env.local file already exists. Backing up to .env.local.backup${NC}"
+  print_warning ".env.local file already exists. Backing up to .env.local.backup"
   cp .env.local .env.local.backup
 fi
 
 # Create .env.local file from .env.local.example
-echo -e "${GREEN}📝 Creating .env.local file from .env.local.example...${NC}"
+print_info "Creating .env.local file from .env.local.example..."
 
 # Check if .env.local.example exists
 if [ ! -f ".env.local.example" ]; then
-  echo -e "${RED}❌ Error: .env.local.example file not found${NC}"
+  print_error ".env.local.example file not found"
   exit 1
 fi
 
@@ -70,51 +75,50 @@ fi
 cp .env.local.example .env.local
 
 # Generate a random secret for NEXTAUTH_SECRET
-NEXTAUTH_SECRET=$(openssl rand -base64 32 | tr -d '\n')
+NEXTAUTH_SECRET=$(generate_secret)
 
 # Replace NEXTAUTH_SECRET in .env.local file
 if command -v sed &> /dev/null; then
-  # Use different sed syntax for macOS and Linux
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    sed -i '' "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.local
-  else
-    sed -i "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.local
-  fi
+  sed_inplace "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=\"$NEXTAUTH_SECRET\"|" .env.local
 else
-  echo -e "${YELLOW}⚠️  sed not found. Please manually update NEXTAUTH_SECRET in .env.local${NC}"
+  print_warning "sed not found. Please manually update NEXTAUTH_SECRET in .env.local"
 fi
 
-echo -e "${GREEN}✅ .env.local file created successfully${NC}"
-echo -e "${GREEN}🔑 NEXTAUTH_SECRET has been automatically generated${NC}"
+print_success ".env.local file created successfully"
+print_success "NEXTAUTH_SECRET has been automatically generated"
+
 
 # Install dependencies
-echo -e "${GREEN}📦 Installing dependencies...${NC}"
-npm install
+if [ "$SETUP_MODE" = "prod" ]; then
+  print_info "Installing dependencies with npm ci (production mode)..."
+  npm ci
+else
+  print_info "Installing dependencies with npm install (development mode)..."
+  npm install
+fi
 
 # Setup Git hooks with Husky
-echo -e "${GREEN}🪝 Setting up Git hooks...${NC}"
+print_info "Setting up Git hooks..."
 npx husky
 
 # Generate Prisma Client
-echo -e "${GREEN}🔧 Generating Prisma Client...${NC}"
+print_info "Generating Prisma Client..."
 npx prisma generate
 
 # Run database migrations
-echo -e "${GREEN}🗄️  Running database migrations...${NC}"
+print_info "Running database migrations..."
 # Load .env.local to ensure DATABASE_URL is available
-set -a
-source .env.local 2>/dev/null || true
-set +a
+load_env_file
 npx prisma migrate deploy 2>/dev/null || npx prisma db push
 
 echo ""
-echo -e "${GREEN}✨ Setup completed successfully!${NC}"
+print_success "Setup completed successfully!"
 echo ""
-echo -e "${YELLOW}Next steps:${NC}"
+print_warning "Next steps:"
 echo "  1. Run the development server:"
 echo -e "     ${GREEN}./scripts/run.sh${NC}"
 echo ""
 echo "  2. Or run in production mode:"
 echo -e "     ${GREEN}./scripts/run.sh --prod${NC}"
 echo ""
-echo -e "${YELLOW}Note:${NC} You may need to create an admin user. Check the documentation for details."
+print_warning "Note: You may need to create an admin user. Check the documentation for details."

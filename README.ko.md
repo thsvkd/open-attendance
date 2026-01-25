@@ -2,9 +2,7 @@
 
 # 🕐 Open Attendance
 
-## 오픈소스 근태 및 연차 관리 시스템
-
-직원의 출근, 퇴근, 휴가 등을 체계적으로 관리하고 분석하는 종합 솔루션
+## 스타트업을 위한 근태·연차 관리 솔루션
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://reactjs.org/)
@@ -48,9 +46,8 @@
 
 ### 📅 근태 관리
 
-- **자동 근태 기록** - 모든 근무일(휴일 제외)에 자동 출근 처리
-- **결근 기록** - 결근 사유 기록 및 추적
-- **유연한 근무 시간** - 다양한 근무 일정 지원
+- **출퇴근 기록** - 모든 근무일(휴일 제외)에 출퇴근 기록
+- **조퇴/결근 기록** - 조퇴/결근 사유 기록 및 추적
 
 ### 🏖️ 연차 관리
 
@@ -58,18 +55,21 @@
 - **휴가 신청 워크플로우** - 휴가 신청, 승인 및 추적
 - **다양한 휴가 유형**:
   - 연차
+    - 연차 (1일 단위)
+    - 반차 (0.5일 단위)
+    - 반반차 (0.25일 단위)
   - 병가
   - 공가
   - 조퇴
-  - 기타 휴가 유형
+  - 기타
 - **한국 근로기준법 준수** - 한국 연차 규정 적용
 - **연차 잔액 대시보드** - 실시간 연차 현황 확인
 
 ### 👥 사용자 관리
 
 - **역할 기반 접근 제어**:
-  - **관리자** - 전체 시스템 접근 및 관리 권한
-  - **일반 사용자** - 개인 근태/연차 데이터 조회 및 관리
+  - **관리자 (ADMIN)** - 전체 시스템 접근 및 관리 권한
+  - **일반 사용자 (USER)** - 개인 근태/연차 데이터 조회 및 관리
 - **안전한 인증** - NextAuth.js 기반
 - **사용자 프로필** - 개인 정보 및 설정 관리
 
@@ -102,22 +102,29 @@ git clone https://github.com/thsvkd/open-attendance.git
 #### 의존성 설치 및 초기 서버 설정
 
 ```bash
+# 개발 설정
 ./scripts/setup.sh
+
+# 또는 프로덕션 설정
+./scripts/setup.sh --prod
 ```
 
 #### 서버 실행
 
 ```bash
+# 개발 모드로 실행
 ./scripts/run.sh
-```
 
-또는 프로덕션 모드로 실행:
+# 프로덕션 모드로 실행
+./scripts/run.sh --prod
 
-```bash
-./scripts/run.sh --prod   # 빌드 후 실행
+# 커스텀 포트로 실행
+./scripts/run.sh --port 3001
 ```
 
 실행 완료 후, 🎉 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어보세요!
+
+> 💡 **팁:** 스크립트에 대한 자세한 문서는 [scripts/README.md](scripts/README.md)를 참조하세요.
 
 ---
 
@@ -129,7 +136,7 @@ git clone https://github.com/thsvkd/open-attendance.git
 | ----------------- | ------------------------ | ---- | ----------------------- |
 | `DATABASE_URL`    | 데이터베이스 연결 문자열 | 예   | `file:./dev.db`         |
 | `NEXTAUTH_URL`    | 애플리케이션 URL         | 예   | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | NextAuth 비밀 키         | 예   | -                       |
+| `NEXTAUTH_SECRET` | NextAuth 비밀 키         | 예   | _`자동 생성`_           |
 
 ### 데이터베이스 설정
 
