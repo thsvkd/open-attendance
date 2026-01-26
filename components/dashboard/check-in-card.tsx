@@ -54,11 +54,12 @@ export function CheckInCard({
   const formatter = useFormatter();
   const isMobile = isMobileDevice();
 
-  // Use the new useLocation hook with @uidotdev/usehooks' useGeolocation
+  // Use the new useLocation hook with usePreciseLocation
   const {
     loading: checkingLocation,
     accuracy: currentAccuracy,
     error: locationError,
+    warning: locationWarning,
     validation: locationValidation,
     validating,
     refresh: checkLocation,
@@ -66,6 +67,7 @@ export function CheckInCard({
   } = useLocation({
     enabled: isLocationConfigured,
     validateOnServer: isLocationConfigured,
+    autoFetch: true,
   });
 
   // Get translated error message
@@ -298,6 +300,7 @@ export function CheckInCard({
           {(checkingLocation ||
             validating ||
             translatedLocationError ||
+            locationWarning ||
             locationValidation ||
             !isLocationConfigured) && (
             <Alert
@@ -306,7 +309,9 @@ export function CheckInCard({
                 (locationValidation && !locationValidation.isWithinRadius) ||
                 !isLocationConfigured
                   ? "destructive"
-                  : "default"
+                  : locationWarning
+                    ? "default"
+                    : "default"
               }
             >
               <div className="flex items-center gap-2 w-full">
@@ -347,7 +352,16 @@ export function CheckInCard({
                     </span>
                   )}
 
-                  {/* 3. Validation Status */}
+                  {/* 3. Location Warning (accuracy between 100m-500m) */}
+                  {isLocationConfigured &&
+                    !translatedLocationError &&
+                    locationWarning && (
+                      <span className="font-medium text-amber-600 dark:text-amber-500">
+                        ⚠️ {locationWarning}
+                      </span>
+                    )}
+
+                  {/* 4. Validation Status */}
                   {isLocationConfigured &&
                     locationValidation &&
                     !checkingLocation &&
@@ -365,13 +379,13 @@ export function CheckInCard({
                       </div>
                     )}
 
-                  {/* 4. Checking Status (Sub-info) */}
+                  {/* 5. Checking Status (Sub-info) */}
                   {(checkingLocation || validating) && !locationValidation && (
                     <div className="flex flex-col gap-1">
                       <span className="animate-pulse font-medium">
                         {t("updatingLocation")}
                       </span>
-                      {currentAccuracy && (
+                      {currentAccuracy && currentAccuracy !== Infinity && (
                         <span className="text-xs font-mono text-primary animate-pulse">
                           {t("locationAccuracy", {
                             accuracy: Math.round(currentAccuracy),

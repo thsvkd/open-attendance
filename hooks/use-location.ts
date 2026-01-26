@@ -1,18 +1,19 @@
 "use client";
 
-import { useGeolocation } from "@uidotdev/usehooks";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
+import { usePreciseLocation } from "./use-precise-location";
 
 /**
- * Custom hook that wraps @uidotdev/usehooks' useGeolocation
- * with additional location validation functionality.
+ * Custom hook for high-precision geolocation with server validation
  *
  * Features:
- * - Automatic geolocation tracking using browser API
+ * - High-precision location using watchPosition API (via usePreciseLocation)
+ * - 5-second timeout with best available location
  * - Server-side location validation against company location
  * - Error handling for permission denied, insecure context, etc.
- * - Retry functionality to re-fetch location
+ * - Warning system for accuracy thresholds (100m, 500m)
+ * - Manual refresh functionality
  */
 
 interface LocationValidation {
@@ -26,6 +27,8 @@ interface UseLocationOptions {
   enabled?: boolean;
   /** Whether to validate location against company location on the server */
   validateOnServer?: boolean;
+  /** Whether to automatically fetch location on mount */
+  autoFetch?: boolean;
 }
 
 interface UseLocationReturn {
@@ -41,6 +44,8 @@ interface UseLocationReturn {
   timestamp: number | null;
   /** Error message if location fetch failed */
   error: string | null;
+  /** Warning message for sub-optimal accuracy */
+  warning: string | null;
   /** Whether validation against company location is in progress */
   validating: boolean;
   /** Result of server-side location validation */
@@ -63,11 +68,13 @@ interface UseLocationReturn {
  *   loading,
  *   latitude,
  *   longitude,
+ *   accuracy,
  *   error,
+ *   warning,
  *   validation,
  *   refresh,
  *   getLocationData
- * } = useLocation({ enabled: true, validateOnServer: true });
+ * } = useLocation({ enabled: true, validateOnServer: true, autoFetch: true });
  *
  * // Check if user is within allowed radius
  * if (validation?.isWithinRadius) {
@@ -78,39 +85,15 @@ interface UseLocationReturn {
 export function useLocation(
   options: UseLocationOptions = {},
 ): UseLocationReturn {
-  const { enabled = true, validateOnServer = true } = options;
+  const { enabled = true, validateOnServer = true, autoFetch = true } = options;
 
-  // Use @uidotdev/usehooks' useGeolocation for automatic position tracking
-  const geoState = useGeolocation({
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0,
-  });
+  // Use the new usePreciseLocation hook for high-precision location
+  const preciseLocation = usePreciseLocation();
 
   const [validating, setValidating] = useState(false);
   const [validation, setValidation] = useState<LocationValidation | null>(null);
+  const [timestamp, setTimestamp] = useState<number | null>(null);
   const [customError, setCustomError] = useState<string | null>(null);
-
-  /**
-   * Converts geolocation errors to user-friendly messages
-   */
-  const getErrorMessage = useCallback(
-    (error: GeolocationPositionError | null): string | null => {
-      if (!error) return null;
-
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          return "PERMISSION_DENIED";
-        case error.POSITION_UNAVAILABLE:
-          return "POSITION_UNAVAILABLE";
-        case error.TIMEOUT:
-          return "TIMEOUT";
-        default:
-          return "UNKNOWN_ERROR";
-      }
-    },
-    [],
-  );
 
   /**
    * Validate location against company location on the server
@@ -120,7 +103,6 @@ export function useLocation(
       if (!validateOnServer) return;
 
       setValidating(true);
-      setCustomError(null);
 
       try {
         const res = await axios.post("/api/location/validate", {
@@ -153,55 +135,66 @@ export function useLocation(
     }
   }, []);
 
-  // Validate location when position changes
+  // Automatically fetch location on mount if autoFetch is enabled
   useEffect(() => {
-    if (!enabled || geoState.loading || geoState.error) return;
-    if (geoState.latitude === null || geoState.longitude === null) return;
+    if (enabled && autoFetch && !preciseLocation.loading && preciseLocation.latitude === 0) {
+      preciseLocation.getPreciseLocation();
+    }
+  }, [enabled, autoFetch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    validateLocation(geoState.latitude, geoState.longitude);
+  // Validate location when position is successfully obtained
+  useEffect(() => {
+    if (!enabled || preciseLocation.loading || preciseLocation.error) return;
+    if (preciseLocation.latitude === 0 || preciseLocation.longitude === 0) return;
+
+    setTimestamp(Date.now());
+    validateLocation(preciseLocation.latitude, preciseLocation.longitude);
   }, [
     enabled,
-    geoState.loading,
-    geoState.error,
-    geoState.latitude,
-    geoState.longitude,
+    preciseLocation.loading,
+    preciseLocation.error,
+    preciseLocation.latitude,
+    preciseLocation.longitude,
     validateLocation,
   ]);
 
   /**
-   * Refresh location by reloading the page
-   * (useGeolocation from @uidotdev/usehooks uses watchPosition internally,
-   * so we can trigger a re-validation by calling validateLocation directly)
+   * Refresh location by calling getPreciseLocation again
    */
   const refresh = useCallback(async () => {
-    if (geoState.latitude !== null && geoState.longitude !== null) {
-      await validateLocation(geoState.latitude, geoState.longitude);
-    }
-  }, [geoState.latitude, geoState.longitude, validateLocation]);
+    setCustomError(null);
+    preciseLocation.getPreciseLocation();
+  }, [preciseLocation]);
 
   /**
    * Get current location data for API calls
    */
   const getLocationData = useCallback(() => {
-    if (geoState.latitude === null || geoState.longitude === null) {
+    if (
+      preciseLocation.latitude === 0 ||
+      preciseLocation.longitude === 0 ||
+      preciseLocation.latitude === null ||
+      preciseLocation.longitude === null
+    ) {
       return null;
     }
     return {
-      latitude: geoState.latitude,
-      longitude: geoState.longitude,
+      latitude: preciseLocation.latitude,
+      longitude: preciseLocation.longitude,
     };
-  }, [geoState.latitude, geoState.longitude]);
+  }, [preciseLocation.latitude, preciseLocation.longitude]);
 
-  // Determine the error to display
-  const displayError = customError || getErrorMessage(geoState.error);
+  // Determine the error to display (custom error takes precedence)
+  const displayError = customError || preciseLocation.error;
 
   return {
-    loading: geoState.loading,
-    latitude: geoState.latitude,
-    longitude: geoState.longitude,
-    accuracy: geoState.accuracy,
-    timestamp: geoState.timestamp,
+    loading: preciseLocation.loading,
+    latitude: preciseLocation.latitude === 0 ? null : preciseLocation.latitude,
+    longitude: preciseLocation.longitude === 0 ? null : preciseLocation.longitude,
+    accuracy: preciseLocation.accuracy === Infinity ? null : preciseLocation.accuracy,
+    timestamp,
     error: displayError,
+    warning: preciseLocation.warning,
     validating,
     validation,
     refresh,

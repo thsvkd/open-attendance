@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
 import dynamic from "next/dynamic";
-import { getCurrentLocation } from "@/lib/location-utils";
+import { usePreciseLocation } from "@/hooks/use-precise-location";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -78,9 +78,11 @@ export function LocationSettings() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [newWifiSsid, setNewWifiSsid] = useState("");
   const [newWifiBssid, setNewWifiBssid] = useState("");
-  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isManualChange = useRef(false);
+
+  // Use the precise location hook
+  const preciseLocation = usePreciseLocation();
 
   // Load Kakao Maps SDK at the settings level
   const [isKakaoLoading, kakaoLoadError] = useKakaoLoader({
@@ -253,20 +255,42 @@ export function LocationSettings() {
     try {
       setSearchResults([]);
       setShowDropdown(false);
-      setIsUpdatingLocation(true); // 버튼 클릭 시 즉시 로딩 상태 표시
-      const coords = await getCurrentLocation();
-      reverseGeocode(coords.latitude, coords.longitude);
-      toast.success(t("currentLocationSet"));
+      preciseLocation.getPreciseLocation();
     } catch (error) {
       console.error(
         "Failed to get current location:",
         error instanceof Error ? error.message : error,
       );
       toast.error(t("failedToGetCurrentLocation"));
-    } finally {
-      setIsUpdatingLocation(false);
     }
   };
+
+  // Handle location result from precise location hook
+  useEffect(() => {
+    if (preciseLocation.loading) return;
+    
+    if (preciseLocation.error) {
+      toast.error(preciseLocation.error);
+      return;
+    }
+
+    if (preciseLocation.warning) {
+      toast.warning(preciseLocation.warning);
+    }
+
+    if (preciseLocation.latitude !== 0 && preciseLocation.longitude !== 0) {
+      reverseGeocode(preciseLocation.latitude, preciseLocation.longitude);
+      if (!preciseLocation.warning) {
+        toast.success(t("currentLocationSet"));
+      }
+    }
+  }, [
+    preciseLocation.loading,
+    preciseLocation.error,
+    preciseLocation.warning,
+    preciseLocation.latitude,
+    preciseLocation.longitude,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSaveLocation = async () => {
     setSaving(true);
@@ -428,15 +452,20 @@ export function LocationSettings() {
                 variant="outline"
                 onClick={handleUseCurrentLocation}
                 className="order-1 md:order-2 shrink-0 relative"
-                disabled={isUpdatingLocation}
+                disabled={preciseLocation.loading}
               >
                 <div className="flex items-center gap-2">
-                  {isUpdatingLocation ? (
+                  {preciseLocation.loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                       <span className="text-sm animate-pulse">
                         {t("updatingLocation")}
                       </span>
+                      {preciseLocation.accuracy !== Infinity && (
+                        <span className="text-xs font-mono text-primary">
+                          {Math.round(preciseLocation.accuracy)}m
+                        </span>
+                      )}
                     </>
                   ) : (
                     <>
