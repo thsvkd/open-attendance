@@ -8,32 +8,44 @@ interface LocationData {
   accuracy: number;
 }
 
+// Error codes for localization
+export type LocationErrorCode =
+  | "GEOLOCATION_NOT_SUPPORTED"
+  | "LOCATION_TOO_INACCURATE";
+
+// Warning codes for localization
+export type LocationWarningCode = "LOCATION_ACCURACY_LOW";
+
 interface LocationState extends LocationData {
   error: string | null;
+  errorCode: LocationErrorCode | null;
+  errorAccuracy: number | null; // Accuracy value when error occurred
   warning: string | null;
+  warningCode: LocationWarningCode | null;
+  warningAccuracy: number | null; // Accuracy value when warning occurred
   loading: boolean;
 }
 
 /**
  * Hook for obtaining high-precision location using watchPosition API
- * 
+ *
  * Features:
  * - Uses watchPosition to continuously monitor for better accuracy
  * - Returns immediately when accuracy is within 100m
  * - 5-second timeout with best available location
  * - Provides warnings for 100m-500m accuracy
  * - Provides errors for >500m or no location data
- * 
+ *
  * @returns Location state and getPreciseLocation function
- * 
+ *
  * @example
  * ```tsx
  * const { latitude, longitude, accuracy, error, warning, loading, getPreciseLocation } = usePreciseLocation();
- * 
+ *
  * <button onClick={getPreciseLocation} disabled={loading}>
  *   {loading ? 'Getting location...' : 'Get Location'}
  * </button>
- * 
+ *
  * {warning && <div className="warning">{warning}</div>}
  * {error && <div className="error">{error}</div>}
  * ```
@@ -44,7 +56,11 @@ export const usePreciseLocation = () => {
     longitude: 0,
     accuracy: Infinity,
     error: null,
+    errorCode: null,
+    errorAccuracy: null,
     warning: null,
+    warningCode: null,
+    warningAccuracy: null,
     loading: false,
   });
 
@@ -67,18 +83,24 @@ export const usePreciseLocation = () => {
     if (!navigator.geolocation) {
       setState((prev) => ({
         ...prev,
-        error: "브라우저가 위치 정보를 지원하지 않습니다.",
+        error: "Geolocation not supported",
+        errorCode: "GEOLOCATION_NOT_SUPPORTED",
+        errorAccuracy: null,
         loading: false,
       }));
       return;
     }
 
-    // Reset state
+    // Reset state - clear error/warning when starting new location fetch
     setState((prev) => ({
       ...prev,
       loading: true,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
       warning: null,
+      warningCode: null,
+      warningAccuracy: null,
     }));
     bestCaptured.current = null;
 
@@ -105,7 +127,11 @@ export const usePreciseLocation = () => {
           setState({
             ...currentData,
             error: null,
+            errorCode: null,
+            errorAccuracy: null,
             warning: null,
+            warningCode: null,
+            warningAccuracy: null,
             loading: false,
           });
         }
@@ -114,7 +140,7 @@ export const usePreciseLocation = () => {
         console.error("GPS Error:", error);
         // Don't immediately fail - wait for timeout to handle the error
       },
-      options
+      options,
     );
 
     // 2. Set 5-second forced timeout
@@ -128,7 +154,9 @@ export const usePreciseLocation = () => {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: `위치 정보가 너무 부정확합니다 (오차 ${Math.round(best?.accuracy || 0)}m). 장소 이동 후 다시 시도해주세요.`,
+          error: "Location too inaccurate",
+          errorCode: "LOCATION_TOO_INACCURATE",
+          errorAccuracy: best?.accuracy ? Math.round(best.accuracy) : null,
         }));
       } else if (best.accuracy > 100) {
         // [Condition 2] Between 100m-500m (warning with result)
@@ -136,7 +164,11 @@ export const usePreciseLocation = () => {
           ...best,
           loading: false,
           error: null,
-          warning: `정확도가 다소 낮습니다(오차 ${Math.round(best.accuracy)}m). 100m 이내 정확도를 확보하지 못해 가장 최선의 값을 반환합니다.`,
+          errorCode: null,
+          errorAccuracy: null,
+          warning: "Location accuracy low",
+          warningCode: "LOCATION_ACCURACY_LOW",
+          warningAccuracy: Math.round(best.accuracy),
         });
       }
     }, 5000); // 5-second timeout

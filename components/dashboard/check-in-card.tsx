@@ -305,13 +305,17 @@ export function CheckInCard({
             !isLocationConfigured) && (
             <Alert
               variant={
-                translatedLocationError ||
-                (locationValidation && !locationValidation.isWithinRadius) ||
-                !isLocationConfigured
-                  ? "destructive"
-                  : locationWarning
-                    ? "default"
-                    : "default"
+                // Bug #5 fix: Don't show destructive (red) when loading/validating
+                checkingLocation || validating
+                  ? "default"
+                  : translatedLocationError ||
+                      (locationValidation &&
+                        !locationValidation.isWithinRadius) ||
+                      !isLocationConfigured
+                    ? "destructive"
+                    : locationWarning
+                      ? "default"
+                      : "default"
               }
             >
               <div className="flex items-center gap-2 w-full">
@@ -325,7 +329,7 @@ export function CheckInCard({
                   <MapPin className="h-4 w-4 shrink-0" />
                 )}
                 <AlertDescription className="flex flex-col gap-1 w-full text-balance">
-                  {/* 1. Configuration Error */}
+                  {/* 1. Configuration Error - highest priority */}
                   {!isLocationConfigured && (
                     <div className="flex flex-col">
                       <span>
@@ -345,42 +349,8 @@ export function CheckInCard({
                     </div>
                   )}
 
-                  {/* 2. Location Error */}
-                  {isLocationConfigured && translatedLocationError && (
-                    <span className="font-medium">
-                      {translatedLocationError}
-                    </span>
-                  )}
-
-                  {/* 3. Location Warning (accuracy between 100m-500m) */}
-                  {isLocationConfigured &&
-                    !translatedLocationError &&
-                    locationWarning && (
-                      <span className="font-medium text-amber-600 dark:text-amber-500">
-                        ⚠️ {locationWarning}
-                      </span>
-                    )}
-
-                  {/* 4. Validation Status */}
-                  {isLocationConfigured &&
-                    locationValidation &&
-                    !checkingLocation &&
-                    !validating && (
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {!locationValidation.isWithinRadius &&
-                            `${t("tooFarFromOffice")}`}
-                        </span>
-                        <span className="font-medium">
-                          {t("distanceFromOffice", {
-                            distance: locationValidation.distance,
-                          })}
-                        </span>
-                      </div>
-                    )}
-
-                  {/* 5. Checking Status (Sub-info) */}
-                  {(checkingLocation || validating) && !locationValidation && (
+                  {/* 2. Checking Status - show while loading */}
+                  {isLocationConfigured && (checkingLocation || validating) && (
                     <div className="flex flex-col gap-1">
                       <span className="animate-pulse font-medium">
                         {t("updatingLocation")}
@@ -394,6 +364,46 @@ export function CheckInCard({
                       )}
                     </div>
                   )}
+
+                  {/* 3. Location Error - show only if not loading and has error (Bug #4 fix: prioritize over validation) */}
+                  {isLocationConfigured &&
+                    !checkingLocation &&
+                    !validating &&
+                    translatedLocationError && (
+                      <span className="font-medium">
+                        {translatedLocationError}
+                      </span>
+                    )}
+
+                  {/* 4. Location Warning (accuracy between 100m-500m) - show only if no error */}
+                  {isLocationConfigured &&
+                    !checkingLocation &&
+                    !validating &&
+                    !translatedLocationError &&
+                    locationWarning && (
+                      <span className="font-medium text-amber-600 dark:text-amber-500">
+                        ⚠️ {locationWarning}
+                      </span>
+                    )}
+
+                  {/* 5. Validation Status - show only if no location error (Bug #4 fix) */}
+                  {isLocationConfigured &&
+                    !checkingLocation &&
+                    !validating &&
+                    !translatedLocationError &&
+                    locationValidation && (
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {!locationValidation.isWithinRadius &&
+                            `${t("tooFarFromOffice")}`}
+                        </span>
+                        <span className="font-medium">
+                          {t("distanceFromOffice", {
+                            distance: locationValidation.distance,
+                          })}
+                        </span>
+                      </div>
+                    )}
                 </AlertDescription>
               </div>
             </Alert>

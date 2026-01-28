@@ -278,7 +278,11 @@
       "wifiSsidPlaceholder": "Company WiFi",
       "kakaoLoadFailed": "Failed to load Kakao Maps",
       "kakaoLoadErrorDescription": "Please check if the JavaScript key is correct and if the current domain is registered in the Kakao Developers console.",
-      "goKakaoConsole": "Go to Kakao Console"
+      "goKakaoConsole": "Go to Kakao Console",
+      "geolocationNotSupported": "Your browser does not support location services.",
+      "locationTooInaccurate": "Location is too inaccurate (error margin {accuracy}m). Please try again from a different location.",
+      "locationAccuracyLow": "Location accuracy is somewhat low (error margin {accuracy}m). Using the best available value as accuracy under 100m could not be achieved.",
+      "adminOnlyLocationSettings": "Only administrators can modify company location settings."
     },
     "appearance": {
       "title": "Appearance",

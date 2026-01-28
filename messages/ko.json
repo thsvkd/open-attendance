@@ -278,7 +278,11 @@
       "wifiSsidPlaceholder": "회사 WiFi",
       "kakaoLoadFailed": "Kakao Maps 로드 실패",
       "kakaoLoadErrorDescription": "JavaScript 키가 올바른지, 그리고 Kakao Developers 설정에서 현재 도메인이 등록되어 있는지 확인해주세요.",
-      "goKakaoConsole": "카카오 설정으로 이동"
+      "goKakaoConsole": "카카오 설정으로 이동",
+      "geolocationNotSupported": "브라우저가 위치 정보를 지원하지 않습니다.",
+      "locationTooInaccurate": "위치 정보가 너무 부정확합니다 (오차 {accuracy}m). 장소 이동 후 다시 시도해주세요.",
+      "locationAccuracyLow": "정확도가 다소 낮습니다 (오차 {accuracy}m). 100m 이내 정확도를 확보하지 못해 가장 최선의 값을 반환합니다.",
+      "adminOnlyLocationSettings": "관리자만 회사 위치 설정을 수정할 수 있습니다."
     },
     "appearance": {
       "title": "화면 설정",

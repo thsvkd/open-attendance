@@ -3,18 +3,18 @@ import { renderHook, act } from "@testing-library/react";
 import { useLocation } from "@/hooks/use-location";
 import axios from "axios";
 
-// Mock @uidotdev/usehooks
-vi.mock("@uidotdev/usehooks", () => ({
-  useGeolocation: vi.fn(),
+// Mock usePreciseLocation hook
+vi.mock("@/hooks/use-precise-location", () => ({
+  usePreciseLocation: vi.fn(),
 }));
 
 // Mock axios
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios, true);
 
-// Import the mocked useGeolocation
-import { useGeolocation } from "@uidotdev/usehooks";
-const mockedUseGeolocation = vi.mocked(useGeolocation);
+// Import the mocked usePreciseLocation
+import { usePreciseLocation } from "@/hooks/use-precise-location";
+const mockedUsePreciseLocation = vi.mocked(usePreciseLocation);
 
 // Helper function to wait for async updates
 const waitForNextUpdate = () =>
@@ -33,20 +33,36 @@ describe("useLocation", () => {
         hostname: "localhost",
       },
     } as unknown as Window & typeof globalThis;
+
+    // Default mock for usePreciseLocation
+    mockedUsePreciseLocation.mockReturnValue({
+      loading: false,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
+      error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
+    });
   });
 
   it("should return loading state when geolocation is loading", () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: true,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     const { result } = renderHook(() => useLocation({ enabled: true }));
@@ -57,17 +73,18 @@ describe("useLocation", () => {
   });
 
   it("should return location data when available", async () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
       latitude: 37.5665,
       longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
+      accuracy: 50,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     mockedAxios.post.mockResolvedValue({
@@ -93,79 +110,44 @@ describe("useLocation", () => {
     expect(result.current.validation?.isWithinRadius).toBe(true);
   });
 
-  it("should handle permission denied error", () => {
-    mockedUseGeolocation.mockReturnValue({
+  it("should handle location too inaccurate error", () => {
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 1, // PERMISSION_DENIED
-        message: "User denied geolocation",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
+      error: "Location too inaccurate",
+      errorCode: "LOCATION_TOO_INACCURATE",
+      errorAccuracy: 600,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     const { result } = renderHook(() => useLocation({ enabled: true }));
 
-    expect(result.current.error).toBe("PERMISSION_DENIED");
+    expect(result.current.error).toBe("Location too inaccurate");
   });
 
-  it("should handle position unavailable error", () => {
-    mockedUseGeolocation.mockReturnValue({
+  it("should handle geolocation not supported error", () => {
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 2, // POSITION_UNAVAILABLE
-        message: "Position unavailable",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
+      error: "Geolocation not supported",
+      errorCode: "GEOLOCATION_NOT_SUPPORTED",
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     const { result } = renderHook(() => useLocation({ enabled: true }));
 
-    expect(result.current.error).toBe("POSITION_UNAVAILABLE");
-  });
-
-  it("should handle timeout error", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 3, // TIMEOUT
-        message: "Timeout",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
-    });
-
-    const { result } = renderHook(() => useLocation({ enabled: true }));
-
-    expect(result.current.error).toBe("TIMEOUT");
+    expect(result.current.error).toBe("Geolocation not supported");
   });
 
   it("should detect insecure origin", () => {
@@ -176,17 +158,18 @@ describe("useLocation", () => {
       },
     } as unknown as Window & typeof globalThis;
 
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     const { result } = renderHook(() => useLocation({ enabled: true }));
@@ -202,17 +185,18 @@ describe("useLocation", () => {
       },
     } as unknown as Window & typeof globalThis;
 
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
       latitude: 37.5665,
       longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
+      accuracy: 50,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     // Disable server validation to avoid act warnings from async validation
@@ -228,17 +212,18 @@ describe("useLocation", () => {
   });
 
   it("should return location data via getLocationData", async () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
       latitude: 37.5665,
       longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
+      accuracy: 50,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     // Disable server validation to avoid act warnings
@@ -257,17 +242,18 @@ describe("useLocation", () => {
   });
 
   it("should return null from getLocationData when location is not available", () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: true,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
+      latitude: 0,
+      longitude: 0,
+      accuracy: Infinity,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     const { result } = renderHook(() => useLocation({ enabled: true }));
@@ -277,17 +263,18 @@ describe("useLocation", () => {
   });
 
   it("should not validate when disabled", async () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
       latitude: 37.5665,
       longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
+      accuracy: 50,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     renderHook(() => useLocation({ enabled: false }));
@@ -299,17 +286,18 @@ describe("useLocation", () => {
   });
 
   it("should skip server validation when validateOnServer is false", async () => {
-    mockedUseGeolocation.mockReturnValue({
+    mockedUsePreciseLocation.mockReturnValue({
       loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
       latitude: 37.5665,
       longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
+      accuracy: 50,
       error: null,
+      errorCode: null,
+      errorAccuracy: null,
+      warning: null,
+      warningCode: null,
+      warningAccuracy: null,
+      getPreciseLocation: vi.fn(),
     });
 
     renderHook(() => useLocation({ enabled: true, validateOnServer: false }));

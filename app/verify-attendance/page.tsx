@@ -128,10 +128,12 @@ export default function VerifyAttendancePage() {
           {status === "success" && (
             <>
               <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-600">
-                  {message}
-                </AlertDescription>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                  <AlertDescription className="text-green-600">
+                    {message}
+                  </AlertDescription>
+                </div>
               </Alert>
               <p className="text-sm text-center text-muted-foreground">
                 {t("closePage", {

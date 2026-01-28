@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search, ShieldAlert } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePreciseLocation } from "@/hooks/use-precise-location";
+import {
+  usePreciseLocation,
+  LocationErrorCode,
+  LocationWarningCode,
+} from "@/hooks/use-precise-location";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -65,6 +71,8 @@ interface ReverseGeocodeResult {
 
 export function LocationSettings() {
   const t = useTranslations("settings.location");
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [location, setLocation] = useState<CompanyLocation>({
@@ -83,6 +91,42 @@ export function LocationSettings() {
 
   // Use the precise location hook
   const preciseLocation = usePreciseLocation();
+
+  // Helper function to translate error codes
+  const translateErrorCode = useCallback(
+    (
+      errorCode: LocationErrorCode | null,
+      accuracy: number | null,
+    ): string | null => {
+      if (!errorCode) return null;
+      switch (errorCode) {
+        case "GEOLOCATION_NOT_SUPPORTED":
+          return t("geolocationNotSupported");
+        case "LOCATION_TOO_INACCURATE":
+          return t("locationTooInaccurate", { accuracy: accuracy || 0 });
+        default:
+          return t("failedToGetCurrentLocation");
+      }
+    },
+    [t],
+  );
+
+  // Helper function to translate warning codes
+  const translateWarningCode = useCallback(
+    (
+      warningCode: LocationWarningCode | null,
+      accuracy: number | null,
+    ): string | null => {
+      if (!warningCode) return null;
+      switch (warningCode) {
+        case "LOCATION_ACCURACY_LOW":
+          return t("locationAccuracyLow", { accuracy: accuracy || 0 });
+        default:
+          return null;
+      }
+    },
+    [t],
+  );
 
   // Load Kakao Maps SDK at the settings level
   const [isKakaoLoading, kakaoLoadError] = useKakaoLoader({
@@ -268,29 +312,46 @@ export function LocationSettings() {
   // Handle location result from precise location hook
   useEffect(() => {
     if (preciseLocation.loading) return;
-    
-    if (preciseLocation.error) {
-      toast.error(preciseLocation.error);
+
+    if (preciseLocation.errorCode) {
+      const translatedError = translateErrorCode(
+        preciseLocation.errorCode,
+        preciseLocation.errorAccuracy,
+      );
+      if (translatedError) {
+        toast.error(translatedError);
+      }
       return;
     }
 
-    if (preciseLocation.warning) {
-      toast.warning(preciseLocation.warning);
+    if (preciseLocation.warningCode) {
+      const translatedWarning = translateWarningCode(
+        preciseLocation.warningCode,
+        preciseLocation.warningAccuracy,
+      );
+      if (translatedWarning) {
+        toast.warning(translatedWarning);
+      }
     }
 
     if (preciseLocation.latitude !== 0 && preciseLocation.longitude !== 0) {
       reverseGeocode(preciseLocation.latitude, preciseLocation.longitude);
-      if (!preciseLocation.warning) {
+      if (!preciseLocation.warningCode) {
         toast.success(t("currentLocationSet"));
       }
     }
   }, [
     preciseLocation.loading,
-    preciseLocation.error,
-    preciseLocation.warning,
+    preciseLocation.errorCode,
+    preciseLocation.errorAccuracy,
+    preciseLocation.warningCode,
+    preciseLocation.warningAccuracy,
     preciseLocation.latitude,
     preciseLocation.longitude,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    translateErrorCode,
+    translateWarningCode,
+    t,
+  ]);
 
   const handleSaveLocation = async () => {
     setSaving(true);
@@ -355,6 +416,18 @@ export function LocationSettings() {
     return (
       <div className="flex justify-center py-8">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Show admin-only message for non-admin users
+  if (!isAdmin) {
+    return (
+      <div className="space-y-6">
+        <Alert>
+          <ShieldAlert className="h-4 w-4" />
+          <AlertDescription>{t("adminOnlyLocationSettings")}</AlertDescription>
+        </Alert>
       </div>
     );
   }
