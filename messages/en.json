@@ -9,14 +9,20 @@
     "selectTime": "Select time",
     "confirm": "Confirm",
     "pickDate": "Pick a date",
-    "toggleLanguage": "Toggle language"
+    "toggleLanguage": "Toggle language",
+    "comingSoon": "Coming soon",
+    "roles": {
+      "ADMIN": "Admin",
+      "USER": "User"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",
     "myAttendance": "My Attendance",
     "earlyLeave": "Early Leave/Absence",
     "annualLeave": "Annual Leave",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "settings": "Settings"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -28,7 +34,28 @@
     "checkInFailed": "Failed to check in.",
     "checkOutSuccess": "Checked out successfully.",
     "checkOutFailed": "Failed to check out.",
-    "dayComplete": "Day Complete"
+    "dayComplete": "Day Complete",
+    "tooFarFromOffice": "You are too far from the office",
+    "distanceFromOffice": "Distance: {distance}m",
+    "locationRequired": "Location access required",
+    "grantLocationPermission": "Please grant location permission to check in/out",
+    "scanQrToVerify": "Scan QR code with your phone to verify location",
+    "waitingForVerification": "Waiting for verification...",
+    "verificationExpired": "Verification expired. Please try again.",
+    "locationVerificationFailed": "Location verification failed",
+    "refreshLocation": "Refresh Location",
+    "locationNotConfigured": "Company location is not configured.",
+    "goToSettings": "Go to settings",
+    "failedToCreateSession": "Failed to create verification session",
+    "failedToGetLocation": "Failed to get location",
+    "locationPermissionDenied": "Location permission denied. Allow access to use attendance features",
+    "locationRequiresHttps": "Turn on HTTPS (or use localhost) to allow location access",
+    "updatingLocation": "Updating location...",
+    "locationAccuracy": "Location Accuracy: {accuracy}m",
+    "locationAccuracyLow": "Location accuracy too low for check-in",
+    "locationAccuracyRequired": "Accuracy must be below {threshold}m (currently {current}m)",
+    "waitingForBetterAccuracy": "Waiting for better GPS signal...",
+    "tryingToImproveAccuracy": "Improving location accuracy..."
   },
   "earlyLeave": {
     "common": {
@@ -151,6 +178,7 @@
     "password": "Password",
     "currentPassword": "Current Password",
     "newPassword": "New Password (fill to change)",
+    "confirmNewPassword": "Confirm New Password",
     "role": "Role",
     "joinDate": "Join Date",
     "update": "Update Profile",
@@ -158,6 +186,7 @@
     "error": "An error occurred while updating.",
     "incorrectPassword": "Current password is incorrect.",
     "passwordRequired": "Please enter your current password to change it.",
+    "passwordMismatch": "Passwords do not match.",
     "emailInUse": "Email already in use."
   },
   "admin": {
@@ -207,6 +236,64 @@
       "joinedAt": "Joined At"
     }
   },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your application settings",
+    "tabs": {
+      "location": "Location",
+      "appearance": "Appearance",
+      "language": "Language"
+    },
+    "location": {
+      "title": "Company Location",
+      "description": "Set your company location for location-based attendance",
+      "searchPlaceholder": "Search for an address...",
+      "currentLocation": "Use current location",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "radius": "Allowed radius (meters)",
+      "address": "Address",
+      "saveLocation": "Save Location",
+      "saveSuccess": "Location saved successfully",
+      "currentLocationSet": "Current location set",
+      "saveFailed": "Failed to save location",
+      "wifiNetworks": "WiFi Networks",
+      "wifiDescription": "Register company WiFi networks to use for attendance validation.",
+      "addWifiNetwork": "Add WiFi Network",
+      "wifiSsid": "WiFi Network Name (SSID)",
+      "wifiBssid": "MAC Address (Optional)",
+      "removeWifi": "Remove",
+      "noWifiNetworks": "No WiFi networks registered",
+      "gettingLocation": "Getting your location...",
+      "updatingLocation": "Updating location...",
+      "locationAccuracy": "Location Accuracy: {accuracy}m",
+      "noResultsFound": "No results found",
+      "wifiSsidRequired": "WiFi SSID is required",
+      "wifiAdded": "WiFi network added",
+      "wifiAddFailed": "Failed to add WiFi network",
+      "wifiRemoved": "WiFi network removed",
+      "wifiRemoveFailed": "Failed to remove WiFi network",
+      "invalidMacAddress": "Invalid MAC address format (XX:XX:XX:XX:XX:XX)",
+      "failedToGetCurrentLocation": "Failed to get current location",
+      "wifiSsidPlaceholder": "Company WiFi",
+      "kakaoLoadFailed": "Failed to load Kakao Maps",
+      "kakaoLoadErrorDescription": "Please check if the JavaScript key is correct and if the current domain is registered in the Kakao Developers console.",
+      "goKakaoConsole": "Go to Kakao Console"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language Settings",
+      "description": "Change the language of the application",
+      "selectLanguage": "Select Language"
+    }
+  },
   "auth": {
     "confirmPassword": "Confirm Password",
     "alreadyHaveAccount": "Already have an account? Login",
@@ -220,8 +307,40 @@
       "submit": "Login",
       "submitting": "Logging in...",
       "noAccount": "Don't have an account? Register",
+      "emailPlaceholder": "user@example.com",
       "invalidCredentials": "Invalid credentials",
       "loginSuccess": "Logged in!"
-    }
+    },
+    "register": {
+      "title": "Register",
+      "submit": "Register",
+      "submitting": "Creating account...",
+      "success": "Account created! Please login."
+    },
+    "setup": {
+      "title": "Initial Setup",
+      "description": "Welcome! Create your administrator account to get started.",
+      "submit": "Create Admin Account",
+      "submitting": "Creating admin account...",
+      "success": "Admin account created! Please login."
+    },
+    "somethingWentWrong": "Something went wrong.",
+    "name": "Name",
+    "namePlaceholder": "John Doe",
+    "email": "Email",
+    "password": "Password"
+  },
+  "verification": {
+    "title": "Attendance Verification",
+    "description": "Location-based attendance verification",
+    "invalidLink": "Invalid verification link",
+    "gettingLocation": "Getting your location...",
+    "verifyingLocation": "Verifying location...",
+    "checkInSuccess": "Check-in successful!",
+    "checkOutSuccess": "Check-out successful!",
+    "verifyFailed": "Verification failed",
+    "closePage": "You can close this page now. Your {action} has been recorded.",
+    "tryAgain": "Try Again",
+    "locationAccuracy": "Location Accuracy: {accuracy}m"
   }
 }

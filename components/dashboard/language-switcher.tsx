@@ -44,14 +44,14 @@ export function LanguageSwitcher() {
           onClick={() => switchLanguage("ko")}
           className="flex items-center justify-between"
         >
-          KO (한국어)
+          한국어
           {currentLocale === "ko" && <Check className="ml-2 h-4 w-4" />}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => switchLanguage("en")}
           className="flex items-center justify-between"
         >
-          EN (English)
+          English
           {currentLocale === "en" && <Check className="ml-2 h-4 w-4" />}
         </DropdownMenuItem>
       </DropdownMenuContent>
