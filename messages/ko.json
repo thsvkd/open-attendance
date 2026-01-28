@@ -55,7 +55,10 @@
     "locationAccuracyLow": "위치 정확도가 너무 낮아 출근할 수 없습니다",
     "locationAccuracyRequired": "정확도가 {threshold}m 이하여야 합니다 (현재 {current}m)",
     "waitingForBetterAccuracy": "더 나은 GPS 신호를 기다리는 중...",
-    "tryingToImproveAccuracy": "위치 정확도 개선 중..."
+    "tryingToImproveAccuracy": "위치 정확도 개선 중...",
+    "geolocationNotSupported": "브라우저가 위치 정보를 지원하지 않습니다.",
+    "locationTooInaccurate": "위치 정보가 너무 부정확합니다 (오차 {accuracy}m). 장소 이동 후 다시 시도해주세요.",
+    "locationAccuracyWarning": "정확도가 다소 낮습니다 (오차 {accuracy}m). 가장 최선의 값을 사용합니다."
   },
   "earlyLeave": {
     "common": {

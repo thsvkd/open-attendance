@@ -58,8 +58,10 @@ export function CheckInCard({
   const {
     loading: checkingLocation,
     accuracy: currentAccuracy,
-    error: locationError,
-    warning: locationWarning,
+    errorCode: locationErrorCode,
+    errorAccuracy: locationErrorAccuracy,
+    warningCode: locationWarningCode,
+    warningAccuracy: locationWarningAccuracy,
     validation: locationValidation,
     validating,
     refresh: checkLocation,
@@ -70,17 +72,15 @@ export function CheckInCard({
     autoFetch: true,
   });
 
-  // Get translated error message
+  // Get translated error message from error code
   const getLocationErrorMessage = useCallback(
-    (error: string | null): string | null => {
-      if (!error) return null;
-      switch (error) {
-        case "PERMISSION_DENIED":
-          return t("locationPermissionDenied");
-        case "POSITION_UNAVAILABLE":
-          return t("failedToGetLocation");
-        case "TIMEOUT":
-          return t("failedToGetLocation");
+    (errorCode: string | null, accuracy: number | null): string | null => {
+      if (!errorCode) return null;
+      switch (errorCode) {
+        case "GEOLOCATION_NOT_SUPPORTED":
+          return t("geolocationNotSupported");
+        case "LOCATION_TOO_INACCURATE":
+          return t("locationTooInaccurate", { accuracy: accuracy || 0 });
         case "INSECURE_ORIGIN":
           return t("locationRequiresHttps");
         default:
@@ -90,7 +90,28 @@ export function CheckInCard({
     [t],
   );
 
-  const translatedLocationError = getLocationErrorMessage(locationError);
+  // Get translated warning message from warning code
+  const getLocationWarningMessage = useCallback(
+    (warningCode: string | null, accuracy: number | null): string | null => {
+      if (!warningCode) return null;
+      switch (warningCode) {
+        case "LOCATION_ACCURACY_LOW":
+          return t("locationAccuracyWarning", { accuracy: accuracy || 0 });
+        default:
+          return null;
+      }
+    },
+    [t],
+  );
+
+  const translatedLocationError = getLocationErrorMessage(
+    locationErrorCode,
+    locationErrorAccuracy,
+  );
+  const translatedLocationWarning = getLocationWarningMessage(
+    locationWarningCode,
+    locationWarningAccuracy,
+  );
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -300,7 +321,7 @@ export function CheckInCard({
           {(checkingLocation ||
             validating ||
             translatedLocationError ||
-            locationWarning ||
+            translatedLocationWarning ||
             locationValidation ||
             !isLocationConfigured) && (
             <Alert
@@ -313,7 +334,7 @@ export function CheckInCard({
                         !locationValidation.isWithinRadius) ||
                       !isLocationConfigured
                     ? "destructive"
-                    : locationWarning
+                    : translatedLocationWarning
                       ? "default"
                       : "default"
               }
@@ -380,9 +401,9 @@ export function CheckInCard({
                     !checkingLocation &&
                     !validating &&
                     !translatedLocationError &&
-                    locationWarning && (
+                    translatedLocationWarning && (
                       <span className="font-medium text-amber-600 dark:text-amber-500">
-                        ⚠️ {locationWarning}
+                        ⚠️ {translatedLocationWarning}
                       </span>
                     )}
 

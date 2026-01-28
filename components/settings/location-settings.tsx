@@ -248,7 +248,7 @@ export function LocationSettings() {
     setSearchResults([]);
   };
 
-  const reverseGeocode = (lat: number, lng: number) => {
+  const reverseGeocode = useCallback((lat: number, lng: number) => {
     if (typeof window === "undefined" || !window.kakao || !window.kakao.maps)
       return;
 
@@ -276,7 +276,7 @@ export function LocationSettings() {
         }
       },
     );
-  };
+  }, []);
 
   useEffect(() => {
     fetchLocation();
@@ -350,6 +350,7 @@ export function LocationSettings() {
     preciseLocation.longitude,
     translateErrorCode,
     translateWarningCode,
+    reverseGeocode,
     t,
   ]);
 

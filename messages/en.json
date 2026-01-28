@@ -55,7 +55,10 @@
     "locationAccuracyLow": "Location accuracy too low for check-in",
     "locationAccuracyRequired": "Accuracy must be below {threshold}m (currently {current}m)",
     "waitingForBetterAccuracy": "Waiting for better GPS signal...",
-    "tryingToImproveAccuracy": "Improving location accuracy..."
+    "tryingToImproveAccuracy": "Improving location accuracy...",
+    "geolocationNotSupported": "Your browser does not support location services.",
+    "locationTooInaccurate": "Location is too inaccurate (error margin {accuracy}m). Please try again from a different location.",
+    "locationAccuracyWarning": "Location accuracy is somewhat low (error margin {accuracy}m). Using the best available value."
   },
   "earlyLeave": {
     "common": {

@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { usePreciseLocation } from "./use-precise-location";
+import {
+  usePreciseLocation,
+  LocationErrorCode,
+  LocationWarningCode,
+} from "./use-precise-location";
 
 /**
  * Custom hook for high-precision geolocation with server validation
@@ -44,8 +48,16 @@ interface UseLocationReturn {
   timestamp: number | null;
   /** Error message if location fetch failed */
   error: string | null;
+  /** Error code for localization (from usePreciseLocation or custom) */
+  errorCode: LocationErrorCode | "INSECURE_ORIGIN" | null;
+  /** Accuracy value when error occurred */
+  errorAccuracy: number | null;
   /** Warning message for sub-optimal accuracy */
   warning: string | null;
+  /** Warning code for localization */
+  warningCode: LocationWarningCode | null;
+  /** Accuracy value when warning occurred */
+  warningAccuracy: number | null;
   /** Whether validation against company location is in progress */
   validating: boolean;
   /** Result of server-side location validation */
@@ -137,7 +149,12 @@ export function useLocation(
 
   // Automatically fetch location on mount if autoFetch is enabled
   useEffect(() => {
-    if (enabled && autoFetch && !preciseLocation.loading && preciseLocation.latitude === 0) {
+    if (
+      enabled &&
+      autoFetch &&
+      !preciseLocation.loading &&
+      preciseLocation.latitude === 0
+    ) {
       preciseLocation.getPreciseLocation();
     }
   }, [enabled, autoFetch]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -145,7 +162,8 @@ export function useLocation(
   // Validate location when position is successfully obtained
   useEffect(() => {
     if (!enabled || preciseLocation.loading || preciseLocation.error) return;
-    if (preciseLocation.latitude === 0 || preciseLocation.longitude === 0) return;
+    if (preciseLocation.latitude === 0 || preciseLocation.longitude === 0)
+      return;
 
     setTimestamp(Date.now());
     validateLocation(preciseLocation.latitude, preciseLocation.longitude);
@@ -186,15 +204,24 @@ export function useLocation(
 
   // Determine the error to display (custom error takes precedence)
   const displayError = customError || preciseLocation.error;
+  // Determine the error code (custom error code takes precedence)
+  const displayErrorCode: LocationErrorCode | "INSECURE_ORIGIN" | null =
+    customError ? "INSECURE_ORIGIN" : preciseLocation.errorCode;
 
   return {
     loading: preciseLocation.loading,
     latitude: preciseLocation.latitude === 0 ? null : preciseLocation.latitude,
-    longitude: preciseLocation.longitude === 0 ? null : preciseLocation.longitude,
-    accuracy: preciseLocation.accuracy === Infinity ? null : preciseLocation.accuracy,
+    longitude:
+      preciseLocation.longitude === 0 ? null : preciseLocation.longitude,
+    accuracy:
+      preciseLocation.accuracy === Infinity ? null : preciseLocation.accuracy,
     timestamp,
     error: displayError,
+    errorCode: displayErrorCode,
+    errorAccuracy: preciseLocation.errorAccuracy,
     warning: preciseLocation.warning,
+    warningCode: preciseLocation.warningCode,
+    warningAccuracy: preciseLocation.warningAccuracy,
     validating,
     validation,
     refresh,
