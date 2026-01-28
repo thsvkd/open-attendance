@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { calculateAnnualLeave } from "@/lib/annual-leave-calculator";
 import {
   requireAdmin,
-  errorResponse,
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";
