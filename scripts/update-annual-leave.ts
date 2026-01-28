@@ -72,14 +72,14 @@ async function main() {
         console.log(
           `✅ Updated: ${data.user.name || data.user.email} | ` +
             `Old: ${data.user.totalLeaves} days → New: ${data.calculatedLeave} days | ` +
-            `Join Date: ${data.user.joinDate.toISOString().split("T")[0]}`,
+            `Join Date: ${data.user.joinDate!.toISOString().split("T")[0]}`,
         );
         updatedCount++;
       } else {
         console.log(
           `✓  No change: ${data.user.name || data.user.email} | ` +
             `${data.user.totalLeaves} days | ` +
-            `Join Date: ${data.user.joinDate.toISOString().split("T")[0]}`,
+            `Join Date: ${data.user.joinDate!.toISOString().split("T")[0]}`,
         );
         unchangedCount++;
       }
