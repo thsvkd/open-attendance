@@ -356,12 +356,21 @@ export default function AnnualLeavePage() {
                   placeholder={t("reasonPlaceholder")}
                 />
               </div>
-              <Button className="w-full" type="submit" disabled={submitting}>
+              <Button
+                className="w-full"
+                type="submit"
+                disabled={submitting || !userInfo?.joinDate}
+              >
                 {submitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 {t("submitRequest")}
               </Button>
+              {!userInfo?.joinDate && (
+                <div className="text-sm text-red-600 font-medium">
+                  {t("joinDateNotSet")}
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>
