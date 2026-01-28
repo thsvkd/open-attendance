@@ -538,22 +538,37 @@ export default function AdminPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <DatePickerField
-                      label={t("members.form.joinDate")}
-                      selected={
-                        formData.joinDate
-                          ? new Date(formData.joinDate)
-                          : undefined
-                      }
-                      onSelect={(date) =>
-                        setFormData({
-                          ...formData,
-                          joinDate: date
-                            ? format(date, "yyyy-MM-dd")
-                            : format(new Date(), "yyyy-MM-dd"),
-                        })
-                      }
-                    />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="joinDate">
+                          {t("members.form.joinDate")}
+                        </Label>
+                        {!editingUser?.joinDate && (
+                          <Badge
+                            variant="outline"
+                            className="bg-red-50 text-red-700 border-red-200"
+                          >
+                            {t("members.joinDateNotSet")}
+                          </Badge>
+                        )}
+                      </div>
+                      <DatePickerField
+                        label=""
+                        selected={
+                          formData.joinDate
+                            ? new Date(formData.joinDate)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          setFormData({
+                            ...formData,
+                            joinDate: date
+                              ? format(date, "yyyy-MM-dd")
+                              : format(new Date(), "yyyy-MM-dd"),
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button type="submit">{t("members.form.submitAdd")}</Button>
@@ -616,11 +631,17 @@ export default function AdminPage() {
                             />
                           </TableCell>
                           <TableCell className="text-sm">
-                            {formatter.dateTime(new Date(user.joinDate), {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {user.joinDate ? (
+                              formatter.dateTime(new Date(user.joinDate), {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
+                            ) : (
+                              <span className="text-red-600 font-medium">
+                                {t("members.joinDateNotSet")}
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -676,11 +697,17 @@ export default function AdminPage() {
                                 {t("table.joinedAt")}
                               </span>
                               <span className="font-medium text-right">
-                                {formatter.dateTime(new Date(user.joinDate), {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                                {user.joinDate ? (
+                                  formatter.dateTime(new Date(user.joinDate), {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                ) : (
+                                  <span className="text-red-600">
+                                    {t("members.joinDateNotSet")}
+                                  </span>
+                                )}
                               </span>
                             </div>
                           </div>
@@ -810,20 +837,35 @@ export default function AdminPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <DatePickerField
-                label={t("members.form.joinDate")}
-                selected={
-                  formData.joinDate ? new Date(formData.joinDate) : undefined
-                }
-                onSelect={(date) =>
-                  setFormData({
-                    ...formData,
-                    joinDate: date
-                      ? format(date, "yyyy-MM-dd")
-                      : format(new Date(), "yyyy-MM-dd"),
-                  })
-                }
-              />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="edit-joinDate">
+                    {t("members.form.joinDate")}
+                  </Label>
+                  {!editingUser?.joinDate && (
+                    <Badge
+                      variant="outline"
+                      className="bg-red-50 text-red-700 border-red-200"
+                    >
+                      {t("members.joinDateNotSet")}
+                    </Badge>
+                  )}
+                </div>
+                <DatePickerField
+                  label=""
+                  selected={
+                    formData.joinDate ? new Date(formData.joinDate) : undefined
+                  }
+                  onSelect={(date) =>
+                    setFormData({
+                      ...formData,
+                      joinDate: date
+                        ? format(date, "yyyy-MM-dd")
+                        : format(new Date(), "yyyy-MM-dd"),
+                    })
+                  }
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button type="submit">{t("members.form.submitEdit")}</Button>

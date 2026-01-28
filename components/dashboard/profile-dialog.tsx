@@ -27,6 +27,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [joinDate, setJoinDate] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -47,6 +48,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
         const data = await response.json();
         setName(data.name || "");
         setEmail(data.email || "");
+        setJoinDate(data.joinDate || null);
       }
     } catch (error) {
       console.error("Failed to fetch profile", error);
@@ -139,6 +141,20 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("email")}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="joinDate">{t("joinDate")}</Label>
+            <Input
+              id="joinDate"
+              type="text"
+              value={
+                joinDate
+                  ? new Date(joinDate).toLocaleDateString()
+                  : t("joinDateNotSet")
+              }
+              disabled
+              className="bg-gray-50 text-gray-600"
             />
           </div>
           <div className="space-y-2">

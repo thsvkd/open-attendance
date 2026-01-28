@@ -18,10 +18,10 @@ model User {
   image         String?
   password      String?   // For credentials provider if needed
   role          String    @default("USER") // ADMIN, USER
-  joinDate      DateTime  @default(now()) // Join date
-  
+  joinDate      DateTime? // Join date (nullable - not set until admin configures)
+
   // Annual Leave Info
-  totalLeaves   Float     @default(15) // Total annual leave (default 15 days)
+  totalLeaves   Float     @default(0)  // Total annual leave (default 0 days until joinDate is set)
   usedLeaves    Float     @default(0)  // Used annual leave
   
   accounts      Account[]

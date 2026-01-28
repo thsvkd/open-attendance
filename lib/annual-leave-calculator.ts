@@ -4,17 +4,23 @@ import { differenceInMonths, differenceInYears } from "date-fns";
  * Calculate annual leave balance based on Korean labor law
  *
  * Rules:
- * 1. During the first year: 1 day of annual leave is granted per completed month
- * 2. After completing 1 year: 15 days of annual leave are granted at once
+ * 1. If joinDate is not set, return 0
+ * 2. During the first year: 1 day of annual leave is granted per completed month
+ * 3. After completing 1 year: 15 days of annual leave are granted at once
  *
- * @param joinDate - Employee's hire/join date
+ * @param joinDate - Employee's hire/join date (nullable)
  * @param currentDate - Current date for calculation (defaults to today)
  * @returns Total annual leave days the employee is entitled to
  */
 export function calculateAnnualLeave(
-  joinDate: Date,
+  joinDate: Date | null,
   currentDate: Date = new Date(),
 ): number {
+  // If joinDate is not set, return 0
+  if (!joinDate) {
+    return 0;
+  }
+
   const monthsWorked = differenceInMonths(currentDate, joinDate);
   const yearsWorked = differenceInYears(currentDate, joinDate);
 

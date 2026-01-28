@@ -93,5 +93,15 @@ describe("calculateAnnualLeave", () => {
       const currentDate = new Date("2024-04-30");
       expect(calculateAnnualLeave(joinDate, currentDate)).toBe(2);
     });
+
+    it("should return 0 when joinDate is null", () => {
+      const currentDate = new Date("2024-06-15");
+      expect(calculateAnnualLeave(null, currentDate)).toBe(0);
+    });
+
+    it("should return 0 when joinDate is not set (new employee)", () => {
+      const result = calculateAnnualLeave(null);
+      expect(result).toBe(0);
+    });
   });
 });

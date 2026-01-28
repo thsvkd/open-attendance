@@ -153,7 +153,8 @@
     "twoHoursFixed": "2시간 고정",
     "twoHoursAutoAdjust": "시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이 맞춰집니다.",
     "overlapError": "선택한 휴가 기간이 이미 존재하는 {status} 요청({start} ~ {end})과 겹칩니다.",
-    "insufficientBalance": "잔여 연차가 부족합니다. 현재 {remaining}일 남았습니다."
+    "insufficientBalance": "잔여 연차가 부족합니다. 현재 {remaining}일 남았습니다.",
+    "joinDateNotSet": "입사일이 지정되지 않아 연차 신청이 불가합니다."
   },
   "attendance": {
     "title": "내 근태",
@@ -181,6 +182,7 @@
     "confirmNewPassword": "새 비밀번호 확인",
     "role": "권한",
     "joinDate": "입사일",
+    "joinDateNotSet": "입사일이 지정되지 않았습니다",
     "update": "정보 수정",
     "success": "프로필이 성공적으로 업데이트되었습니다.",
     "error": "업데이트 중 오류가 발생했습니다.",
@@ -217,6 +219,7 @@
       "addFailed": "직원 추가에 실패했습니다.",
       "updateSuccess": "수정되었습니다.",
       "updateFailed": "수정에 실패했습니다.",
+      "joinDateNotSet": "입사일 미지정",
       "form": {
         "details": "직원 정보를 입력하세요.",
         "name": "이름",
