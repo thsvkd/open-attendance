@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search, AlertCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useLocation } from "@/hooks/use-location";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
@@ -65,6 +66,7 @@ interface ReverseGeocodeResult {
 
 export function LocationSettings() {
   const t = useTranslations("settings.location");
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [location, setLocation] = useState<CompanyLocation>({
@@ -80,6 +82,9 @@ export function LocationSettings() {
   const [newWifiBssid, setNewWifiBssid] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isManualChange = useRef(false);
+
+  // Check if user is admin
+  const isAdmin = session?.user?.role === "ADMIN";
 
   // Use the location hook
   const locationState = useLocation({
@@ -287,6 +292,7 @@ export function LocationSettings() {
         toast.success(t("currentLocationSet"));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     locationState.loading,
     locationState.error,
@@ -364,12 +370,32 @@ export function LocationSettings() {
 
   return (
     <div className="space-y-6">
+      {!isAdmin && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-900">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  {t("adminOnlyTitle")}
+                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                  {t("adminOnlyDescription")}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>{t("title")}</CardTitle>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent
+          className={`space-y-6 ${!isAdmin ? "opacity-60 pointer-events-none" : ""}`}
+        >
           {/* Search and Current Location */}
           <div className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row">
@@ -585,7 +611,9 @@ export function LocationSettings() {
           </CardTitle>
           <CardDescription>{t("wifiDescription")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent
+          className={`space-y-4 ${!isAdmin ? "opacity-60 pointer-events-none" : ""}`}
+        >
           {/* Add WiFi Network */}
           <div className="space-y-4 p-4 border rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

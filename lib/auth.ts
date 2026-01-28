@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   session: {
     strategy: "jwt",
   },
@@ -58,6 +59,18 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // 상대 경로면 현재 baseUrl과 결합
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // 같은 origin이면 url 사용
+      else if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // 그 외는 baseUrl로 리다이렉트
+      return baseUrl;
+    },
     async session({ token, session }) {
       if (token) {
         session.user.id = token.id;

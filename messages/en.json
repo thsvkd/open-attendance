@@ -250,6 +250,8 @@
     "location": {
       "title": "Company Location",
       "description": "Set your company location for location-based attendance",
+      "adminOnlyTitle": "Admin Only",
+      "adminOnlyDescription": "Company location can only be set and modified by users with admin (ADMIN) permissions. Please contact your administrator.",
       "searchPlaceholder": "Search for an address...",
       "currentLocation": "Use current location",
       "latitude": "Latitude",

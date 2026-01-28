@@ -250,6 +250,8 @@
     "location": {
       "title": "회사 위치",
       "description": "위치 기반 출퇴근을 위한 회사 위치를 설정합니다",
+      "adminOnlyTitle": "관리자만 수정 가능",
+      "adminOnlyDescription": "회사 위치는 관리자(ADMIN) 권한을 가진 사용자만 설정 및 수정할 수 있습니다. 관리자에게 문의해주세요.",
       "searchPlaceholder": "주소를 검색하세요...",
       "currentLocation": "현재 위치 사용",
       "latitude": "위도",
