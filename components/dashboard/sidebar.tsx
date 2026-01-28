@@ -9,6 +9,7 @@ import {
   CalendarDays,
   CalendarClock,
   ShieldCheck,
+  Settings,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -113,6 +114,25 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             </>
           )}
         </div>
+      </div>
+
+      {/* Settings Area - Bottom */}
+      <div className="px-3 py-3 border-t border-gray-700">
+        <Link
+          href="/dashboard/settings"
+          onClick={onNavigate}
+          className={cn(
+            "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+            pathname === "/dashboard/settings"
+              ? "text-white bg-white/10"
+              : "text-zinc-400",
+          )}
+        >
+          <div className="flex items-center flex-1">
+            <Settings className="h-5 w-5 mr-3 text-gray-400" />
+            {t("settings")}
+          </div>
+        </Link>
       </div>
     </div>
   );

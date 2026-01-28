@@ -76,6 +76,20 @@ model Attendance {
   checkIn   DateTime? // Check-in time
   checkOut  DateTime? // Check-out time
   
+  // Location data for check-in
+  checkInLatitude   Float?
+  checkInLongitude  Float?
+  checkInDistance   Float?   // Distance from company location in meters
+  checkInWifiSsid   String?  // Connected WiFi SSID at check-in
+  checkInWifiBssid  String?  // Connected WiFi BSSID at check-in
+  
+  // Location data for check-out
+  checkOutLatitude  Float?
+  checkOutLongitude Float?
+  checkOutDistance  Float?   // Distance from company location in meters
+  checkOutWifiSsid  String?  // Connected WiFi SSID at check-out
+  checkOutWifiBssid String?  // Connected WiFi BSSID at check-out
+  
   status    String    @default("PRESENT") // PRESENT, ABSENT, LEAVE, HOLIDAY
   note      String?   // Remarks (e.g., late reason)
 
@@ -116,4 +130,62 @@ model Holiday {
   date      DateTime @unique
   name      String
   isPaid    Boolean  @default(true)
+}
+
+// Company location settings for location-based attendance
+model CompanyLocation {
+  id                String   @id @default(cuid())
+  name              String   @default("Company Office")
+  latitude          Float
+  longitude         Float
+  radius            Float    @default(100) // Allowed radius in meters (default 100m)
+  address           String?  // Human-readable address
+  
+  // Registered WiFi networks for additional verification
+  registeredWifiNetworks RegisteredWifiNetwork[]
+  
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([isActive])
+}
+
+// Registered WiFi networks for location verification
+model RegisteredWifiNetwork {
+  id                String          @id @default(cuid())
+  companyLocationId String
+  ssid              String          // WiFi network name
+  bssid             String?         // WiFi MAC address (more precise)
+  
+  companyLocation   CompanyLocation @relation(fields: [companyLocationId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime        @default(now())
+  
+  @@unique([companyLocationId, ssid])
+}
+
+// QR code authentication sessions for web check-in/out
+model AttendanceSession {
+  id                String    @id @default(cuid())
+  userId            String
+  sessionToken      String    @unique // Unique token for QR code
+  action            String    // "CHECK_IN" or "CHECK_OUT"
+  status            String    @default("PENDING") // PENDING, VERIFIED, EXPIRED, FAILED
+  
+  // Location data submitted via mobile
+  latitude          Float?
+  longitude         Float?
+  wifiSsid          String?
+  wifiBssid         String?
+  
+  expiresAt         DateTime  // Session expiration time
+  verifiedAt        DateTime? // When the session was verified
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([sessionToken])
+  @@index([userId, status])
+  @@index([expiresAt])
 }
