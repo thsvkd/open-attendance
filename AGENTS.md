@@ -48,3 +48,7 @@ This is an open-source project for attendance and annual leave management. It pr
 - When adding new features, update related documents (README.md, AGENTS.md, etc.) and add test code
 - Follow standard commit message conventions
 - all commit messages should be in English
+- When committing, use the -s option to create a signed commit
+  - The `-s` option automatically adds a "Signed-off-by" line using the name and email currently set in git config
+  - Do NOT add "Co-Authored-By" lines to commit messages
+  - Example commit command: `git commit -s -m "feat: description"`
