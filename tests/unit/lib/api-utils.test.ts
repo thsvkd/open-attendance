@@ -1,5 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import { NextResponse } from "next/server";
+
+vi.mock("@/lib/db", () => ({
+  db: {},
+}));
+
+vi.mock("@/lib/auth", () => ({
+  authOptions: {},
+}));
+
 import {
   errorResponse,
   internalErrorResponse,

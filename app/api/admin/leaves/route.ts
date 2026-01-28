@@ -73,7 +73,7 @@ export async function PATCH(req: Request) {
       });
 
       const totalUsed = approvedLeaves.reduce(
-        (sum, item) => sum + item.days,
+        (sum: number, item: { days: number }) => sum + item.days,
         0,
       );
 
