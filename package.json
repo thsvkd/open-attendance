@@ -18,6 +18,7 @@
     "test:e2e:headed": "playwright install --with-deps && playwright test --headed",
     "test:e2e:stop-on-failure": "playwright install --with-deps && STOP_ON_FAILURE=true playwright test",
     "test:all": "npm run test && npm run test:e2e",
+    "test:build": "next build",
     "prepare": "husky"
   },
   "lint-staged": {

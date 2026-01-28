@@ -7,7 +7,6 @@ import bcrypt from "bcryptjs";
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true,
   session: {
     strategy: "jwt",
   },
