@@ -44,8 +44,8 @@ export function unauthorizedResponse() {
 /**
  * Returns a JSON error response.
  */
-export function errorResponse(message: string, status: number) {
-  return NextResponse.json({ message }, { status });
+export function errorResponse(error: string, status: number) {
+  return NextResponse.json({ error, message: error }, { status });
 }
 
 /**

@@ -47,3 +47,4 @@ This is an open-source project for attendance and annual leave management. It pr
   - Commit
 - When adding new features, update related documents (README.md, AGENTS.md, etc.) and add test code
 - Follow standard commit message conventions
+- all commit messages should be in English
