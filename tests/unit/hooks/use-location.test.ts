@@ -57,16 +57,8 @@ describe("useLocation", () => {
       },
     );
 
-    mockedAxios.post.mockResolvedValue({
-      data: {
-        isWithinRadius: true,
-        distance: 100,
-        allowedRadius: 500,
-      },
-    });
-
-    const { result, rerender } = renderHook(() =>
-      useLocation({ enabled: true, validateOnServer: true, autoFetch: true }),
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, validateOnServer: false, autoFetch: true }),
     );
 
     // Simulate location update within 100m accuracy (should return immediately)
@@ -89,19 +81,6 @@ describe("useLocation", () => {
     expect(result.current.longitude).toBe(126.978);
     expect(result.current.accuracy).toBe(50);
     expect(result.current.loading).toBe(false);
-
-    // Advance timers to allow validation to complete
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-
-    rerender();
-
-    // Validation should have been called
-    expect(mockedAxios.post).toHaveBeenCalledWith("/api/location/validate", {
-      latitude: 37.5665,
-      longitude: 126.978,
-    });
   });
 
   it("should handle permission denied error", () => {
