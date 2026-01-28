@@ -31,23 +31,33 @@ export async function POST() {
     }> = [];
     const currentDate = new Date();
 
-    for (const user of users) {
-      const calculatedLeave = calculateAnnualLeave(user.joinDate, currentDate);
+    // Collect all updates first
+    const updatePromises = users
+      .map((user) => {
+        const calculatedLeave = calculateAnnualLeave(
+          user.joinDate,
+          currentDate,
+        );
 
-      // Only update if the calculated leave is different from current
-      if (calculatedLeave !== user.totalLeaves) {
-        await db.user.update({
-          where: { id: user.id },
-          data: { totalLeaves: calculatedLeave },
-        });
+        // Only update if the calculated leave is different from current
+        if (calculatedLeave !== user.totalLeaves) {
+          updates.push({
+            id: user.id,
+            oldBalance: user.totalLeaves,
+            newBalance: calculatedLeave,
+          });
 
-        updates.push({
-          id: user.id,
-          oldBalance: user.totalLeaves,
-          newBalance: calculatedLeave,
-        });
-      }
-    }
+          return db.user.update({
+            where: { id: user.id },
+            data: { totalLeaves: calculatedLeave },
+          });
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    // Execute all updates in parallel
+    await Promise.all(updatePromises);
 
     return successResponse({
       message: `Updated ${updates.length} user(s) annual leave balance`,

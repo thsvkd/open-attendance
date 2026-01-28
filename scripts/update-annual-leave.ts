@@ -38,26 +38,48 @@ async function main() {
     let updatedCount = 0;
     let unchangedCount = 0;
 
+    // Prepare updates and collect info
+    const updateData: Array<{
+      user: (typeof users)[0];
+      calculatedLeave: number;
+      needsUpdate: boolean;
+    }> = [];
+
     for (const user of users) {
       const calculatedLeave = calculateAnnualLeave(user.joinDate, currentDate);
+      updateData.push({
+        user,
+        calculatedLeave,
+        needsUpdate: calculatedLeave !== user.totalLeaves,
+      });
+    }
 
-      if (calculatedLeave !== user.totalLeaves) {
-        await db.user.update({
-          where: { id: user.id },
-          data: { totalLeaves: calculatedLeave },
-        });
+    // Execute all updates in parallel
+    await Promise.all(
+      updateData
+        .filter((data) => data.needsUpdate)
+        .map((data) =>
+          db.user.update({
+            where: { id: data.user.id },
+            data: { totalLeaves: data.calculatedLeave },
+          }),
+        ),
+    );
 
+    // Log results
+    for (const data of updateData) {
+      if (data.needsUpdate) {
         console.log(
-          `✅ Updated: ${user.name || user.email} | ` +
-            `Old: ${user.totalLeaves} days → New: ${calculatedLeave} days | ` +
-            `Join Date: ${user.joinDate.toISOString().split("T")[0]}`,
+          `✅ Updated: ${data.user.name || data.user.email} | ` +
+            `Old: ${data.user.totalLeaves} days → New: ${data.calculatedLeave} days | ` +
+            `Join Date: ${data.user.joinDate.toISOString().split("T")[0]}`,
         );
         updatedCount++;
       } else {
         console.log(
-          `✓  No change: ${user.name || user.email} | ` +
-            `${user.totalLeaves} days | ` +
-            `Join Date: ${user.joinDate.toISOString().split("T")[0]}`,
+          `✓  No change: ${data.user.name || data.user.email} | ` +
+            `${data.user.totalLeaves} days | ` +
+            `Join Date: ${data.user.joinDate.toISOString().split("T")[0]}`,
         );
         unchangedCount++;
       }
