@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test script for open-attendance project
 # Usage: ./scripts/test.sh [unit|e2e|all|watch]

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Utility functions and constants for open-attendance scripts
 # Source this file in other scripts: source "$(dirname "$0")/utils.sh"
