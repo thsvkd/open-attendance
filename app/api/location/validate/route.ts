@@ -45,12 +45,14 @@ export async function POST(req: Request) {
     // Check WiFi if provided
     let isWifiValid = false;
     if (wifiSsid && companyLocation.registeredWifiNetworks.length > 0) {
-      isWifiValid = companyLocation.registeredWifiNetworks.some((wifi) => {
-        if (wifiBssid && wifi.bssid) {
-          return wifi.ssid === wifiSsid && wifi.bssid === wifiBssid;
-        }
-        return wifi.ssid === wifiSsid;
-      });
+      isWifiValid = companyLocation.registeredWifiNetworks.some(
+        (wifi: { ssid: string; bssid: string | null }) => {
+          if (wifiBssid && wifi.bssid) {
+            return wifi.ssid === wifiSsid && wifi.bssid === wifiBssid;
+          }
+          return wifi.ssid === wifiSsid;
+        },
+      );
     }
 
     return successResponse({
