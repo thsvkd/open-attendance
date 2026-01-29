@@ -102,6 +102,9 @@ export function DatePickerField({
             onSelect={handleSelect}
             fixedWeeks
             locale={dateLocale}
+            captionLayout="dropdown"
+            startMonth={new Date(1900, 0)}
+            endMonth={new Date(2100, 11)}
           />
         </PopoverContent>
       </Popover>
