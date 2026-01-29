@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
+import { ko, enUS } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface DatePickerFieldProps {
   label: string;
@@ -28,6 +29,8 @@ export function DatePickerField({
   placeholder,
 }: DatePickerFieldProps) {
   const t = useTranslations("common");
+  const locale = useLocale();
+  const dateLocale = locale === "ko" ? ko : enUS;
   const [open, setOpen] = useState(false);
   const [popoverSide, setPopoverSide] = useState<"top" | "bottom">("bottom");
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -86,14 +89,20 @@ export function DatePickerField({
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {selected ? (
-              format(selected, "yyyy-MM-dd")
+              format(selected, "yyyy-MM-dd", { locale: dateLocale })
             ) : (
               <span>{placeholder || t("pickDate")}</span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" side={popoverSide}>
-          <Calendar mode="single" selected={selected} onSelect={handleSelect} />
+          <Calendar
+            mode="single"
+            selected={selected}
+            onSelect={handleSelect}
+            fixedWeeks
+            locale={dateLocale}
+          />
         </PopoverContent>
       </Popover>
     </div>
