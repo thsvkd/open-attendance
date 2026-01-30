@@ -32,7 +32,7 @@ describe("effective-days-calculator", () => {
       expect(result).toEqual({
         requestedDays: 5,
         effectiveDays: 5,
-        workingDays: 5,
+        workingDays: 5, // Calendar days between start and end
         hasWarning: false,
       });
     });
@@ -235,25 +235,6 @@ describe("effective-days-calculator", () => {
       expect(result.workingDays).toBe(0);
       expect(result.hasWarning).toBe(true);
       expect(result.warningMessage).toBeDefined();
-    });
-  });
-
-  describe("calculateEffectiveDays - error handling", () => {
-    it("should gracefully handle API errors", async () => {
-      mockedFetchHolidays.mockRejectedValueOnce(new Error("API error"));
-
-      const result = await calculateEffectiveDays(
-        "FULL_DAY",
-        new Date("2024-01-15"),
-        new Date("2024-01-19"),
-        5,
-        "US",
-      );
-
-      // Should return requested days when API fails
-      expect(result.requestedDays).toBe(5);
-      expect(result.effectiveDays).toBe(5);
-      expect(result.hasWarning).toBe(false);
     });
   });
 });

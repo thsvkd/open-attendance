@@ -17,14 +17,24 @@ export interface Holiday {
 }
 
 /**
+ * Cache entry with timestamp
+ */
+interface CacheEntry {
+  holidays: Holiday[];
+  timestamp: number;
+}
+
+/**
  * Cache for holiday data to avoid excessive API calls
  * Key format: "countryCode-year"
+ * Entries expire after 24 hours
  */
-const holidayCache = new Map<string, Holiday[]>();
+const holidayCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Fetch public holidays for a specific country and year from Nager.Date API
- * Results are cached to minimize API calls
+ * Results are cached for 24 hours to minimize API calls
  *
  * @param countryCode - ISO 3166-1 alpha-2 country code (e.g., "KR", "US")
  * @param year - Year to fetch holidays for
@@ -36,9 +46,15 @@ export async function fetchHolidays(
 ): Promise<Holiday[]> {
   const cacheKey = `${countryCode}-${year}`;
 
-  // Check cache first
-  if (holidayCache.has(cacheKey)) {
-    return holidayCache.get(cacheKey)!;
+  // Check cache and validate TTL
+  const cachedEntry = holidayCache.get(cacheKey);
+  if (cachedEntry) {
+    const age = Date.now() - cachedEntry.timestamp;
+    if (age < CACHE_TTL_MS) {
+      return cachedEntry.holidays;
+    }
+    // Cache expired, remove it
+    holidayCache.delete(cacheKey);
   }
 
   try {
@@ -50,7 +66,7 @@ export async function fetchHolidays(
     );
 
     const holidays = response.data;
-    holidayCache.set(cacheKey, holidays);
+    holidayCache.set(cacheKey, { holidays, timestamp: Date.now() });
     return holidays;
   } catch (error) {
     console.error(
@@ -80,7 +96,12 @@ export function isWeekend(date: Date): boolean {
  * @returns true if the date is a public holiday
  */
 export function isHoliday(date: Date, holidays: Holiday[]): boolean {
-  const dateStr = date.toISOString().split("T")[0]; // Convert to YYYY-MM-DD format
+  // Format date as YYYY-MM-DD without timezone conversion
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
+
   return holidays.some((holiday) => holiday.date === dateStr);
 }
 

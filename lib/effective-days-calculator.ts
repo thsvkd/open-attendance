@@ -44,11 +44,15 @@ export async function calculateEffectiveDays(
 ): Promise<EffectiveDaysResult> {
   // If no country code is provided, return requested days as effective days
   // (no holiday calculation)
+  // workingDays is set to the number of calendar days in the range
   if (!countryCode) {
+    const calendarDays = Math.floor(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    ) + 1;
     return {
       requestedDays,
       effectiveDays: requestedDays,
-      workingDays: requestedDays,
+      workingDays: calendarDays,
       hasWarning: false,
     };
   }
@@ -58,24 +62,13 @@ export async function calculateEffectiveDays(
   const endYear = endDate.getFullYear();
 
   let holidays: Holiday[] = [];
-  try {
-    if (startYear === endYear) {
-      holidays = await fetchHolidays(countryCode, startYear);
-    } else {
-      // If the leave spans multiple years, fetch holidays for both years
-      const holidaysStart = await fetchHolidays(countryCode, startYear);
-      const holidaysEnd = await fetchHolidays(countryCode, endYear);
-      holidays = [...holidaysStart, ...holidaysEnd];
-    }
-  } catch (error) {
-    console.error("[EFFECTIVE_DAYS] Error fetching holidays:", error);
-    // If holiday fetch fails, return requested days (graceful degradation)
-    return {
-      requestedDays,
-      effectiveDays: requestedDays,
-      workingDays: requestedDays,
-      hasWarning: false,
-    };
+  if (startYear === endYear) {
+    holidays = await fetchHolidays(countryCode, startYear);
+  } else {
+    // If the leave spans multiple years, fetch holidays for both years
+    const holidaysStart = await fetchHolidays(countryCode, startYear);
+    const holidaysEnd = await fetchHolidays(countryCode, endYear);
+    holidays = [...holidaysStart, ...holidaysEnd];
   }
 
   // For FULL_DAY leaves, calculate working days
