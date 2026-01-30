@@ -19,6 +19,7 @@ model User {
   password      String?   // For credentials provider if needed
   role          String    @default("USER") // ADMIN, USER
   joinDate      DateTime? // Join date (nullable - not set until admin configures)
+  country       String?   // Country code for holiday calculation (ISO 3166-1 alpha-2, e.g., "KR", "US")
 
   // Annual Leave Info
   totalLeaves   Float     @default(0)  // Total annual leave (default 0 days until joinDate is set)
@@ -112,6 +113,7 @@ model LeaveRequest {
   startTime String? // For quarter day leave (e.g., "09:00")
   endTime   String? // For quarter day leave (e.g., "11:00")
   days      Float       // 사용 일수 (1, 0.5, 0.25)
+  effectiveDays Float?   // Effective days after excluding holidays/weekends (nullable for backwards compatibility)
   
   reason    String?
   status    String      @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
