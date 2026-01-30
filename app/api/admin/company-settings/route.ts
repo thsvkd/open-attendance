@@ -7,7 +7,7 @@ import {
 } from "@/lib/api-utils";
 
 export async function GET() {
-  const { session, error } = await requireAuth();
+  const { error } = await requireAuth();
   if (error) return error;
 
   try {
@@ -38,7 +38,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const { session, error } = await requireAuth();
+    const { error } = await requireAuth();
     if (error) {
       return error;
     }
@@ -80,7 +80,7 @@ export async function PATCH(req: Request) {
       name: companyLocation.name,
       country: companyLocation.country,
     });
-  } catch (e) {
+  } catch {
     return internalErrorResponse();
   }
 }
