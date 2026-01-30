@@ -101,6 +101,18 @@ fi
 print_info "Setting up Git hooks..."
 npx husky
 
+# === DB Schema Version Management ===
+
+# 1. Prisma 캐시 이슈 자동 해결
+print_info "Checking for Prisma cache issues..."
+if ! npx prisma validate &>/dev/null; then
+  print_warning "Prisma cache issues detected. Resolving..."
+  bash "$SCRIPT_DIR/db/clear-prisma-cache.sh"
+  print_success "Prisma cache resolved"
+else
+  print_success "No Prisma cache issues detected"
+fi
+
 # Generate Prisma Client
 print_info "Generating Prisma Client..."
 npx prisma generate

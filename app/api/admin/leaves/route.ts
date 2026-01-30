@@ -72,8 +72,10 @@ export async function PATCH(req: Request) {
         },
       });
 
+      // Use effectiveDays if available, otherwise fall back to days
       const totalUsed = approvedLeaves.reduce(
-        (sum: number, item: { days: number }) => sum + item.days,
+        (sum: number, item: { days: number; effectiveDays?: number | null }) =>
+          sum + (item.effectiveDays ?? item.days),
         0,
       );
 

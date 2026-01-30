@@ -123,7 +123,7 @@ load_env_file() {
 # Get PORT from .env.local or use default
 get_port() {
   local default_port="${1:-3000}"
-  
+
   if [ -f ".env.local" ]; then
     local port=$(grep -E "^PORT=" ".env.local" | cut -d '=' -f 2 | tr -d '"' || echo "$default_port")
     echo "$port"
