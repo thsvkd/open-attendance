@@ -196,8 +196,26 @@
     "title": "관리자 페이지",
     "description": "직원 및 휴가 신청을 관리합니다.",
     "tabs": {
+      "attendance": "근무 기록",
       "leaves": "휴가/조퇴 신청",
       "members": "직원 관리"
+    },
+    "attendance": {
+      "description": "직원 근무 기록 관리",
+      "date": "날짜",
+      "checkIn": "체크인",
+      "checkOut": "체크아웃",
+      "status": "상태",
+      "noRecords": "근무 기록이 없습니다",
+      "statuses": {
+        "PRESENT": "출석",
+        "ABSENT": "결근",
+        "LEAVE": "휴가",
+        "HOLIDAY": "공휴일"
+      },
+      "delete": "삭제",
+      "deleteSuccess": "근무 기록이 삭제되었습니다.",
+      "deleteFailed": "근무 기록 삭제에 실패했습니다."
     },
     "leaves": {
       "title": "신청 내역",
@@ -207,7 +225,10 @@
       "reject": "거절",
       "approveSuccess": "승인되었습니다.",
       "rejectSuccess": "거절되었습니다.",
-      "actionFailed": "처리에 실패했습니다."
+      "actionFailed": "처리에 실패했습니다.",
+      "delete": "삭제",
+      "deleteSuccess": "휴가 기록이 삭제되었습니다.",
+      "deleteFailed": "휴가 기록 삭제에 실패했습니다."
     },
     "members": {
       "title": "직원 목록",

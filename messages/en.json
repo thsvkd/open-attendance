@@ -196,8 +196,26 @@
     "title": "Admin Panel",
     "description": "Manage employees and leave requests.",
     "tabs": {
+      "attendance": "Attendance Records",
       "leaves": "Leave Requests",
       "members": "Employee Management"
+    },
+    "attendance": {
+      "description": "Manage employee attendance records",
+      "date": "Date",
+      "checkIn": "Check In",
+      "checkOut": "Check Out",
+      "status": "Status",
+      "noRecords": "No attendance records found",
+      "statuses": {
+        "PRESENT": "Present",
+        "ABSENT": "Absent",
+        "LEAVE": "Leave",
+        "HOLIDAY": "Holiday"
+      },
+      "delete": "Delete",
+      "deleteSuccess": "Attendance record deleted successfully.",
+      "deleteFailed": "Failed to delete attendance record."
     },
     "leaves": {
       "title": "Leave Request History",
@@ -207,7 +225,10 @@
       "reject": "Reject",
       "approveSuccess": "Approved successfully.",
       "rejectSuccess": "Rejected successfully.",
-      "actionFailed": "Action failed."
+      "actionFailed": "Action failed.",
+      "delete": "Delete",
+      "deleteSuccess": "Leave record deleted successfully.",
+      "deleteFailed": "Failed to delete leave record."
     },
     "members": {
       "title": "Employee List",
