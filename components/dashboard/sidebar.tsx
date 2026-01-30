@@ -76,6 +76,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
             <Link
               key={route.href}
               href={route.href}
+              prefetch={true}
               onClick={onNavigate}
               className={cn(
                 "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
@@ -97,6 +98,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 <Link
                   key={route.href}
                   href={route.href}
+                  prefetch={true}
                   onClick={onNavigate}
                   className={cn(
                     "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
@@ -120,6 +122,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       <div className="px-3 py-3 border-t border-gray-700">
         <Link
           href="/dashboard/settings"
+          prefetch={true}
           onClick={onNavigate}
           className={cn(
             "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",

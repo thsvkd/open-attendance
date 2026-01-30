@@ -33,27 +33,29 @@ export async function POST() {
 
     // Collect all updates first
     const updatePromises = users
-      .map((user) => {
-        const calculatedLeave = calculateAnnualLeave(
-          user.joinDate,
-          currentDate,
-        );
+      .map(
+        (user: { id: string; joinDate: Date | null; totalLeaves: number }) => {
+          const calculatedLeave = calculateAnnualLeave(
+            user.joinDate,
+            currentDate,
+          );
 
-        // Only update if the calculated leave is different from current
-        if (calculatedLeave !== user.totalLeaves) {
-          updates.push({
-            id: user.id,
-            oldBalance: user.totalLeaves,
-            newBalance: calculatedLeave,
-          });
+          // Only update if the calculated leave is different from current
+          if (calculatedLeave !== user.totalLeaves) {
+            updates.push({
+              id: user.id,
+              oldBalance: user.totalLeaves,
+              newBalance: calculatedLeave,
+            });
 
-          return db.user.update({
-            where: { id: user.id },
-            data: { totalLeaves: calculatedLeave },
-          });
-        }
-        return null;
-      })
+            return db.user.update({
+              where: { id: user.id },
+              data: { totalLeaves: calculatedLeave },
+            });
+          }
+          return null;
+        },
+      )
       .filter(Boolean);
 
     // Execute all updates in parallel

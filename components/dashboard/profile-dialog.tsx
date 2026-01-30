@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
       >
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 py-4">
           <div className="space-y-2">
