@@ -12,7 +12,7 @@ import {
 
 // Mock axios
 vi.mock("axios");
-const mockedAxios = vi.mocked(axios);
+const mockedAxios = vi.mocked(axios, { deep: true });
 
 describe("holiday-service", () => {
   beforeEach(() => {
@@ -75,11 +75,19 @@ describe("holiday-service", () => {
     });
 
     it("should return empty array on API error", async () => {
+      // Mock console.error to suppress error logging in test output
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
       mockedAxios.get.mockRejectedValueOnce(new Error("API error"));
 
       const holidays = await fetchHolidays("US", 2024);
 
       expect(holidays).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
     });
   });
 
