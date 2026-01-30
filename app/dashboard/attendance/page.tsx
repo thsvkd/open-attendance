@@ -14,11 +14,19 @@ export default async function AttendancePage() {
   }
 
   // Fetch attendance history server-side
-  const history = await db.attendance.findMany({
+  const rawHistory = await db.attendance.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "desc" },
     take: 30,
   });
+
+  // Convert Date objects to ISO strings for type compatibility
+  const history = rawHistory.map((record) => ({
+    ...record,
+    date: record.date.toISOString(),
+    checkIn: record.checkIn?.toISOString() ?? null,
+    checkOut: record.checkOut?.toISOString() ?? null,
+  }));
 
   return (
     <div className="space-y-6">
