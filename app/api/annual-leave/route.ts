@@ -107,14 +107,11 @@ export async function POST(req: Request) {
 
     // Show warning if effective days is 0
     if (effectiveDaysResult.hasWarning) {
-      return successResponse(
-        {
-          warning: effectiveDaysResult.warningMessage,
-          requestedDays: effectiveDaysResult.requestedDays,
-          effectiveDays: effectiveDaysResult.effectiveDays,
-        },
-        { status: 200 },
-      );
+      return successResponse({
+        warning: effectiveDaysResult.warningMessage,
+        requestedDays: effectiveDaysResult.requestedDays,
+        effectiveDays: effectiveDaysResult.effectiveDays,
+      });
     }
 
     // Check if effective days exceed remaining balance

@@ -30,12 +30,12 @@ vi.mock("@/lib/db", () => ({
 
 // Mock next-intl
 vi.mock("next-intl/server", () => ({
-  getTranslations: vi.fn(async () => (key: string, params?: any) => {
+  getTranslations: vi.fn(async () => (key: string, params?: Record<string, unknown>) => {
     if (key === "insufficientBalance") {
-      return `Insufficient balance. Remaining: ${params.remaining}`;
+      return `Insufficient balance. Remaining: ${params?.remaining}`;
     }
     if (key === "overlapError") {
-      return `Overlap with ${params.status} leave from ${params.start} to ${params.end}`;
+      return `Overlap with ${params?.status} leave from ${params?.start} to ${params?.end}`;
     }
     if (key.startsWith("statuses.")) {
       const status = key.split(".")[1];
