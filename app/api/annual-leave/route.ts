@@ -87,22 +87,28 @@ export async function POST(req: Request) {
     // Check remaining leave balance
     const user = await db.user.findUnique({
       where: { id: session!.user.id },
-      select: { totalLeaves: true, usedLeaves: true, country: true },
+      select: { totalLeaves: true, usedLeaves: true },
     });
 
     if (!user) {
       return errorResponse("User not found", 404);
     }
 
+    // Get company location for country setting
+    const companyLocation = await db.companyLocation.findFirst({
+      where: { isActive: true },
+    });
+
     const remainingLeaves = user.totalLeaves - user.usedLeaves;
 
     // Calculate effective days (excluding holidays and weekends)
+    // Use company's country setting instead of user's country
     const effectiveDaysResult = await calculateEffectiveDays(
       leaveType as LeaveType,
       start,
       end,
       days,
-      user.country,
+      companyLocation?.country,
     );
 
     // Show warning if effective days is 0

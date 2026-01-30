@@ -25,24 +25,29 @@ vi.mock("@/lib/db", () => ({
       findMany: vi.fn(),
       create: vi.fn(),
     },
+    companyLocation: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
 // Mock next-intl
 vi.mock("next-intl/server", () => ({
-  getTranslations: vi.fn(async () => (key: string, params?: Record<string, unknown>) => {
-    if (key === "insufficientBalance") {
-      return `Insufficient balance. Remaining: ${params?.remaining}`;
-    }
-    if (key === "overlapError") {
-      return `Overlap with ${params?.status} leave from ${params?.start} to ${params?.end}`;
-    }
-    if (key.startsWith("statuses.")) {
-      const status = key.split(".")[1];
-      return status.toLowerCase();
-    }
-    return key;
-  }),
+  getTranslations: vi.fn(
+    async () => (key: string, params?: Record<string, unknown>) => {
+      if (key === "insufficientBalance") {
+        return `Insufficient balance. Remaining: ${params?.remaining}`;
+      }
+      if (key === "overlapError") {
+        return `Overlap with ${params?.status} leave from ${params?.start} to ${params?.end}`;
+      }
+      if (key.startsWith("statuses.")) {
+        const status = key.split(".")[1];
+        return status.toLowerCase();
+      }
+      return key;
+    },
+  ),
 }));
 
 // Mock holiday service
@@ -75,11 +80,22 @@ describe("/api/annual-leave with holiday calculation", () => {
         id: mockSession.user.id,
         totalLeaves: 15,
         usedLeaves: 0,
-        country: "US",
       };
 
       vi.mocked(db.user.findUnique).mockResolvedValue(mockUser as never);
       vi.mocked(db.leaveRequest.findMany).mockResolvedValue([]);
+      vi.mocked(db.companyLocation.findFirst).mockResolvedValue({
+        id: "company-1",
+        country: "US",
+        name: "Company Office",
+        latitude: 0,
+        longitude: 0,
+        radius: 100,
+        address: null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as never);
       mockedFetchHolidays.mockResolvedValue([]);
 
       const mockLeave = {
@@ -244,7 +260,7 @@ describe("/api/annual-leave with holiday calculation", () => {
   });
 
   describe("POST without country code", () => {
-    it("should not calculate effective days if no country code", async () => {
+    it("should calculate effective days excluding weekends even without country code", async () => {
       const mockSession = createMockSession();
       const { getServerSession } = await import("next-auth");
       vi.mocked(getServerSession).mockResolvedValue(mockSession);
@@ -253,11 +269,12 @@ describe("/api/annual-leave with holiday calculation", () => {
         id: mockSession.user.id,
         totalLeaves: 15,
         usedLeaves: 0,
-        country: null, // No country code
       };
 
       vi.mocked(db.user.findUnique).mockResolvedValue(mockUser as never);
       vi.mocked(db.leaveRequest.findMany).mockResolvedValue([]);
+      // No company location configured (returns null)
+      vi.mocked(db.companyLocation.findFirst).mockResolvedValue(null as never);
 
       const mockLeave = {
         id: "leave-1",
@@ -267,7 +284,7 @@ describe("/api/annual-leave with holiday calculation", () => {
         startDate: new Date("2024-01-15"),
         endDate: new Date("2024-01-21"),
         days: 7,
-        effectiveDays: 7, // Same as requested days when no country
+        effectiveDays: 5, // 7 days - 2 weekend days (Sat, Sun) = 5 working days
         reason: null,
         status: "PENDING",
       };
@@ -287,7 +304,7 @@ describe("/api/annual-leave with holiday calculation", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.effectiveDays).toBe(7);
+      expect(data.effectiveDays).toBe(5); // Should exclude weekends even without country code
       expect(data.days).toBe(7);
     });
   });

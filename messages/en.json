@@ -198,7 +198,8 @@
     "tabs": {
       "attendance": "Attendance Records",
       "leaves": "Leave Requests",
-      "members": "Employee Management"
+      "members": "Employee Management",
+      "settings": "Company Settings"
     },
     "attendance": {
       "description": "Manage employee attendance records",
@@ -259,6 +260,16 @@
       "employee": "Employee",
       "role": "Role",
       "joinedAt": "Joined At"
+    },
+    "settings": {
+      "description": "Manage company-wide settings",
+      "country": "Country for holiday calculations",
+      "countryDescription": "Select the country to apply when calculating annual leave usage. Public holidays of the selected country will be automatically excluded.",
+      "saved": "Settings saved.",
+      "saveFailed": "Failed to save settings.",
+      "saving": "Saving...",
+      "save": "Save",
+      "note": "These settings apply company-wide. The public holidays of the selected country will be reflected in annual leave calculations for all employees."
     }
   },
   "settings": {
