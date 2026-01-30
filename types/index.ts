@@ -42,7 +42,8 @@ export interface LeaveRequestRecord {
 }
 
 export interface UserBalance {
+  id: string;
   totalLeaves: number;
   usedLeaves: number;
-  joinDate: string;
+  joinDate: Date | null;
 }
