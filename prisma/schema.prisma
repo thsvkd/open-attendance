@@ -174,19 +174,19 @@ model AttendanceSession {
   sessionToken      String    @unique // Unique token for QR code
   action            String    // "CHECK_IN" or "CHECK_OUT"
   status            String    @default("PENDING") // PENDING, VERIFIED, EXPIRED, FAILED
-  
+
   // Location data submitted via mobile
   latitude          Float?
   longitude         Float?
   wifiSsid          String?
   wifiBssid         String?
-  
+
   expiresAt         DateTime  // Session expiration time
   verifiedAt        DateTime? // When the session was verified
-  
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  
+
   @@index([sessionToken])
   @@index([userId, status])
   @@index([expiresAt])
