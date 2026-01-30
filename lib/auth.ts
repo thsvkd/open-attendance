@@ -48,9 +48,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Return user object with all necessary fields for JWT
         return {
-          id: user.id,
-          name: user.name,
+          id: String(user.id),
+          name: user.name || "",
           email: user.email,
           role: user.role,
         };
@@ -71,27 +72,43 @@ export const authOptions: NextAuthOptions = {
       return baseUrl;
     },
     async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.role = token.role;
+      // Add JWT token data to session
+      if (token && typeof token === "object") {
+        if (session.user) {
+          session.user.id = (token.id as string) || "";
+          session.user.name = (token.name as string) || undefined;
+          session.user.email = (token.email as string) || "";
+          (session.user as Record<string, unknown>).role =
+            (token.role as string) || "USER";
+        }
       }
+
       return session;
     },
     async jwt({ token, user }) {
       // On initial sign-in, user object is available
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.role = user.role;
+      if (user && typeof user === "object") {
+        const userRecord = user as unknown as Record<string, unknown>;
+        const userId = (userRecord.id || userRecord.id) as string;
+        if (!userId) {
+          console.error(
+            "User object missing id field during JWT creation",
+            user,
+          );
+          return token;
+        }
+
+        token.id = userId;
+        token.name = (userRecord.name as string) || "";
+        token.email = (userRecord.email as string) || "";
+        token.role = (userRecord.role as string) || "USER";
+
         return token;
       }
 
       // On subsequent requests, refresh user data from database using ID
       // This ensures email changes are properly reflected
-      if (token.id && typeof token.id === "string") {
+      if (token && token.id && typeof token.id === "string") {
         const dbUser = await db.user.findUnique({
           where: {
             id: token.id,
@@ -100,8 +117,8 @@ export const authOptions: NextAuthOptions = {
 
         if (dbUser) {
           return {
-            id: dbUser.id,
-            name: dbUser.name,
+            id: String(dbUser.id),
+            name: dbUser.name || "",
             email: dbUser.email,
             role: dbUser.role,
           };
