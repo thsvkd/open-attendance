@@ -21,7 +21,7 @@ export default async function AttendancePage() {
   });
 
   // Convert Date objects to ISO strings for type compatibility
-  const history = rawHistory.map((record) => ({
+  const history = rawHistory.map((record: (typeof rawHistory)[number]) => ({
     ...record,
     date: record.date.toISOString(),
     checkIn: record.checkIn?.toISOString() ?? null,

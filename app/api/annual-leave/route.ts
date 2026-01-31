@@ -99,6 +99,9 @@ export async function POST(req: Request) {
       where: { isActive: true },
     });
 
+    // Default to 'KR' (Korea) if no country is set
+    const countryCode = companyLocation?.country || "KR";
+
     const remainingLeaves = user.totalLeaves - user.usedLeaves;
 
     // Calculate effective days (excluding holidays and weekends)
@@ -108,7 +111,7 @@ export async function POST(req: Request) {
       start,
       end,
       days,
-      companyLocation?.country,
+      countryCode,
     );
 
     // Show warning if effective days is 0
@@ -171,6 +174,10 @@ export async function POST(req: Request) {
       }
     }
 
+    // Store effectiveDays as the actual consumed leave days
+    // This pre-calculates weekends/holidays exclusion before storing
+    const actualDays = effectiveDaysResult.effectiveDays;
+
     const leave = await db.leaveRequest.create({
       data: {
         userId: session!.user.id,
@@ -180,8 +187,8 @@ export async function POST(req: Request) {
         endDate: end,
         startTime: leaveType === "QUARTER_DAY" ? startTime || null : null,
         endTime: leaveType === "QUARTER_DAY" ? endTime || null : null,
-        days,
-        effectiveDays: effectiveDaysResult.effectiveDays,
+        days: actualDays,
+        effectiveDays: actualDays,
         reason: reason || null,
         status: "PENDING",
       },
