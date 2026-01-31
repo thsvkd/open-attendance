@@ -69,8 +69,8 @@ async function getAnnualLeaveData(userId: string) {
   }
 
   const usedLeaves = leaves
-    .filter((leave) => leave.status === "APPROVED")
-    .reduce((acc, leave) => acc + leave.days, 0);
+    .filter((leave: { status: string }) => leave.status === "APPROVED")
+    .reduce((acc: number, leave: { days: number }) => acc + leave.days, 0);
 
   const userBalance: UserBalance = {
     id: user.id,
@@ -79,19 +79,21 @@ async function getAnnualLeaveData(userId: string) {
     joinDate: user.joinDate,
   };
 
-  const leaveRecords: LeaveRequestRecord[] = leaves.map((leave) => ({
-    id: leave.id,
-    type: leave.type,
-    startDate: leave.startDate.toISOString(),
-    endDate: leave.endDate.toISOString(),
-    days: leave.days,
-    reason: leave.reason ?? "",
-    status: leave.status,
-    leaveType: (leave.leaveType as LeaveType) || undefined,
-    startTime: leave.startTime || undefined,
-    endTime: leave.endTime || undefined,
-    createdAt: leave.createdAt.toISOString(),
-  }));
+  const leaveRecords: LeaveRequestRecord[] = leaves.map(
+    (leave: (typeof leaves)[number]) => ({
+      id: leave.id,
+      type: leave.type,
+      startDate: leave.startDate.toISOString(),
+      endDate: leave.endDate.toISOString(),
+      days: leave.days,
+      reason: leave.reason ?? "",
+      status: leave.status,
+      leaveType: (leave.leaveType as LeaveType) || undefined,
+      startTime: leave.startTime || undefined,
+      endTime: leave.endTime || undefined,
+      createdAt: leave.createdAt.toISOString(),
+    }),
+  );
 
   return { leaves: leaveRecords, userBalance };
 }

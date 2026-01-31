@@ -17,6 +17,25 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding test database...");
 
+  // Ensure default CompanyLocation exists with KR country
+  const existingLocation = await prisma.companyLocation.findFirst({
+    where: { isActive: true },
+  });
+
+  if (!existingLocation) {
+    await prisma.companyLocation.create({
+      data: {
+        name: "Default Office",
+        latitude: 37.5665, // Seoul coordinates
+        longitude: 126.978,
+        radius: 100,
+        country: "KR",
+        isActive: true,
+      },
+    });
+    console.log("Created default CompanyLocation with country: KR");
+  }
+
   // Check if users already exist
   const existingUsers = await prisma.user.count();
   if (existingUsers > 0) {
