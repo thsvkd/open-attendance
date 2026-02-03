@@ -39,6 +39,8 @@ export interface LeaveRequestRecord {
   leaveType?: LeaveType;
   startTime?: string;
   endTime?: string;
+  reason?: string;
+  createdAt?: string;
 }
 
 export interface UserBalance {
