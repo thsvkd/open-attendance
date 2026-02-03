@@ -174,10 +174,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Store effectiveDays as the actual consumed leave days
-    // This pre-calculates weekends/holidays exclusion before storing
-    const actualDays = effectiveDaysResult.effectiveDays;
-
     const leave = await db.leaveRequest.create({
       data: {
         userId: session!.user.id,
@@ -187,8 +183,8 @@ export async function POST(req: Request) {
         endDate: end,
         startTime: leaveType === "QUARTER_DAY" ? startTime || null : null,
         endTime: leaveType === "QUARTER_DAY" ? endTime || null : null,
-        days: actualDays,
-        effectiveDays: actualDays,
+        days,
+        effectiveDays: effectiveDaysResult.effectiveDays,
         reason: reason || null,
         status: "PENDING",
       },

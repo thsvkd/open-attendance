@@ -22,6 +22,7 @@ async function getAnnualLeaveData(userId: string) {
         startDate: true,
         endDate: true,
         days: true,
+        effectiveDays: true,
         reason: true,
         status: true,
         leaveType: true,
@@ -70,7 +71,11 @@ async function getAnnualLeaveData(userId: string) {
 
   const usedLeaves = leaves
     .filter((leave: { status: string }) => leave.status === "APPROVED")
-    .reduce((acc: number, leave: { days: number }) => acc + leave.days, 0);
+    .reduce(
+      (acc: number, leave: { days: number; effectiveDays: number | null }) =>
+        acc + (leave.effectiveDays ?? leave.days),
+      0,
+    );
 
   const userBalance: UserBalance = {
     id: user.id,
