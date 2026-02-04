@@ -154,7 +154,15 @@
     "twoHoursAutoAdjust": "시작 시간 또는 종료 시간을 변경하면 자동으로 2시간 간격이 맞춰집니다.",
     "overlapError": "선택한 휴가 기간이 이미 존재하는 {status} 요청({start} ~ {end})과 겹칩니다.",
     "insufficientBalance": "잔여 연차가 부족합니다. 현재 {remaining}일 남았습니다.",
-    "joinDateNotSet": "입사일이 지정되지 않아 연차 신청이 불가합니다."
+    "joinDateNotSet": "입사일이 지정되지 않아 연차 신청이 불가합니다.",
+    "calculationResult": "연차 소모 계산",
+    "totalPeriod": "전체 기간",
+    "weekendDays": "주말",
+    "holidayDays": "공휴일",
+    "effectiveDays": "실제 소모 연차",
+    "allNonWorkingDays": "선택한 모든 날짜가 주말 또는 공휴일입니다",
+    "insufficientBalancePreview": "잔여 연차가 부족합니다",
+    "calendarDays": "달력 일수"
   },
   "attendance": {
     "title": "내 근태",

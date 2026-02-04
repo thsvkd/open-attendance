@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TimePickerField } from "@/components/ui/time-picker-field";
+import type { Holiday } from "@/lib/holiday-service";
+import { calculateLeaveBreakdown } from "@/lib/client-holiday-utils";
 import type {
   LeaveType,
   LeaveTypeSelection,
@@ -56,7 +58,59 @@ export function AnnualLeaveForm({
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [fetchedYears, setFetchedYears] = useState<Set<number>>(new Set());
   const t = useTranslations("annualLeave");
+
+  // Fetch holidays on mount and when date years change
+  useEffect(() => {
+    const currentYear = new Date().getFullYear();
+    const yearsToFetch = new Set<number>([currentYear]);
+
+    if (startDate) yearsToFetch.add(startDate.getFullYear());
+    if (endDate) yearsToFetch.add(endDate.getFullYear());
+
+    const missingYears = [...yearsToFetch].filter((y) => !fetchedYears.has(y));
+    if (missingYears.length === 0) return;
+
+    const fetchAll = async () => {
+      const results = await Promise.all(
+        missingYears.map((year) =>
+          axios
+            .get<{ holidays: Holiday[] }>(`/api/holidays?year=${year}`)
+            .then((res) => res.data.holidays)
+            .catch(() => [] as Holiday[]),
+        ),
+      );
+      setHolidays((prev) => [...prev, ...results.flat()]);
+      setFetchedYears((prev) => {
+        const next = new Set(prev);
+        missingYears.forEach((y) => next.add(y));
+        return next;
+      });
+    };
+    fetchAll();
+  }, [startDate, endDate, fetchedYears]);
+
+  // Real-time leave calculation
+  const leaveBreakdown = useMemo(() => {
+    if (leaveTypeSelection === "FULL_DAY") {
+      if (!startDate || !endDate) return null;
+      return calculateLeaveBreakdown(
+        leaveTypeSelection,
+        startDate,
+        endDate,
+        holidays,
+      );
+    }
+    if (!startDate) return null;
+    return calculateLeaveBreakdown(
+      leaveTypeSelection,
+      startDate,
+      startDate,
+      holidays,
+    );
+  }, [startDate, endDate, leaveTypeSelection, holidays]);
 
   const getActualLeaveType = (): LeaveType => {
     if (leaveTypeSelection === "HALF_DAY") {
@@ -331,6 +385,60 @@ export function AnnualLeaveForm({
                 </div>
               )}
 
+              {leaveBreakdown && (
+                <div className="rounded-md border p-3 space-y-2 text-sm">
+                  <div className="font-medium">{t("calculationResult")}</div>
+                  {leaveTypeSelection === "FULL_DAY" && (
+                    <>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>{t("totalPeriod")}</span>
+                        <span>
+                          {leaveBreakdown.totalDays} {t("days")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>{t("weekendDays")}</span>
+                        <span>
+                          -{leaveBreakdown.weekendDays} {t("days")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>{t("holidayDays")}</span>
+                        <span>
+                          -{leaveBreakdown.holidayDays} {t("days")}
+                        </span>
+                      </div>
+                      <div className="border-t pt-2 flex justify-between font-semibold">
+                        <span>{t("effectiveDays")}</span>
+                        <span>
+                          {leaveBreakdown.effectiveDays} {t("days")}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {leaveTypeSelection !== "FULL_DAY" && (
+                    <div className="flex justify-between font-semibold">
+                      <span>{t("effectiveDays")}</span>
+                      <span>
+                        {leaveBreakdown.effectiveDays} {t("days")}
+                      </span>
+                    </div>
+                  )}
+                  {leaveBreakdown.effectiveDays === 0 && (
+                    <div className="text-red-600 text-xs font-medium">
+                      {t("allNonWorkingDays")}
+                    </div>
+                  )}
+                  {leaveBreakdown.effectiveDays > 0 &&
+                    leaveBreakdown.effectiveDays >
+                      userInfo.totalLeaves - userInfo.usedLeaves && (
+                      <div className="text-red-600 text-xs font-medium">
+                        {t("insufficientBalancePreview")}
+                      </div>
+                    )}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="reason">{t("reason")}</Label>
                 <Input
@@ -409,7 +517,15 @@ export function AnnualLeaveForm({
                           )}
                         </TableCell>
                         <TableCell>
-                          {leave.days} {t("days")}
+                          <span>
+                            {leave.effectiveDays ?? leave.days} {t("days")}
+                          </span>
+                          {leave.effectiveDays != null &&
+                            leave.effectiveDays !== leave.days && (
+                              <span className="block text-xs text-muted-foreground">
+                                ({t("calendarDays")}: {leave.days})
+                              </span>
+                            )}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -493,7 +609,13 @@ export function AnnualLeaveForm({
                               {t("duration")}
                             </div>
                             <div className="text-sm font-medium">
-                              {leave.days} {t("days")}
+                              {leave.effectiveDays ?? leave.days} {t("days")}
+                              {leave.effectiveDays != null &&
+                                leave.effectiveDays !== leave.days && (
+                                  <span className="block text-xs text-muted-foreground font-normal">
+                                    ({t("calendarDays")}: {leave.days})
+                                  </span>
+                                )}
                             </div>
                           </div>
                         </div>

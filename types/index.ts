@@ -35,10 +35,13 @@ export interface LeaveRequestRecord {
   startDate: string;
   endDate: string;
   days: number;
+  effectiveDays?: number;
   status: string;
   leaveType?: LeaveType;
   startTime?: string;
   endTime?: string;
+  reason?: string;
+  createdAt?: string;
 }
 
 export interface UserBalance {
