@@ -109,7 +109,7 @@
     "days": "days",
     "type": "Type",
     "dates": "Dates",
-    "duration": "Duration",
+    "duration": "Leave Used",
     "status": "Status",
     "reason": "Reason",
     "reasonPlaceholder": "Reason for annual leave",

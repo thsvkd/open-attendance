@@ -1,3 +1,4 @@
+import { isWeekend, isHoliday } from "./holiday-service";
 import type { Holiday } from "./holiday-service";
 import type { LeaveTypeSelection } from "@/types";
 
@@ -6,19 +7,6 @@ export interface LeaveBreakdown {
   weekendDays: number;
   holidayDays: number;
   effectiveDays: number;
-}
-
-function isWeekend(date: Date): boolean {
-  const day = date.getDay();
-  return day === 0 || day === 6;
-}
-
-function isHoliday(date: Date, holidays: Holiday[]): boolean {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const dateStr = `${year}-${month}-${day}`;
-  return holidays.some((h) => h.date === dateStr);
 }
 
 function countWeekendDays(start: Date, end: Date): number {

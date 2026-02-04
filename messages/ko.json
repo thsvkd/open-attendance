@@ -109,7 +109,7 @@
     "days": "일",
     "type": "유형",
     "dates": "날짜",
-    "duration": "기간",
+    "duration": "소모된 연차",
     "status": "상태",
     "reason": "사유",
     "reasonPlaceholder": "연차 사용 사유",

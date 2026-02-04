@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AnnualLeaveForm } from "@/components/annual-leave/annual-leave-form";
 import { calculateAnnualLeave } from "@/lib/annual-leave-calculator";
+import { calculateUsedLeaves } from "@/lib/leave-utils";
 import type { UserBalance, LeaveRequestRecord, LeaveType } from "@/types";
 
 async function getAnnualLeaveData(userId: string) {
@@ -50,9 +51,7 @@ async function getAnnualLeaveData(userId: string) {
   const joinDate = user.joinDate ? new Date(user.joinDate) : null;
   const totalLeaves = calculateAnnualLeave(joinDate);
 
-  const usedLeaves = leaves
-    .filter((leave) => leave.status === "APPROVED")
-    .reduce((acc, leave) => acc + (leave.effectiveDays ?? leave.days), 0);
+  const usedLeaves = calculateUsedLeaves(leaves);
 
   const userBalance: UserBalance = {
     id: user.id,
