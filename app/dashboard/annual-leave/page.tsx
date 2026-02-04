@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AnnualLeaveForm } from "@/components/annual-leave/annual-leave-form";
+import { calculateAnnualLeave } from "@/lib/annual-leave-calculator";
 import type { UserBalance, LeaveRequestRecord, LeaveType } from "@/types";
 
 async function getAnnualLeaveData(userId: string) {
@@ -45,29 +46,9 @@ async function getAnnualLeaveData(userId: string) {
     throw new Error("User not found");
   }
 
-  // Calculate leave balance
-  const currentYear = new Date().getFullYear();
+  // Calculate leave balance using Korean labor law (근로기준법 제60조)
   const joinDate = user.joinDate ? new Date(user.joinDate) : null;
-
-  let totalLeaves = 15; // Default
-
-  if (joinDate) {
-    const joinYear = joinDate.getFullYear();
-    const joinMonth = joinDate.getMonth();
-
-    if (joinYear === currentYear) {
-      totalLeaves = Math.max(1, Math.floor((12 - joinMonth) * (15 / 12)));
-    } else {
-      const yearsSinceJoin = currentYear - joinYear;
-      if (yearsSinceJoin >= 20) totalLeaves = 25;
-      else if (yearsSinceJoin >= 15) totalLeaves = 24;
-      else if (yearsSinceJoin >= 10) totalLeaves = 23;
-      else if (yearsSinceJoin >= 8) totalLeaves = 21;
-      else if (yearsSinceJoin >= 6) totalLeaves = 19;
-      else if (yearsSinceJoin >= 4) totalLeaves = 17;
-      else if (yearsSinceJoin >= 2) totalLeaves = 16;
-    }
-  }
+  const totalLeaves = calculateAnnualLeave(joinDate);
 
   const usedLeaves = leaves
     .filter((leave) => leave.status === "APPROVED")
