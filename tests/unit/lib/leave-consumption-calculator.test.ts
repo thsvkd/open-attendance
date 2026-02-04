@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { calculateEffectiveDays } from "@/lib/effective-days-calculator";
+import { calculateLeaveConsumption } from "@/lib/leave-consumption-calculator";
 import * as holidayService from "@/lib/holiday-service";
 import type { Holiday } from "@/lib/holiday-service";
 
@@ -14,14 +14,14 @@ vi.mock("@/lib/holiday-service", async () => {
 
 const mockedFetchHolidays = vi.mocked(holidayService.fetchHolidays);
 
-describe("effective-days-calculator", () => {
+describe("leave-consumption-calculator", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe("calculateEffectiveDays - no country code", () => {
+  describe("calculateLeaveConsumption - no country code", () => {
     it("should return requested days when no country code is provided", async () => {
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "FULL_DAY",
         new Date("2024-01-15"),
         new Date("2024-01-19"),
@@ -38,12 +38,12 @@ describe("effective-days-calculator", () => {
     });
   });
 
-  describe("calculateEffectiveDays - FULL_DAY", () => {
+  describe("calculateLeaveConsumption - FULL_DAY", () => {
     it("should calculate effective days excluding weekends", async () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 15-21, 2024 (Mon-Sun) = 7 days, but only 5 working days
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "FULL_DAY",
         new Date("2024-01-15"),
         new Date("2024-01-21"),
@@ -75,7 +75,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce(mockHolidays);
 
       // Jan 15-19, 2024 (Mon-Fri) with one holiday on Jan 16 = 4 working days
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "FULL_DAY",
         new Date("2024-01-15"),
         new Date("2024-01-19"),
@@ -93,7 +93,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 13-14, 2024 (Sat-Sun) = 0 working days
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "FULL_DAY",
         new Date("2024-01-13"),
         new Date("2024-01-14"),
@@ -113,7 +113,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Dec 30, 2024 - Jan 3, 2025
-      await calculateEffectiveDays(
+      await calculateLeaveConsumption(
         "FULL_DAY",
         new Date("2024-12-30"),
         new Date("2025-01-03"),
@@ -127,12 +127,12 @@ describe("effective-days-calculator", () => {
     });
   });
 
-  describe("calculateEffectiveDays - HALF_DAY", () => {
+  describe("calculateLeaveConsumption - HALF_DAY", () => {
     it("should return requested days for working day", async () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 15, 2024 (Monday)
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "HALF_DAY_AM",
         new Date("2024-01-15"),
         new Date("2024-01-15"),
@@ -150,7 +150,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 13, 2024 (Saturday)
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "HALF_DAY_AM",
         new Date("2024-01-13"),
         new Date("2024-01-13"),
@@ -183,7 +183,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce(mockHolidays);
 
       // Jan 15, 2024 (Monday but holiday)
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "HALF_DAY_PM",
         new Date("2024-01-15"),
         new Date("2024-01-15"),
@@ -199,12 +199,12 @@ describe("effective-days-calculator", () => {
     });
   });
 
-  describe("calculateEffectiveDays - QUARTER_DAY", () => {
+  describe("calculateLeaveConsumption - QUARTER_DAY", () => {
     it("should return requested days for working day", async () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 15, 2024 (Monday)
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "QUARTER_DAY",
         new Date("2024-01-15"),
         new Date("2024-01-15"),
@@ -222,7 +222,7 @@ describe("effective-days-calculator", () => {
       mockedFetchHolidays.mockResolvedValueOnce([]);
 
       // Jan 13, 2024 (Saturday)
-      const result = await calculateEffectiveDays(
+      const result = await calculateLeaveConsumption(
         "QUARTER_DAY",
         new Date("2024-01-13"),
         new Date("2024-01-13"),
