@@ -74,7 +74,7 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                 <TableHead>{t("table.employee")}</TableHead>
                 <TableHead>{tl("type")}</TableHead>
                 <TableHead>{tl("dates")}</TableHead>
-                <TableHead className="text-center">{tl("days")}</TableHead>
+                <TableHead className="text-center">{ta("duration")}</TableHead>
                 <TableHead className="text-center">{tl("status")}</TableHead>
                 <TableHead className="text-center">{tc("actions")}</TableHead>
               </TableRow>
@@ -127,7 +127,9 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                         format(new Date(leave.startDate), "MM/dd")
                       )}
                     </TableCell>
-                    <TableCell className="text-center">{leave.days}</TableCell>
+                    <TableCell className="text-center">
+                      {leave.effectiveDays ?? leave.days}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Badge
                         statusType="leave"
@@ -250,9 +252,11 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                          {tl("days")}
+                          {ta("duration")}
                         </span>
-                        <span className="font-medium">{leave.days}</span>
+                        <span className="font-medium">
+                          {leave.effectiveDays ?? leave.days}
+                        </span>
                       </div>
                     </div>
                     {leave.status === "PENDING" && (
