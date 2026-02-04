@@ -478,9 +478,13 @@ export function AnnualLeaveForm({
                   <TableRow>
                     <TableHead>{t("type")}</TableHead>
                     <TableHead>{t("dates")}</TableHead>
-                    <TableHead>{t("duration")}</TableHead>
-                    <TableHead>{t("status")}</TableHead>
-                    <TableHead>{t("common.actions")}</TableHead>
+                    <TableHead className="text-center">
+                      {t("duration")}
+                    </TableHead>
+                    <TableHead className="text-center">{t("status")}</TableHead>
+                    <TableHead className="text-center">
+                      {t("common.actions")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -516,40 +520,36 @@ export function AnnualLeaveForm({
                             format(new Date(leave.startDate), "MM/dd")
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <span>
                             {leave.effectiveDays ?? leave.days} {t("days")}
                           </span>
-                          {leave.effectiveDays != null &&
-                            leave.effectiveDays !== leave.days && (
-                              <span className="block text-xs text-muted-foreground">
-                                ({t("calendarDays")}: {leave.days})
-                              </span>
-                            )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <Badge
                             statusType="leave"
                             status={leave.status}
                             label={t(`statuses.${leave.status}`)}
                           />
                         </TableCell>
-                        <TableCell className="text-right">
-                          {leave.status === "PENDING" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleCancelLeave(leave.id)}
-                              disabled={cancelling === leave.id}
-                            >
-                              {cancelling === leave.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                t("cancel")
-                              )}
-                            </Button>
-                          )}
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {leave.status === "PENDING" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleCancelLeave(leave.id)}
+                                disabled={cancelling === leave.id}
+                              >
+                                {cancelling === leave.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  t("cancel")
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -610,12 +610,6 @@ export function AnnualLeaveForm({
                             </div>
                             <div className="text-sm font-medium">
                               {leave.effectiveDays ?? leave.days} {t("days")}
-                              {leave.effectiveDays != null &&
-                                leave.effectiveDays !== leave.days && (
-                                  <span className="block text-xs text-muted-foreground font-normal">
-                                    ({t("calendarDays")}: {leave.days})
-                                  </span>
-                                )}
                             </div>
                           </div>
                         </div>
