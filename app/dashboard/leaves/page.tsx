@@ -43,7 +43,10 @@ export default function LeavesPage() {
   const fetchLeaves = async () => {
     try {
       const res = await axios.get("/api/leaves");
-      setLeaves(res.data);
+      // 조퇴/결근 페이지에서는 연차(ANNUAL) 타입 제외
+      setLeaves(
+        res.data.filter((leave: LeaveRequestRecord) => leave.type !== "ANNUAL"),
+      );
     } catch (error) {
       console.error(error);
     } finally {
