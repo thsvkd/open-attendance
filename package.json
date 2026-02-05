@@ -2,6 +2,10 @@
   "name": "open-attendance",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.3.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "node scripts/start-app.js",
     "build": "next build",
