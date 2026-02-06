@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import {
   requireAuth,
+  requireAdmin,
   errorResponse,
   internalErrorResponse,
   successResponse,
