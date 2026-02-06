@@ -1,49 +1,57 @@
-# AI Agents Development Guide
+# open-attendance Development Guidelines
 
-## Project Overview
+> **Audience**: LLM-driven engineering agents and human developers
 
-This is an open-source project for attendance and annual leave management. It provides an integrated system for systematically managing and analyzing employee attendance, time off, and vacation.
+open-attendance is an attendance and leave management system designed for small to medium-sized companies. open-attendance provides features for managing employee attendance, annual leave, vacation, sick leave, and related reporting functionalities.
 
-## Feature Requirements
+## Required Development Workflow
 
-### Employee Attendance/Check-out Management
+1. Fulfill the user's requirements.
+2. Write tests for the implemented features (add them to the `./tests` directory).
+3. Run the full test suite (`test.sh`).
+4. Ensure formatting, linting, and type-checking are clean (`check-quality.sh --fix`).
 
-- By default, assume attendance on all dates except legal holidays and company-designated holidays
-- If actual attendance is not made, record it as absent with a reason
+## Development Rules
 
-### Annual Leave, Vacation, and Sick Leave Management
+### General
 
-- Annual leave balance management
-- Leave request and approval workflow
-  - Implement leave and sick leave requests via Slack
-- Special leave handling (sick leave, family events leave, etc.)
-- Leave usage tracking
-- Annual leave initialization and carryover policy management
-- Reflect Korean public holidays and apply Korean annual leave laws
-  - Implement choice between hire date basis or fiscal year basis
+- .env, .env.local files must never be edited.
 
-### Attendance and Leave Usage Analysis and Reporting
+### Git & CI
 
-- Monthly/quarterly/annual attendance and leave usage reports
+- **NEVER** push or force-push to remote
+- **ALWAYS** use the -s option to create a signed commit
+- **NEVER** add "Co-Authored-By" lines to commit messages
 
-### User Account and Permission Management
+### Commit Messages
 
-- Login and account creation
-- Role-based permissions management
-  - Administrator: Full access to all features
-  - Regular user: Access only to their own attendance and leave information
-
-## Development Guidelines
-
-- Utilize vercel-react-best-practices skills
-- Write code that is easy for human developers to modify later
-  - Add sufficient comments to understand the code
-  - Reduce code duplication and modularize
-  - Follow code style guidelines
-- After implementing features and feedback, follow these steps:
-  - Formatting
-  - Linting
-  - Testing
-  - Commit
-- When adding new features, update related documents (README.md, AGENTS.md, etc.) and add test code
 - Follow standard commit message conventions
+- Commit messages should be in English
+- Keep commit messages brief - ideally just headlines, not detailed messages
+- Focus on what changed, not how or why
+
+### Agents
+
+- nextjs-project-lead: Start with this agent for all Next.js related tasks
+- db-schema-architect: Use this agent for all database related tasks
+- ui-theme-specialist: Use this agent for all UI/UX and design related tasks
+- location-expert: Use this agent for all location-based features and optimizations
+
+### Tools (MCP & Skills)
+
+- Use vercel-react-best-practices skills for React, TypeScript, and Next.js development
+- Use web-design-guidelines skills for UI/UX design & create new components
+- Use Context7 MCP for up-to-date library and framework knowledge
+
+### Documentation
+
+- README.md: 처음봐도 프로젝트의 목적과 기능을 한번에 이해할 수 있고, 빠르게 시작할 수 있도록 작성.
+- ./docs: 프로젝트의 구조, 아키텍처, 주요 결정 사항 등 상세한 설명에 대한 문서를 정리.
+- **Core Principle**: A feature doesn't exist unless it is documented!
+
+### Documentation Guidelines
+
+- **Code Examples**: Explain before showing code, make blocks fully runnable (include imports)
+- **Structure**: Headers form navigation guide, logical H2/H3 hierarchy
+- **Content**: User-focused sections, motivate features (why) before mechanics (how)
+- **Style**: Prose over code comments for important information

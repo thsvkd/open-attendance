@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Utility functions and constants for open-attendance scripts
 # Source this file in other scripts: source "$(dirname "$0")/utils.sh"
@@ -59,6 +59,60 @@ load_nvm() {
     fi
   fi
   hash -r 2>/dev/null
+}
+
+# Required versions (should match package.json)
+REQUIRED_NODE_MAJOR=22
+REQUIRED_NPM_VERSION="11.3.0"
+
+# Check Node.js version meets minimum requirement
+check_node_version() {
+  if ! command -v node &> /dev/null; then
+    print_error "Node.js is not installed."
+    exit 1
+  fi
+
+  local node_version
+  node_version=$(node -v | sed 's/^v//')
+  local node_major
+  node_major=$(echo "$node_version" | cut -d. -f1)
+
+  if [ "$node_major" -lt "$REQUIRED_NODE_MAJOR" ]; then
+    print_error "Node.js >= $REQUIRED_NODE_MAJOR.0.0 is required (current: v$node_version)"
+    print_warning "Please upgrade Node.js: nvm install $REQUIRED_NODE_MAJOR"
+    exit 1
+  fi
+
+  print_success "Node.js v$node_version"
+}
+
+# Check corepack and npm version for lock file consistency
+check_npm_version() {
+  local npm_version
+  npm_version=$(npm --version 2>/dev/null)
+
+  if command -v corepack &> /dev/null; then
+    # Check if corepack is enabled by testing if it intercepts npm
+    if corepack npm --version &> /dev/null; then
+      print_success "corepack is active (npm will use v$REQUIRED_NPM_VERSION per packageManager field)"
+      return
+    fi
+
+    # corepack exists but not enabled — activate it automatically
+    print_info "Enabling corepack..."
+    corepack enable
+    print_success "corepack enabled (npm will use v$REQUIRED_NPM_VERSION per packageManager field)"
+    return
+  fi
+
+  # corepack not available — warn if npm version differs
+  if [ "$npm_version" != "$REQUIRED_NPM_VERSION" ]; then
+    print_warning "npm version mismatch: current v$npm_version, expected v$REQUIRED_NPM_VERSION"
+    print_warning "This may cause unnecessary package-lock.json changes."
+    print_warning "Install corepack or align your npm version to v$REQUIRED_NPM_VERSION."
+  else
+    print_success "npm v$npm_version"
+  fi
 }
 
 # Check if running in WSL with Windows npm (not allowed)
@@ -123,7 +177,7 @@ load_env_file() {
 # Get PORT from .env.local or use default
 get_port() {
   local default_port="${1:-3000}"
-  
+
   if [ -f ".env.local" ]; then
     local port=$(grep -E "^PORT=" ".env.local" | cut -d '=' -f 2 | tr -d '"' || echo "$default_port")
     echo "$port"

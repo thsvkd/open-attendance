@@ -7,6 +7,7 @@ import {
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";
+import { calculateAnnualLeave } from "@/lib/annual-leave-calculator";
 
 const ALLOWED_UPDATE_FIELDS = [
   "name",
@@ -72,6 +73,8 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const userJoinDate = joinDate ? new Date(joinDate) : new Date();
+    const totalLeaves = calculateAnnualLeave(userJoinDate);
 
     const user = await db.user.create({
       data: {
@@ -79,7 +82,8 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role: role === "ADMIN" ? "ADMIN" : "USER",
-        joinDate: joinDate ? new Date(joinDate) : new Date(),
+        joinDate: userJoinDate,
+        totalLeaves,
       },
       select: {
         id: true,
@@ -148,6 +152,15 @@ export async function PATCH(req: Request) {
 
     if (updateData.joinDate && typeof updateData.joinDate === "string") {
       updateData.joinDate = new Date(updateData.joinDate);
+    }
+
+    // Recalculate annual leave if joinDate is being updated (unless totalLeaves is also explicitly set)
+    if (
+      updateData.joinDate &&
+      updateData.joinDate instanceof Date &&
+      !updateData.totalLeaves
+    ) {
+      updateData.totalLeaves = calculateAnnualLeave(updateData.joinDate);
     }
 
     if (updateData.password && typeof updateData.password === "string") {

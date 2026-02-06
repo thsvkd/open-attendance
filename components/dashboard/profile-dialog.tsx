@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -27,8 +28,10 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [joinDate, setJoinDate] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
@@ -46,6 +49,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
         const data = await response.json();
         setName(data.name || "");
         setEmail(data.email || "");
+        setJoinDate(data.joinDate || null);
       }
     } catch (error) {
       console.error("Failed to fetch profile", error);
@@ -59,6 +63,11 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
 
     if (newPassword && !currentPassword) {
       toast.error(t("passwordRequired"));
+      return;
+    }
+
+    if (newPassword && newPassword !== confirmNewPassword) {
+      toast.error(t("passwordMismatch"));
       return;
     }
 
@@ -90,6 +99,7 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
         });
         onClose();
         setNewPassword("");
+        setConfirmNewPassword("");
         setCurrentPassword("");
       } else if (response.status === 403) {
         toast.error(t("incorrectPassword"));
@@ -107,11 +117,25 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">{t("name")}</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("name")}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input
@@ -124,13 +148,17 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">{t("name")}</Label>
+            <Label htmlFor="joinDate">{t("joinDate")}</Label>
             <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("name")}
-              required
+              id="joinDate"
+              type="text"
+              value={
+                joinDate
+                  ? new Date(joinDate).toLocaleDateString()
+                  : t("joinDateNotSet")
+              }
+              disabled
+              className="bg-gray-50 text-gray-600"
             />
           </div>
           <div className="space-y-2">
@@ -145,13 +173,26 @@ export function ProfileDialog({ isOpen, onClose }: ProfileDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="newPassword">{t("password")}</Label>
+            <Label htmlFor="newPassword">{t("newPassword")}</Label>
             <Input
               id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder={t("newPassword")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmNewPassword">
+              {t("confirmNewPassword")}
+            </Label>
+            <Input
+              id="confirmNewPassword"
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              placeholder={t("confirmNewPassword")}
+              required={!!newPassword}
             />
           </div>
           <DialogFooter>

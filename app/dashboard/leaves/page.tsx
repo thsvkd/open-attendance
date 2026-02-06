@@ -43,7 +43,10 @@ export default function LeavesPage() {
   const fetchLeaves = async () => {
     try {
       const res = await axios.get("/api/leaves");
-      setLeaves(res.data);
+      // 조퇴/결근 페이지에서는 연차(ANNUAL) 타입 제외
+      setLeaves(
+        res.data.filter((leave: LeaveRequestRecord) => leave.type !== "ANNUAL"),
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -183,9 +186,11 @@ export default function LeavesPage() {
                   <TableRow>
                     <TableHead>{t("type")}</TableHead>
                     <TableHead>{t("dates")}</TableHead>
-                    <TableHead>{t("days")}</TableHead>
-                    <TableHead>{t("status")}</TableHead>
-                    <TableHead>{t("common.actions")}</TableHead>
+                    <TableHead className="text-center">{t("days")}</TableHead>
+                    <TableHead className="text-center">{t("status")}</TableHead>
+                    <TableHead className="text-center">
+                      {t("common.actions")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -206,30 +211,34 @@ export default function LeavesPage() {
                           {format(new Date(leave.startDate), "MM/dd")} -{" "}
                           {format(new Date(leave.endDate), "MM/dd")}
                         </TableCell>
-                        <TableCell>{leave.days}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
+                          {leave.days}
+                        </TableCell>
+                        <TableCell className="text-center">
                           <Badge
                             statusType="leave"
                             status={leave.status}
                             label={t(`statuses.${leave.status}`)}
                           />
                         </TableCell>
-                        <TableCell className="text-right">
-                          {leave.status === "PENDING" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleCancelLeave(leave.id)}
-                              disabled={cancelling === leave.id}
-                            >
-                              {cancelling === leave.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                t("cancel")
-                              )}
-                            </Button>
-                          )}
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {leave.status === "PENDING" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleCancelLeave(leave.id)}
+                                disabled={cancelling === leave.id}
+                              >
+                                {cancelling === leave.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  t("cancel")
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

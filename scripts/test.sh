@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test script for open-attendance project
 # Usage: ./scripts/test.sh [unit|e2e|all|watch]
@@ -80,12 +80,17 @@ case "$TEST_TYPE" in
   all)
     print_info "Running all tests..."
     echo ""
-    print_warning "Step 1/2: Unit and Integration Tests"
+    print_warning "Step 1/3: Unit and Integration Tests"
     npm run test
     UNIT_TEST_EXIT_CODE=$?
+
+    echo ""
+    print_warning "Step 2/3: Build Test"
+    npm run build
+    BUILD_EXIT_CODE=$?
     
     echo ""
-    print_warning "Step 2/2: E2E Tests"
+    print_warning "Step 3/3: E2E Tests"
     npx playwright test
     E2E_TEST_EXIT_CODE=$?
     
@@ -96,6 +101,12 @@ case "$TEST_TYPE" in
       print_success "Unit/Integration Tests: PASSED"
     else
       print_error "Unit/Integration Tests: FAILED"
+    fi
+
+    if [ $BUILD_EXIT_CODE -eq 0 ]; then
+      print_success "Build: SUCCESSFUL"
+    else
+      print_error "Build: FAILED"
     fi
     
     if [ $E2E_TEST_EXIT_CODE -eq 0 ]; then
@@ -110,7 +121,7 @@ case "$TEST_TYPE" in
     echo ""
 
     # 하나라도 실패하면 종료 코드 1 반환
-    if [ $UNIT_TEST_EXIT_CODE -ne 0 ] || [ $E2E_TEST_EXIT_CODE -ne 0 ]; then
+    if [ $UNIT_TEST_EXIT_CODE -ne 0 ] || [ $BUILD_EXIT_CODE -ne 0 ] || [ $E2E_TEST_EXIT_CODE -ne 0 ]; then
       exit 1
     fi
     ;;

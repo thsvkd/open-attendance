@@ -2,14 +2,14 @@
 
 /**
  * Start dev/prod server with proper PORT environment variable
- * 
+ *
  * This script MUST remain as JavaScript because:
  * - Needs to spawn Next.js server process with proper environment variables
  * - Handles output filtering for cleaner logs
  * - Must integrate with init-db.js for database initialization
  * - Complex signal handling for graceful shutdown
  * - Cross-platform process management
- * 
+ *
  * This script reads .env.local, sets PORT and NEXTAUTH_URL,
  * then spawns the next dev/start command with those variables
  */
@@ -102,8 +102,9 @@ initDbProcess.on("close", (code) => {
   }
 
   // Run next dev or next start
+  const nextBin = path.join(__dirname, "..", "node_modules", ".bin", "next");
   const nextCommand = isProd ? "start" : "dev";
-  const nextProcess = spawn("next", [nextCommand], {
+  const nextProcess = spawn(nextBin, [nextCommand], {
     cwd: path.join(__dirname, ".."),
     env: fullEnv,
     stdio: ["inherit", "pipe", "pipe"],
