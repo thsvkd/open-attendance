@@ -8,7 +8,7 @@ import {
 /**
  * Result of effective days calculation
  */
-export interface EffectiveDaysResult {
+export interface LeaveConsumptionResult {
   requestedDays: number;
   effectiveDays: number;
   workingDays: number;
@@ -35,13 +35,13 @@ export interface EffectiveDaysResult {
  * @param countryCode - ISO 3166-1 alpha-2 country code (optional)
  * @returns Effective days calculation result
  */
-export async function calculateEffectiveDays(
+export async function calculateLeaveConsumption(
   leaveType: LeaveType,
   startDate: Date,
   endDate: Date,
   requestedDays: number,
   countryCode?: string | null,
-): Promise<EffectiveDaysResult> {
+): Promise<LeaveConsumptionResult> {
   // Fetch holidays for the relevant years
   // Note: Always fetch holidays (even if countryCode is empty) to ensure weekends are excluded
   const startYear = startDate.getFullYear();

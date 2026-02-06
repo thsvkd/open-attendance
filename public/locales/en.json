@@ -109,7 +109,7 @@
     "days": "days",
     "type": "Type",
     "dates": "Dates",
-    "duration": "Duration",
+    "duration": "Leave Used",
     "status": "Status",
     "reason": "Reason",
     "reasonPlaceholder": "Reason for annual leave",
@@ -154,7 +154,15 @@
     "twoHoursAutoAdjust": "Changing the start or end time will automatically adjust to 2-hour intervals.",
     "overlapError": "This leave request overlaps with an existing {status} request from {start} to {end}.",
     "insufficientBalance": "Insufficient leave balance. You have {remaining} days remaining.",
-    "joinDateNotSet": "Join date not set. Annual leave requests are not available until your administrator sets your join date."
+    "joinDateNotSet": "Join date not set. Annual leave requests are not available until your administrator sets your join date.",
+    "calculationResult": "Leave Calculation",
+    "totalPeriod": "Total Period",
+    "weekendDays": "Weekends",
+    "holidayDays": "Public Holidays",
+    "effectiveDays": "Actual Leave Used",
+    "allNonWorkingDays": "All selected days fall on weekends or holidays",
+    "insufficientBalancePreview": "Insufficient leave balance",
+    "calendarDays": "Calendar days"
   },
   "attendance": {
     "title": "My Attendance",

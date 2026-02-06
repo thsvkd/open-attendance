@@ -5,6 +5,7 @@ import {
   internalErrorResponse,
   successResponse,
 } from "@/lib/api-utils";
+import { calculateUsedLeaves } from "@/lib/leave-utils";
 
 export async function DELETE(
   req: Request,
@@ -47,12 +48,7 @@ export async function DELETE(
         },
       });
 
-      // Use effectiveDays if available, otherwise fall back to days
-      const totalUsed = approvedLeaves.reduce(
-        (sum: number, item: { days: number; effectiveDays?: number | null }) =>
-          sum + (item.effectiveDays ?? item.days),
-        0,
-      );
+      const totalUsed = calculateUsedLeaves(approvedLeaves);
 
       await db.user.update({
         where: { id: deletedLeave.userId },

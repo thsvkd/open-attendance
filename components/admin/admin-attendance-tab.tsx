@@ -66,10 +66,16 @@ export function AdminAttendanceTab({
               <TableRow>
                 <TableHead>{t("table.employee")}</TableHead>
                 <TableHead>{t("attendance.date") || "날짜"}</TableHead>
-                <TableHead>{t("attendance.checkIn") || "체크인"}</TableHead>
-                <TableHead>{t("attendance.checkOut") || "체크아웃"}</TableHead>
-                <TableHead>{t("attendance.status") || "상태"}</TableHead>
-                <TableHead className="text-right">{tc("actions")}</TableHead>
+                <TableHead className="text-center">
+                  {t("attendance.checkIn") || "체크인"}
+                </TableHead>
+                <TableHead className="text-center">
+                  {t("attendance.checkOut") || "체크아웃"}
+                </TableHead>
+                <TableHead className="text-center">
+                  {t("attendance.status") || "상태"}
+                </TableHead>
+                <TableHead className="text-center">{tc("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,17 +100,17 @@ export function AdminAttendanceTab({
                     <TableCell className="text-sm">
                       {format(new Date(record.date), "yyyy-MM-dd")}
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="text-sm text-center">
                       {record.checkIn
                         ? format(new Date(record.checkIn), "HH:mm:ss")
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-sm">
+                    <TableCell className="text-sm text-center">
                       {record.checkOut
                         ? format(new Date(record.checkOut), "HH:mm:ss")
                         : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         statusType="attendance"
                         status={record.status}
@@ -114,16 +120,18 @@ export function AdminAttendanceTab({
                         }
                       />
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => onDeleteAttendance(record.id)}
-                        title={t("attendance.delete") || "삭제"}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => onDeleteAttendance(record.id)}
+                          title={t("attendance.delete") || "삭제"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

@@ -66,11 +66,49 @@ describe("calculateAnnualLeave", () => {
       const currentDate = new Date("2024-01-01");
       expect(calculateAnnualLeave(joinDate, currentDate)).toBe(15);
     });
+  });
 
-    it("should return 15 days after multiple years", () => {
+  describe("graduated increase per Korean labor law (제60조 제4항)", () => {
+    it("should return 16 days after 3 years", () => {
+      const joinDate = new Date("2021-01-01");
+      const currentDate = new Date("2024-01-01"); // 3 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(16);
+    });
+
+    it("should return 16 days after 4 years", () => {
       const joinDate = new Date("2020-01-01");
-      const currentDate = new Date("2024-01-01");
-      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(15);
+      const currentDate = new Date("2024-01-01"); // 4 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(16);
+    });
+
+    it("should return 17 days after 5 years", () => {
+      const joinDate = new Date("2019-01-01");
+      const currentDate = new Date("2024-01-01"); // 5 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(17);
+    });
+
+    it("should return 18 days after 7 years", () => {
+      const joinDate = new Date("2017-01-01");
+      const currentDate = new Date("2024-01-01"); // 7 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(18);
+    });
+
+    it("should return 19 days after 10 years (9 extra years / 2 = 4)", () => {
+      const joinDate = new Date("2014-01-01");
+      const currentDate = new Date("2024-01-01"); // 10 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(19);
+    });
+
+    it("should return 25 days after 21 years (max)", () => {
+      const joinDate = new Date("2003-01-01");
+      const currentDate = new Date("2024-01-01"); // 21 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(25);
+    });
+
+    it("should cap at 25 days after 30 years", () => {
+      const joinDate = new Date("1994-01-01");
+      const currentDate = new Date("2024-01-01"); // 30 years
+      expect(calculateAnnualLeave(joinDate, currentDate)).toBe(25);
     });
   });
 
@@ -84,8 +122,8 @@ describe("calculateAnnualLeave", () => {
     it("should use current date by default when not provided", () => {
       const joinDate = new Date("2023-01-01");
       const result = calculateAnnualLeave(joinDate);
-      // Should be 15 since more than a year has passed from 2023-01-01 to 2026-01-28
-      expect(result).toBe(15);
+      // 2023-01-01 to 2026-02-04 is 3 years -> 15 + floor(2/2) = 16
+      expect(result).toBe(16);
     });
 
     it("should handle same day in different months correctly", () => {

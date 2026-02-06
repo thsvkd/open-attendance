@@ -270,9 +270,11 @@ export function AdminMembersTab({ users, onRefresh }: AdminMembersTabProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("table.employee")}</TableHead>
-                  <TableHead>{t("table.role")}</TableHead>
+                  <TableHead className="text-center">
+                    {t("table.role")}
+                  </TableHead>
                   <TableHead>{t("table.joinedAt")}</TableHead>
-                  <TableHead className="text-right">{tc("actions")}</TableHead>
+                  <TableHead className="text-center">{tc("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -301,7 +303,7 @@ export function AdminMembersTab({ users, onRefresh }: AdminMembersTabProps) {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <Badge
                           statusType="role"
                           status={user.role || "USER"}
@@ -321,14 +323,16 @@ export function AdminMembersTab({ users, onRefresh }: AdminMembersTabProps) {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(user)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                      <TableCell>
+                        <div className="flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

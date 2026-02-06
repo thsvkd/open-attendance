@@ -74,9 +74,9 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                 <TableHead>{t("table.employee")}</TableHead>
                 <TableHead>{tl("type")}</TableHead>
                 <TableHead>{tl("dates")}</TableHead>
-                <TableHead>{tl("days")}</TableHead>
-                <TableHead>{tl("status")}</TableHead>
-                <TableHead className="text-right">{tc("actions")}</TableHead>
+                <TableHead className="text-center">{ta("duration")}</TableHead>
+                <TableHead className="text-center">{tl("status")}</TableHead>
+                <TableHead className="text-center">{tc("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -127,46 +127,54 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                         format(new Date(leave.startDate), "MM/dd")
                       )}
                     </TableCell>
-                    <TableCell>{leave.days}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
+                      {leave.effectiveDays ?? leave.days}
+                    </TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         statusType="leave"
                         status={leave.status}
                         label={tl(`statuses.${leave.status}`)}
                       />
                     </TableCell>
-                    <TableCell className="text-right space-x-2 min-w-[140px]">
-                      {leave.status === "PENDING" && (
-                        <>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => onUpdateStatus(leave.id, "APPROVED")}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-2 min-w-[140px]">
+                        {leave.status === "PENDING" && (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() =>
+                                onUpdateStatus(leave.id, "APPROVED")
+                              }
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() =>
+                                onUpdateStatus(leave.id, "REJECTED")
+                              }
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {leave.status !== "PENDING" && (
                           <Button
                             size="icon"
                             variant="outline"
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => onUpdateStatus(leave.id, "REJECTED")}
+                            onClick={() => onDeleteLeave(leave.id)}
+                            title={t("leaves.delete") || "삭제"}
                           >
-                            <X className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        </>
-                      )}
-                      {leave.status !== "PENDING" && (
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => onDeleteLeave(leave.id)}
-                          title={t("leaves.delete") || "삭제"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -244,9 +252,11 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                          {tl("days")}
+                          {ta("duration")}
                         </span>
-                        <span className="font-medium">{leave.days}</span>
+                        <span className="font-medium">
+                          {leave.effectiveDays ?? leave.days}
+                        </span>
                       </div>
                     </div>
                     {leave.status === "PENDING" && (
