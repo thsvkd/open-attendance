@@ -13,6 +13,34 @@ export default async function AttendancePage() {
     redirect("/login");
   }
 
+  // Ensure user exists in database before querying attendance
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true },
+  });
+
+  if (!user) {
+    // Try to find by email as fallback
+    if (session.user.email) {
+      const userByEmail = await db.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true },
+      });
+
+      if (!userByEmail) {
+        throw new Error(
+          "User profile not found. Please contact your administrator.",
+        );
+      }
+      // Continue with the correct userId
+      session.user.id = userByEmail.id;
+    } else {
+      throw new Error(
+        "User profile not found. Please contact your administrator.",
+      );
+    }
+  }
+
   // Fetch attendance history server-side
   const rawHistory = await db.attendance.findMany({
     where: { userId: session.user.id },
