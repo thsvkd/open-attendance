@@ -47,34 +47,33 @@ interface AuthFormProps {
   variant: "register" | "setup";
 }
 
-const CONFIG = {
-  register: {
-    title: "Register",
-    description: "",
-    emailPlaceholder: "user@example.com",
-    submitLabel: "Register",
-    loadingLabel: "Creating account...",
-    successMessage: "Account created! Please login.",
-    width: "w-[350px]",
-    showFooter: true,
-  },
-  setup: {
-    title: "Initial Setup",
-    description: "Welcome! Create your administrator account to get started.",
-    emailPlaceholder: "admin@example.com",
-    submitLabel: "Create Admin Account",
-    loadingLabel: "Creating admin account...",
-    successMessage: "Admin account created! Please login.",
-    width: "w-[400px]",
-    showFooter: false,
-  },
-} as const;
-
 export function AuthForm({ variant }: AuthFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
-  const config = CONFIG[variant];
   const t = useTranslations("auth");
+
+  const uiConfig = {
+    register: {
+      title: t("register.title"),
+      description: t("createAccount"),
+      emailPlaceholder: "user@example.com",
+      submitLabel: t("register.submit"),
+      loadingLabel: t("register.submitting"),
+      successMessage: t("register.success"),
+      width: "w-[350px]",
+      showFooter: true,
+    },
+    setup: {
+      title: t("setup.title"),
+      description: t("setup.description"),
+      emailPlaceholder: "admin@example.com",
+      submitLabel: t("setup.submit"),
+      loadingLabel: t("setup.submitting"),
+      successMessage: t("setup.success"),
+      width: "w-[400px]",
+      showFooter: false,
+    },
+  }[variant];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -93,22 +92,20 @@ export function AuthForm({ variant }: AuthFormProps) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = values;
       await axios.post("/api/register", registerData);
-      toast.success(config.successMessage);
+      toast.success(uiConfig.successMessage);
       router.push("/login");
     } catch {
-      toast.error("Something went wrong.");
+      toast.error(t("somethingWentWrong"));
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <Card className={config.width}>
+    <Card className={uiConfig.width}>
       <CardHeader>
-        <CardTitle>{config.title}</CardTitle>
-        <CardDescription>
-          {config.description || t("createAccount")}
-        </CardDescription>
+        <CardTitle>{uiConfig.title}</CardTitle>
+        <CardDescription>{uiConfig.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -118,9 +115,9 @@ export function AuthForm({ variant }: AuthFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,9 +128,9 @@ export function AuthForm({ variant }: AuthFormProps) {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("email")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={config.emailPlaceholder} {...field} />
+                    <Input placeholder={uiConfig.emailPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,7 +141,7 @@ export function AuthForm({ variant }: AuthFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("password")}</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -166,12 +163,12 @@ export function AuthForm({ variant }: AuthFormProps) {
               )}
             />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? config.loadingLabel : config.submitLabel}
+              {isLoading ? uiConfig.loadingLabel : uiConfig.submitLabel}
             </Button>
           </form>
         </Form>
       </CardContent>
-      {config.showFooter && (
+      {uiConfig.showFooter && (
         <CardFooter>
           <Button variant="link" className="w-full" asChild>
             <Link href="/login">{t("alreadyHaveAccount")}</Link>

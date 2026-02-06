@@ -89,3 +89,15 @@ export function calculateDays(
       return differenceInDays(endDate, startDate) + 1;
   }
 }
+
+/**
+ * Calculates total used annual leave days from approved leave records.
+ * Uses effectiveDays if available, otherwise falls back to days.
+ */
+export function calculateUsedLeaves(
+  leaves: { days: number; effectiveDays?: number | null; status: string }[],
+): number {
+  return leaves
+    .filter((leave) => leave.status === "APPROVED")
+    .reduce((sum, leave) => sum + (leave.effectiveDays ?? leave.days), 0);
+}

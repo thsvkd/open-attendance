@@ -52,6 +52,8 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role: (await db.user.count()) === 0 ? "ADMIN" : "USER",
+        // joinDate is not set initially - admin must configure it
+        joinDate: null,
       },
       select: {
         id: true,

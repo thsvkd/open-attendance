@@ -8,7 +8,7 @@ assignees: ""
 
 ## 📚 Documentation Issue
 
-Which documentation needs improvement?
+<!-- Which documentation needs improvement?
 
 - [ ] README.md
 - [ ] CONTRIBUTING.md
@@ -18,31 +18,31 @@ Which documentation needs improvement?
 - [ ] docs/ARCHITECTURE.md
 - [ ] Code comments
 - [ ] API documentation
-- [ ] Other: \***\*\_\_\_\*\***
+- [ ] Other: \***\*\_\_\_\*\*** -->
 
 ## 📝 Current State
 
-Describe what the current documentation says (or doesn't say).
+<!-- Describe what the current documentation says (or doesn't say). -->
 
 ## ✨ Proposed Improvement
 
-Describe what you think should be added, changed, or clarified.
+<!-- Describe what you think should be added, changed, or clarified. -->
 
 ## 🎯 Target Audience
 
-Who will benefit from this documentation improvement?
+<!-- Who will benefit from this documentation improvement?
 
 - [ ] New users
 - [ ] Contributors
 - [ ] Developers
 - [ ] System administrators
-- [ ] All users
+- [ ] All users -->
 
 ## 📋 Additional Context
 
-Add any other context, examples, or references here.
+<!-- Add any other context, examples, or references here. -->
 
 ## 💪 Implementation Willingness
 
-- [ ] I would like to write/update this documentation myself
-- [ ] I can review the documentation after updates
+<!-- - [ ] I would like to write/update this documentation myself
+- [ ] I can review the documentation after updates -->

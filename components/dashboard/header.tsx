@@ -39,12 +39,16 @@ export function Header() {
               label={
                 <span className="flex items-center gap-1">
                   <Shield className="h-3 w-3" />
-                  {session?.user?.role}
+                  {t(`roles.${session?.user?.role || "USER"}`)}
                 </span>
               }
             />
           ) : (
-            <Badge statusType="role" status={session?.user?.role || "USER"} />
+            <Badge
+              statusType="role"
+              status={session?.user?.role || "USER"}
+              label={t(`roles.${session?.user?.role || "USER"}`)}
+            />
           )}
         </div>
 
@@ -75,6 +79,7 @@ export function Header() {
                   <Badge
                     statusType="role"
                     status={session?.user?.role || "USER"}
+                    label={t(`roles.${session?.user?.role || "USER"}`)}
                   />
                 </div>
                 <p className="text-xs leading-none text-muted-foreground">
@@ -92,7 +97,7 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: "/login" })}
               className="cursor-pointer text-red-600 focus:text-red-600"
             >
               <LogOut className="mr-2 h-4 w-4" />
