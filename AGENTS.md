@@ -13,6 +13,10 @@ open-attendance is an attendance and leave management system designed for small 
 
 ## Development Rules
 
+### General
+
+- .env, .env.local files must never be edited.
+
 ### Git & CI
 
 - **NEVER** push or force-push to remote
