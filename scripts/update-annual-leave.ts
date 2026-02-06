@@ -10,13 +10,17 @@
 
 import { config } from "dotenv";
 import { resolve } from "path";
-import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "../generated/prisma/client";
 import { calculateAnnualLeave } from "../lib/annual-leave-calculator";
 
 // Load environment variables from .env.local
 config({ path: resolve(process.cwd(), ".env.local") });
 
-const db = new PrismaClient();
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.DATABASE_URL || "file:./prisma/dev.db",
+});
+const db = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🔄 Starting annual leave balance update...\n");
