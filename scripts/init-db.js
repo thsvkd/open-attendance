@@ -28,7 +28,9 @@ function loadEnvFile() {
   }
 
   if (!fs.existsSync(envPath)) {
-    console.log("No .env.local or .env file found, using environment variables.");
+    console.log(
+      "No .env.local or .env file found, using environment variables.",
+    );
     return {};
   }
 

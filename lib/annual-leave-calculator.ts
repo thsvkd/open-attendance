@@ -1,12 +1,13 @@
 import { differenceInMonths, differenceInYears } from "date-fns";
 
 /**
- * Calculate annual leave balance based on Korean labor law
+ * Calculate annual leave balance based on Korean labor law (근로기준법 제60조)
  *
  * Rules:
  * 1. If joinDate is not set, return 0
- * 2. During the first year: 1 day of annual leave is granted per completed month
- * 3. After completing 1 year: 15 days of annual leave are granted at once
+ * 2. During the first year: 1 day of annual leave is granted per completed month (max 11)
+ * 3. After completing 1 year: 15 days base + 1 extra day per 2 years over the first year
+ *    Formula: 15 + floor((yearsWorked - 1) / 2), capped at 25 days
  *
  * @param joinDate - Employee's hire/join date (nullable)
  * @param currentDate - Current date for calculation (defaults to today)
@@ -29,9 +30,10 @@ export function calculateAnnualLeave(
     return 0;
   }
 
-  // After 1 year of employment, grant 15 days
+  // After 1 year of employment: 15 days base + 1 extra day per 2 years (max 25)
   if (yearsWorked >= 1) {
-    return 15;
+    const extraDays = Math.floor((yearsWorked - 1) / 2);
+    return Math.min(15 + extraDays, 25);
   }
 
   // During the first year: 1 day per completed month (max 11 days)

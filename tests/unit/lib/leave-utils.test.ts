@@ -3,6 +3,7 @@ import {
   getLeaveMinutes,
   rangesOverlap,
   calculateDays,
+  calculateUsedLeaves,
 } from "@/lib/leave-utils";
 
 describe("leave-utils", () => {
@@ -143,6 +144,54 @@ describe("leave-utils", () => {
       const days = calculateDays("QUARTER_DAY", startDate, endDate);
 
       expect(days).toBe(0.25);
+    });
+  });
+
+  describe("calculateUsedLeaves", () => {
+    it("should sum effectiveDays of approved leaves", () => {
+      const leaves = [
+        { days: 3, effectiveDays: 2, status: "APPROVED" },
+        { days: 1, effectiveDays: 1, status: "APPROVED" },
+      ];
+      expect(calculateUsedLeaves(leaves)).toBe(3);
+    });
+
+    it("should fall back to days when effectiveDays is null", () => {
+      const leaves = [
+        { days: 3, effectiveDays: null, status: "APPROVED" },
+        { days: 1, effectiveDays: 1, status: "APPROVED" },
+      ];
+      expect(calculateUsedLeaves(leaves)).toBe(4);
+    });
+
+    it("should fall back to days when effectiveDays is undefined", () => {
+      const leaves = [
+        { days: 2, status: "APPROVED" },
+        { days: 0.5, effectiveDays: 0.5, status: "APPROVED" },
+      ];
+      expect(calculateUsedLeaves(leaves)).toBe(2.5);
+    });
+
+    it("should exclude non-approved leaves", () => {
+      const leaves = [
+        { days: 3, effectiveDays: 2, status: "APPROVED" },
+        { days: 1, effectiveDays: 1, status: "PENDING" },
+        { days: 2, effectiveDays: 2, status: "REJECTED" },
+        { days: 1, effectiveDays: 1, status: "CANCELLED" },
+      ];
+      expect(calculateUsedLeaves(leaves)).toBe(2);
+    });
+
+    it("should return 0 for empty array", () => {
+      expect(calculateUsedLeaves([])).toBe(0);
+    });
+
+    it("should return 0 when no approved leaves exist", () => {
+      const leaves = [
+        { days: 3, effectiveDays: 2, status: "PENDING" },
+        { days: 1, effectiveDays: 1, status: "REJECTED" },
+      ];
+      expect(calculateUsedLeaves(leaves)).toBe(0);
     });
   });
 });

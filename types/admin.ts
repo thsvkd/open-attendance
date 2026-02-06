@@ -15,6 +15,7 @@ export interface AdminLeave {
   startTime?: string;
   endTime?: string;
   days: number;
+  effectiveDays?: number | null;
   status: string;
   user: { name: string; email: string };
 }

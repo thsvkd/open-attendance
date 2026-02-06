@@ -78,6 +78,24 @@ Runs unit tests, E2E tests, or both.
 - Sets up test environment variables
 - Runs specified test suite(s)
 
+### check-quality.sh
+
+Runs formatting, lint, and TypeScript type checks.
+
+**Usage:**
+
+```bash
+./scripts/check-quality.sh        # Check formatting, lint, and types
+./scripts/check-quality.sh --fix  # Auto-fix formatting and lint before checks
+```
+
+**What it does:**
+
+- Ensures dependencies are installed
+- Runs Prettier check (`npm run format:check`) while respecting `.gitignore`
+- Runs ESLint (`npm run lint`) while respecting `.gitignore`
+- Runs TypeScript type check (`npm run typecheck`)
+
 ## JavaScript/TypeScript Scripts
 
 ### init-db.js

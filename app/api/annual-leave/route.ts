@@ -13,7 +13,7 @@ import {
   rangesOverlap,
   calculateDays,
 } from "@/lib/leave-utils";
-import { calculateEffectiveDays } from "@/lib/effective-days-calculator";
+import { calculateLeaveConsumption } from "@/lib/leave-consumption-calculator";
 import type { LeaveType } from "@/types";
 
 export async function GET() {
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
 
     // Calculate effective days (excluding holidays and weekends)
     // Use company's country setting instead of user's country
-    const effectiveDaysResult = await calculateEffectiveDays(
+    const effectiveDaysResult = await calculateLeaveConsumption(
       leaveType as LeaveType,
       start,
       end,

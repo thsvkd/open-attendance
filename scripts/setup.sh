@@ -52,6 +52,10 @@ load_nvm
 # Check WSL npm
 check_wsl_npm
 
+# Verify Node.js and npm versions
+check_node_version
+check_npm_version
+
 print_info "Project directory: $PROJECT_ROOT"
 print_info "Setup mode: $SETUP_MODE"
 
@@ -132,5 +136,16 @@ echo -e "     ${GREEN}./scripts/run.sh${NC}"
 echo ""
 echo "  2. Or run in production mode:"
 echo -e "     ${GREEN}./scripts/run.sh --prod${NC}"
-echo ""
-print_warning "Note: You may need to create an admin user. Check the documentation for details."
+
+# Check if admin user exists in the database
+ADMIN_COUNT=$(node -e "
+  const { PrismaClient } = require('@prisma/client');
+  const p = new PrismaClient();
+  p.user.count({ where: { role: 'ADMIN' } })
+    .then(c => { console.log(c); p.\$disconnect(); })
+    .catch(() => { console.log(0); p.\$disconnect(); });
+" 2>/dev/null)
+if [ -z "$ADMIN_COUNT" ] || [ "$ADMIN_COUNT" -eq 0 ]; then
+  echo ""
+  print_warning "Note: No admin user found. Check the documentation for creating one."
+fi
