@@ -39,7 +39,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const { error } = await requireAdmin();
+    const { error } = await requireAuth();
     if (error) {
       return error;
     }
