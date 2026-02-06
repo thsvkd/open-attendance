@@ -2,12 +2,12 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -24,7 +24,7 @@ model User {
   // Annual Leave Info
   totalLeaves   Float     @default(0)  // Total annual leave (default 0 days until joinDate is set)
   usedLeaves    Float     @default(0)  // Used annual leave
-  
+
   accounts      Account[]
   sessions      Session[]
   attendances   Attendance[]
@@ -73,24 +73,24 @@ model Attendance {
   id        String    @id @default(cuid())
   userId    String
   date      DateTime  // Work date (excluding time)
-  
+
   checkIn   DateTime? // Check-in time
   checkOut  DateTime? // Check-out time
-  
+
   // Location data for check-in
   checkInLatitude   Float?
   checkInLongitude  Float?
   checkInDistance   Float?   // Distance from company location in meters
   checkInWifiSsid   String?  // Connected WiFi SSID at check-in
   checkInWifiBssid  String?  // Connected WiFi BSSID at check-in
-  
+
   // Location data for check-out
   checkOutLatitude  Float?
   checkOutLongitude Float?
   checkOutDistance  Float?   // Distance from company location in meters
   checkOutWifiSsid  String?  // Connected WiFi SSID at check-out
   checkOutWifiBssid String?  // Connected WiFi BSSID at check-out
-  
+
   status    String    @default("PRESENT") // PRESENT, ABSENT, LEAVE, HOLIDAY
   note      String?   // Remarks (e.g., late reason)
 
@@ -114,10 +114,10 @@ model LeaveRequest {
   endTime   String? // For quarter day leave (e.g., "11:00")
   days      Float       // 사용 일수 (1, 0.5, 0.25)
   effectiveDays Float?   // Effective days after excluding holidays/weekends (nullable for backwards compatibility)
-  
+
   reason    String?
   status    String      @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
-  
+
   approvedBy String?    // Approver ID
   rejectedReason String?
 
@@ -160,11 +160,11 @@ model RegisteredWifiNetwork {
   companyLocationId String
   ssid              String          // WiFi network name
   bssid             String?         // WiFi MAC address (more precise)
-  
+
   companyLocation   CompanyLocation @relation(fields: [companyLocationId], references: [id], onDelete: Cascade)
-  
+
   createdAt         DateTime        @default(now())
-  
+
   @@unique([companyLocationId, ssid])
 }
 
