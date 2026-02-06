@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +15,9 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import axios from "axios";
-import { Loader2, MapPin, Wifi, X, Search } from "lucide-react";
+import { Loader2, MapPin, Wifi, X, Search, AlertCircle } from "lucide-react";
 import dynamic from "next/dynamic";
-import { usePreciseLocation } from "@/hooks/use-precise-location";
+import { useLocation } from "@/hooks/use-location";
 import { useKakaoLoader } from "react-kakao-maps-sdk";
 
 // Dynamically import map component to avoid SSR issues
@@ -65,6 +66,7 @@ interface ReverseGeocodeResult {
 
 export function LocationSettings() {
   const t = useTranslations("settings.location");
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [location, setLocation] = useState<CompanyLocation>({
@@ -81,8 +83,14 @@ export function LocationSettings() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isManualChange = useRef(false);
 
-  // Use the precise location hook
-  const preciseLocation = usePreciseLocation();
+  // Check if user is admin
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  // Use the location hook
+  const locationState = useLocation({
+    autoFetch: false,
+    validateOnServer: false,
+  });
 
   // Load Kakao Maps SDK at the settings level
   const [isKakaoLoading, kakaoLoadError] = useKakaoLoader({
@@ -255,7 +263,7 @@ export function LocationSettings() {
     try {
       setSearchResults([]);
       setShowDropdown(false);
-      preciseLocation.getPreciseLocation();
+      locationState.refresh();
     } catch (error) {
       console.error(
         "Failed to get current location:",
@@ -265,32 +273,33 @@ export function LocationSettings() {
     }
   };
 
-  // Handle location result from precise location hook
+  // Handle location result from location hook
   useEffect(() => {
-    if (preciseLocation.loading) return;
-    
-    if (preciseLocation.error) {
-      toast.error(preciseLocation.error);
+    if (locationState.loading) return;
+
+    if (locationState.error) {
+      toast.error(locationState.error);
       return;
     }
 
-    if (preciseLocation.warning) {
-      toast.warning(preciseLocation.warning);
+    if (locationState.warning) {
+      toast.warning(locationState.warning);
     }
 
-    if (preciseLocation.latitude !== 0 && preciseLocation.longitude !== 0) {
-      reverseGeocode(preciseLocation.latitude, preciseLocation.longitude);
-      if (!preciseLocation.warning) {
+    if (locationState.latitude !== null && locationState.longitude !== null) {
+      reverseGeocode(locationState.latitude, locationState.longitude);
+      if (!locationState.warning) {
         toast.success(t("currentLocationSet"));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    preciseLocation.loading,
-    preciseLocation.error,
-    preciseLocation.warning,
-    preciseLocation.latitude,
-    preciseLocation.longitude,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+    locationState.loading,
+    locationState.error,
+    locationState.warning,
+    locationState.latitude,
+    locationState.longitude,
+  ]);
 
   const handleSaveLocation = async () => {
     setSaving(true);
@@ -361,12 +370,32 @@ export function LocationSettings() {
 
   return (
     <div className="space-y-6">
+      {!isAdmin && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-900">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  {t("adminOnlyTitle")}
+                </p>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+                  {t("adminOnlyDescription")}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>{t("title")}</CardTitle>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent
+          className={`space-y-6 ${!isAdmin ? "opacity-60 pointer-events-none" : ""}`}
+        >
           {/* Search and Current Location */}
           <div className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row">
@@ -452,18 +481,18 @@ export function LocationSettings() {
                 variant="outline"
                 onClick={handleUseCurrentLocation}
                 className="order-1 md:order-2 shrink-0 relative"
-                disabled={preciseLocation.loading}
+                disabled={locationState.loading}
               >
                 <div className="flex items-center gap-2">
-                  {preciseLocation.loading ? (
+                  {locationState.loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                       <span className="text-sm animate-pulse">
                         {t("updatingLocation")}
                       </span>
-                      {preciseLocation.accuracy !== Infinity && (
+                      {locationState.accuracy !== null && (
                         <span className="text-xs font-mono text-primary">
-                          {Math.round(preciseLocation.accuracy)}m
+                          {Math.round(locationState.accuracy)}m
                         </span>
                       )}
                     </>
@@ -582,7 +611,9 @@ export function LocationSettings() {
           </CardTitle>
           <CardDescription>{t("wifiDescription")}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent
+          className={`space-y-4 ${!isAdmin ? "opacity-60 pointer-events-none" : ""}`}
+        >
           {/* Add WiFi Network */}
           <div className="space-y-4 p-4 border rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

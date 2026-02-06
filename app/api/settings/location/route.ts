@@ -16,7 +16,9 @@ export async function GET() {
     const location = await db.companyLocation.findFirst({
       where: { isActive: true },
       include: {
-        registeredWifiNetworks: true,
+        registeredWifiNetworks: {
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

@@ -9,10 +9,14 @@
  * Creates a test user to bypass the initial setup requirement
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "../generated/prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.DATABASE_URL || "file:./prisma/test.db",
+});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding test database...");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useReducer, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,25 +36,66 @@ interface CheckInCardProps {
   isAdmin: boolean;
 }
 
+// Consolidated state using reducer pattern
+interface State {
+  now: Date;
+  loading: boolean;
+  actionLoading: boolean;
+  attendance: Attendance | null;
+  showQrModal: boolean;
+  qrSessionToken: string | null;
+}
+
+type Action =
+  | { type: "SET_NOW"; payload: Date }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ACTION_LOADING"; payload: boolean }
+  | { type: "SET_ATTENDANCE"; payload: Attendance | null }
+  | { type: "SET_SHOW_QR_MODAL"; payload: boolean }
+  | { type: "SET_QR_SESSION_TOKEN"; payload: string | null }
+  | { type: "CLOSE_QR_MODAL" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "SET_NOW":
+      return { ...state, now: action.payload };
+    case "SET_LOADING":
+      return { ...state, loading: action.payload };
+    case "SET_ACTION_LOADING":
+      return { ...state, actionLoading: action.payload };
+    case "SET_ATTENDANCE":
+      return { ...state, attendance: action.payload };
+    case "SET_SHOW_QR_MODAL":
+      return { ...state, showQrModal: action.payload };
+    case "SET_QR_SESSION_TOKEN":
+      return { ...state, qrSessionToken: action.payload };
+    case "CLOSE_QR_MODAL":
+      return { ...state, showQrModal: false, qrSessionToken: null };
+    default:
+      return state;
+  }
+}
+
+const initialState: State = {
+  now: new Date(),
+  loading: true,
+  actionLoading: false,
+  attendance: null,
+  showQrModal: false,
+  qrSessionToken: null,
+};
+
 export function CheckInCard({
   isCompanyLocationConfigured: isLocationConfigured,
   isAdmin,
 }: CheckInCardProps) {
-  const [now, setNow] = useState(new Date());
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [attendance, setAttendance] = useState<Attendance | null>(null);
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [qrSessionToken, setQrSessionToken] = useState<string | null>(null);
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
-    null,
-  );
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const t = useTranslations("dashboard");
   const formatter = useFormatter();
   const isMobile = isMobileDevice();
 
-  // Use the new useLocation hook with usePreciseLocation
   const {
     loading: checkingLocation,
     accuracy: currentAccuracy,
@@ -70,7 +111,6 @@ export function CheckInCard({
     autoFetch: true,
   });
 
-  // Get translated error message
   const getLocationErrorMessage = useCallback(
     (error: string | null): string | null => {
       if (!error) return null;
@@ -92,19 +132,29 @@ export function CheckInCard({
 
   const translatedLocationError = getLocationErrorMessage(locationError);
 
+  // Update clock every minute instead of every second for better performance
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const updateClock = () => {
+      const now = new Date();
+      dispatch({ type: "SET_NOW", payload: now });
+    };
+
+    // Update immediately
+    updateClock();
+
+    // Then update every minute
+    const timer = setInterval(updateClock, 60000);
     return () => clearInterval(timer);
   }, []);
 
   const fetchAttendance = useCallback(async () => {
     try {
       const res = await axios.get("/api/attendance/today");
-      setAttendance(res.data);
+      dispatch({ type: "SET_ATTENDANCE", payload: res.data });
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   }, []);
 
@@ -113,36 +163,31 @@ export function CheckInCard({
   }, [fetchAttendance]);
 
   useEffect(() => {
-    // Cleanup polling on unmount
     return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
       }
     };
-  }, [pollingInterval]);
+  }, []);
 
   const handleCheckIn = async () => {
     if (isMobile) {
-      // Direct check-in on mobile
       await performCheckIn();
     } else {
-      // Show QR code on web
       await initiateQrFlow("CHECK_IN");
     }
   };
 
   const handleCheckOut = async () => {
     if (isMobile) {
-      // Direct check-out on mobile
       await performCheckOut();
     } else {
-      // Show QR code on web
       await initiateQrFlow("CHECK_OUT");
     }
   };
 
   const performCheckIn = async () => {
-    setActionLoading(true);
+    dispatch({ type: "SET_ACTION_LOADING", payload: true });
     try {
       const locationData = getLocationData();
       if (!locationData) {
@@ -150,10 +195,15 @@ export function CheckInCard({
         return;
       }
 
-      await axios.post("/api/attendance/check-in", locationData);
+      // Parallel execution: check-in and location refresh
+      await Promise.all([
+        axios.post("/api/attendance/check-in", locationData),
+        checkLocation(),
+      ]);
+
       toast.success(t("checkInSuccess"));
-      fetchAttendance();
-      await checkLocation();
+      // Refresh attendance after successful check-in
+      await fetchAttendance();
     } catch (error: unknown) {
       console.error(
         "Check-in error:",
@@ -164,12 +214,12 @@ export function CheckInCard({
       ).response?.data;
       toast.error(data?.error || data?.message || t("checkInFailed"));
     } finally {
-      setActionLoading(false);
+      dispatch({ type: "SET_ACTION_LOADING", payload: false });
     }
   };
 
   const performCheckOut = async () => {
-    setActionLoading(true);
+    dispatch({ type: "SET_ACTION_LOADING", payload: true });
     try {
       const locationData = getLocationData();
       if (!locationData) {
@@ -177,10 +227,15 @@ export function CheckInCard({
         return;
       }
 
-      await axios.post("/api/attendance/check-out", locationData);
+      // Parallel execution: check-out and location refresh
+      await Promise.all([
+        axios.post("/api/attendance/check-out", locationData),
+        checkLocation(),
+      ]);
+
       toast.success(t("checkOutSuccess"));
-      fetchAttendance();
-      await checkLocation();
+      // Refresh attendance after successful check-out
+      await fetchAttendance();
     } catch (error: unknown) {
       console.error(
         "Check-out error:",
@@ -191,17 +246,19 @@ export function CheckInCard({
       ).response?.data;
       toast.error(data?.error || data?.message || t("checkOutFailed"));
     } finally {
-      setActionLoading(false);
+      dispatch({ type: "SET_ACTION_LOADING", payload: false });
     }
   };
 
   const initiateQrFlow = async (action: "CHECK_IN" | "CHECK_OUT") => {
-    setActionLoading(true);
+    dispatch({ type: "SET_ACTION_LOADING", payload: true });
     try {
-      // Create QR session
       const res = await axios.post("/api/attendance/qr-session", { action });
-      setQrSessionToken(res.data.sessionToken);
-      setShowQrModal(true);
+      dispatch({
+        type: "SET_QR_SESSION_TOKEN",
+        payload: res.data.sessionToken,
+      });
+      dispatch({ type: "SET_SHOW_QR_MODAL", payload: true });
 
       // Start polling for verification
       const interval = setInterval(async () => {
@@ -211,23 +268,28 @@ export function CheckInCard({
           );
 
           if (statusRes.data.status === "VERIFIED") {
-            clearInterval(interval);
-            setPollingInterval(null);
-            setShowQrModal(false);
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+            dispatch({ type: "CLOSE_QR_MODAL" });
             toast.success(
               action === "CHECK_IN"
                 ? t("checkInSuccess")
                 : t("checkOutSuccess"),
             );
-            fetchAttendance();
-            await checkLocation();
+
+            // Parallel execution: fetch attendance and check location
+            await Promise.all([fetchAttendance(), checkLocation()]);
           } else if (
             statusRes.data.status === "EXPIRED" ||
             statusRes.data.status === "FAILED"
           ) {
-            clearInterval(interval);
-            setPollingInterval(null);
-            setShowQrModal(false);
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+            dispatch({ type: "CLOSE_QR_MODAL" });
             toast.error(
               statusRes.data.status === "EXPIRED"
                 ? t("verificationExpired")
@@ -239,31 +301,30 @@ export function CheckInCard({
         }
       }, 2000);
 
-      setPollingInterval(interval);
+      pollingIntervalRef.current = interval;
     } catch (error) {
       console.error("QR session error:", error);
       toast.error("Failed to create verification session");
     } finally {
-      setActionLoading(false);
+      dispatch({ type: "SET_ACTION_LOADING", payload: false });
     }
   };
 
   const closeQrModal = () => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
     }
-    setShowQrModal(false);
-    setQrSessionToken(null);
+    dispatch({ type: "CLOSE_QR_MODAL" });
   };
 
   const isButtonDisabled: boolean =
-    actionLoading ||
+    state.actionLoading ||
     checkingLocation ||
     validating ||
     !!(locationValidation && !locationValidation.isWithinRadius);
 
-  if (loading) {
+  if (state.loading) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -276,8 +337,8 @@ export function CheckInCard({
   }
 
   const qrUrl =
-    qrSessionToken && typeof window !== "undefined"
-      ? `${window.location.origin}/verify-attendance?token=${qrSessionToken}`
+    state.qrSessionToken && typeof window !== "undefined"
+      ? `${window.location.origin}/verify-attendance?token=${state.qrSessionToken}`
       : "";
 
   return (
@@ -286,7 +347,7 @@ export function CheckInCard({
         <CardHeader>
           <CardTitle>{t("todayAttendance")}</CardTitle>
           <CardDescription>
-            {formatter.dateTime(now, {
+            {formatter.dateTime(state.now, {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -405,8 +466,8 @@ export function CheckInCard({
                 {t("checkIn")}
               </p>
               <p className="text-xl text-center font-bold">
-                {attendance?.checkIn
-                  ? formatter.dateTime(new Date(attendance.checkIn), {
+                {state.attendance?.checkIn
+                  ? formatter.dateTime(new Date(state.attendance.checkIn), {
                       hour: "numeric",
                       minute: "numeric",
                     })
@@ -418,8 +479,8 @@ export function CheckInCard({
                 {t("checkOut")}
               </p>
               <p className="text-xl text-center font-bold">
-                {attendance?.checkOut
-                  ? formatter.dateTime(new Date(attendance.checkOut), {
+                {state.attendance?.checkOut
+                  ? formatter.dateTime(new Date(state.attendance.checkOut), {
                       hour: "numeric",
                       minute: "numeric",
                     })
@@ -428,21 +489,21 @@ export function CheckInCard({
             </div>
           </div>
 
-          {!attendance?.checkIn && (
+          {!state.attendance?.checkIn && (
             <Button
               className="w-full"
               size="lg"
               onClick={handleCheckIn}
               disabled={isButtonDisabled}
             >
-              {actionLoading && (
+              {state.actionLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               {t("checkIn")}
             </Button>
           )}
 
-          {attendance?.checkIn && !attendance.checkOut && (
+          {state.attendance?.checkIn && !state.attendance.checkOut && (
             <Button
               className="w-full"
               variant="outline"
@@ -450,14 +511,14 @@ export function CheckInCard({
               onClick={handleCheckOut}
               disabled={isButtonDisabled}
             >
-              {actionLoading && (
+              {state.actionLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               {t("checkOut")}
             </Button>
           )}
 
-          {attendance?.checkIn && attendance.checkOut && (
+          {state.attendance?.checkIn && state.attendance.checkOut && (
             <Button className="w-full" variant="secondary" size="lg" disabled>
               {t("dayComplete")}
             </Button>
@@ -471,7 +532,6 @@ export function CheckInCard({
               onClick={() => checkLocation()}
               className="w-full"
             >
-              {/* <MapPin className="mr-2 h-4 w-4" /> */}
               {t("refreshLocation")}
             </Button>
           )}
@@ -479,7 +539,7 @@ export function CheckInCard({
       </Card>
 
       {/* QR Code Modal */}
-      <Dialog open={showQrModal} onOpenChange={closeQrModal}>
+      <Dialog open={state.showQrModal} onOpenChange={closeQrModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("scanQrToVerify")}</DialogTitle>

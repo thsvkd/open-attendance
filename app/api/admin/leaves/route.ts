@@ -8,6 +8,7 @@ import {
 } from "@/lib/api-utils";
 import { VALID_ADMIN_LEAVE_ACTIONS } from "@/types";
 import type { LeaveStatus } from "@/types";
+import { calculateUsedLeaves } from "@/lib/leave-utils";
 
 export async function GET() {
   const { error } = await requireAdmin();
@@ -72,10 +73,7 @@ export async function PATCH(req: Request) {
         },
       });
 
-      const totalUsed = approvedLeaves.reduce(
-        (sum, item) => sum + item.days,
-        0,
-      );
+      const totalUsed = calculateUsedLeaves(approvedLeaves);
 
       await db.user.update({
         where: { id: updatedLeave.userId },

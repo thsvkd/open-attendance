@@ -52,6 +52,9 @@
 ### 🏖️ Leave Management
 
 - **Leave Tracking** - Monitor total, used, and remaining annual leave
+- **Automatic Calculation Based on Hire Date** - Annual leave automatically calculated according to Korean labor law
+  - First year: 1 day per month (up to 11 days)
+  - After 1 year: 15 days granted at once
 - **Leave Request Workflow** - Submit, approve, and track leave requests
 - **Diverse Leave Types**:
   - Annual Leave
@@ -172,6 +175,12 @@ npx prisma migrate dev --name your_migration_name
 
 ```bash
 npx prisma migrate reset
+```
+
+**Update Annual Leave Balances** (Recalculate annual leave for existing users based on hire date):
+
+```bash
+npm run db:update-annual-leave
 ```
 
 ---

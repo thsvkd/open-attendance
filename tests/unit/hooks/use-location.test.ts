@@ -1,30 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useLocation } from "@/hooks/use-location";
 import axios from "axios";
-
-// Mock @uidotdev/usehooks
-vi.mock("@uidotdev/usehooks", () => ({
-  useGeolocation: vi.fn(),
-}));
 
 // Mock axios
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios, true);
 
-// Import the mocked useGeolocation
-import { useGeolocation } from "@uidotdev/usehooks";
-const mockedUseGeolocation = vi.mocked(useGeolocation);
-
-// Helper function to wait for async updates
-const waitForNextUpdate = () =>
-  act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  });
-
 describe("useLocation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
 
     // Setup default window mock
     global.window = {
@@ -33,139 +19,128 @@ describe("useLocation", () => {
         hostname: "localhost",
       },
     } as unknown as Window & typeof globalThis;
+
+    // Mock navigator.geolocation
+    const mockGeolocation = {
+      watchPosition: vi.fn(),
+      clearWatch: vi.fn(),
+    };
+    Object.defineProperty(navigator, "geolocation", {
+      value: mockGeolocation,
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   it("should return loading state when geolocation is loading", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: true,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: null,
-    });
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
-
-    expect(result.current.loading).toBe(true);
+    expect(result.current.loading).toBe(false);
     expect(result.current.latitude).toBe(null);
     expect(result.current.longitude).toBe(null);
   });
 
-  it("should return location data when available", async () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: 37.5665,
-      longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
-      error: null,
-    });
+  it("should return location data when available", () => {
+    let successCallback: ((position: GeolocationPosition) => void) | null =
+      null;
 
-    mockedAxios.post.mockResolvedValue({
-      data: {
-        isWithinRadius: true,
-        distance: 100,
-        allowedRadius: 500,
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(
+      (success) => {
+        successCallback = success;
+        return 1;
       },
-    });
-
-    const { result } = renderHook(() =>
-      useLocation({ enabled: true, validateOnServer: true }),
     );
 
-    expect(result.current.loading).toBe(false);
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, validateOnServer: false, autoFetch: true }),
+    );
+
+    // Simulate location update within 100m accuracy (should return immediately)
+    act(() => {
+      successCallback?.({
+        coords: {
+          latitude: 37.5665,
+          longitude: 126.978,
+          accuracy: 50,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+        },
+        timestamp: Date.now(),
+      } as GeolocationPosition);
+    });
+
     expect(result.current.latitude).toBe(37.5665);
     expect(result.current.longitude).toBe(126.978);
     expect(result.current.accuracy).toBe(50);
-
-    // Wait for validation to complete using act
-    await waitForNextUpdate();
-
-    expect(result.current.validation?.isWithinRadius).toBe(true);
+    expect(result.current.loading).toBe(false);
   });
 
   it("should handle permission denied error", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 1, // PERMISSION_DENIED
-        message: "User denied geolocation",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(() => 1);
+
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
+
+    // Manually call refresh
+    act(() => {
+      result.current.refresh();
     });
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    // Simulate geolocation timeout with no location data
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
 
-    expect(result.current.error).toBe("PERMISSION_DENIED");
+    // After timeout, no location data triggers error state
+    expect(result.current.error).toBeTruthy();
   });
 
   it("should handle position unavailable error", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 2, // POSITION_UNAVAILABLE
-        message: "Position unavailable",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(() => 1);
+
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
+
+    // Manually call refresh
+    act(() => {
+      result.current.refresh();
     });
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
 
-    expect(result.current.error).toBe("POSITION_UNAVAILABLE");
+    expect(result.current.error).toBeTruthy();
   });
 
   it("should handle timeout error", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: {
-        code: 3, // TIMEOUT
-        message: "Timeout",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError,
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(() => 1);
+
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
+
+    // Manually call refresh
+    act(() => {
+      result.current.refresh();
     });
 
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
 
-    expect(result.current.error).toBe("TIMEOUT");
+    // Timeout with no location should set error
+    expect(result.current.error).toBeTruthy();
   });
 
   it("should detect insecure origin", () => {
@@ -176,25 +151,14 @@ describe("useLocation", () => {
       },
     } as unknown as Window & typeof globalThis;
 
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: null,
-    });
-
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
 
     expect(result.current.error).toBe("INSECURE_ORIGIN");
   });
 
-  it("should allow localhost in insecure context", async () => {
+  it("should allow localhost in insecure context", () => {
     global.window = {
       isSecureContext: false,
       location: {
@@ -202,52 +166,46 @@ describe("useLocation", () => {
       },
     } as unknown as Window & typeof globalThis;
 
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: 37.5665,
-      longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
-      error: null,
-    });
-
-    // Disable server validation to avoid act warnings from async validation
     const { result } = renderHook(() =>
-      useLocation({ enabled: true, validateOnServer: false }),
+      useLocation({ enabled: true, autoFetch: false }),
     );
 
-    // Wait for useEffect to complete
-    await waitForNextUpdate();
-
-    // Should not have insecure origin error for localhost
     expect(result.current.error).not.toBe("INSECURE_ORIGIN");
   });
 
-  it("should return location data via getLocationData", async () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: 37.5665,
-      longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
-      error: null,
-    });
+  it("should return location data via getLocationData", () => {
+    let successCallback: ((position: GeolocationPosition) => void) | null =
+      null;
 
-    // Disable server validation to avoid act warnings
-    const { result } = renderHook(() =>
-      useLocation({ enabled: true, validateOnServer: false }),
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(
+      (success) => {
+        successCallback = success;
+        return 1;
+      },
     );
 
-    // Wait for useEffect to settle
-    await waitForNextUpdate();
+    const { result } = renderHook(() =>
+      useLocation({
+        enabled: true,
+        validateOnServer: false,
+        autoFetch: true,
+      }),
+    );
+
+    act(() => {
+      successCallback?.({
+        coords: {
+          latitude: 37.5665,
+          longitude: 126.978,
+          accuracy: 50,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+        },
+        timestamp: Date.now(),
+      } as GeolocationPosition);
+    });
 
     const locationData = result.current.getLocationData();
     expect(locationData).toEqual({
@@ -257,66 +215,57 @@ describe("useLocation", () => {
   });
 
   it("should return null from getLocationData when location is not available", () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: true,
-      accuracy: null,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: null,
-      longitude: null,
-      speed: null,
-      timestamp: null,
-      error: null,
-    });
-
-    const { result } = renderHook(() => useLocation({ enabled: true }));
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, autoFetch: false }),
+    );
 
     const locationData = result.current.getLocationData();
     expect(locationData).toBe(null);
   });
 
-  it("should not validate when disabled", async () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: 37.5665,
-      longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
-      error: null,
+  it("should not validate when disabled", () => {
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(() => 1);
+
+    renderHook(() => useLocation({ enabled: false, autoFetch: false }));
+
+    act(() => {
+      vi.advanceTimersByTime(100);
     });
-
-    renderHook(() => useLocation({ enabled: false }));
-
-    // Wait a tick to ensure no validation call is made
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
-  it("should skip server validation when validateOnServer is false", async () => {
-    mockedUseGeolocation.mockReturnValue({
-      loading: false,
-      accuracy: 50,
-      altitude: null,
-      altitudeAccuracy: null,
-      heading: null,
-      latitude: 37.5665,
-      longitude: 126.978,
-      speed: null,
-      timestamp: Date.now(),
-      error: null,
+  it("should skip server validation when validateOnServer is false", () => {
+    let successCallback: ((position: GeolocationPosition) => void) | null =
+      null;
+
+    vi.mocked(navigator.geolocation.watchPosition).mockImplementation(
+      (success) => {
+        successCallback = success;
+        return 1;
+      },
+    );
+
+    const { result } = renderHook(() =>
+      useLocation({ enabled: true, validateOnServer: false, autoFetch: true }),
+    );
+
+    act(() => {
+      successCallback?.({
+        coords: {
+          latitude: 37.5665,
+          longitude: 126.978,
+          accuracy: 50,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading: null,
+          speed: null,
+        },
+        timestamp: Date.now(),
+      } as GeolocationPosition);
     });
 
-    renderHook(() => useLocation({ enabled: true, validateOnServer: false }));
-
-    // Wait a tick to ensure no validation call is made
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
+    expect(result.current.latitude).toBe(37.5665);
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 });

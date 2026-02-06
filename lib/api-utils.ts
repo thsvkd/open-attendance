@@ -20,7 +20,52 @@ export async function requireAuth() {
   if (!session) {
     return { session: null, error: unauthorizedResponse() };
   }
+
+  // Verify user.id exists in session
+  if (!session.user?.id) {
+    console.error("Session exists but user.id is missing");
+    return { session: null, error: unauthorizedResponse() };
+  }
+
   return { session, error: null };
+}
+
+/**
+ * Verifies that user exists in database.
+ * If user.id doesn't exist in DB, tries to find by email.
+ * Returns false if user not found, true otherwise.
+ */
+export async function verifyUserExists(
+  userId: string,
+  userEmail?: string,
+): Promise<{ exists: boolean; actualUserId?: string }> {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (user) {
+      return { exists: true, actualUserId: user.id };
+    }
+
+    // Try to find by email as fallback
+    if (userEmail) {
+      const userByEmail = await db.user.findUnique({
+        where: { email: userEmail },
+        select: { id: true },
+      });
+
+      if (userByEmail) {
+        return { exists: true, actualUserId: userByEmail.id };
+      }
+    }
+
+    return { exists: false };
+  } catch (e) {
+    console.error("Error verifying user in database:", e);
+    return { exists: false };
+  }
 }
 
 /**

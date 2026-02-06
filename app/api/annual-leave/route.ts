@@ -13,6 +13,7 @@ import {
   rangesOverlap,
   calculateDays,
 } from "@/lib/leave-utils";
+import { calculateLeaveConsumption } from "@/lib/leave-consumption-calculator";
 import type { LeaveType } from "@/types";
 
 export async function GET() {
@@ -93,9 +94,34 @@ export async function POST(req: Request) {
       return errorResponse("User not found", 404);
     }
 
+    // Get company location for country setting
+    const companyLocation = await db.companyLocation.findFirst({
+      where: { isActive: true },
+    });
+
     const remainingLeaves = user.totalLeaves - user.usedLeaves;
 
-    if (days > remainingLeaves) {
+    // Calculate effective days (excluding holidays and weekends)
+    // Use company's country setting instead of user's country
+    const effectiveDaysResult = await calculateLeaveConsumption(
+      leaveType as LeaveType,
+      start,
+      end,
+      days,
+      companyLocation?.country,
+    );
+
+    // Show warning if effective days is 0
+    if (effectiveDaysResult.hasWarning) {
+      return successResponse({
+        warning: effectiveDaysResult.warningMessage,
+        requestedDays: effectiveDaysResult.requestedDays,
+        effectiveDays: effectiveDaysResult.effectiveDays,
+      });
+    }
+
+    // Check if effective days exceed remaining balance
+    if (effectiveDaysResult.effectiveDays > remainingLeaves) {
       return errorResponse(
         t("insufficientBalance", { remaining: remainingLeaves }),
         400,
@@ -155,6 +181,7 @@ export async function POST(req: Request) {
         startTime: leaveType === "QUARTER_DAY" ? startTime || null : null,
         endTime: leaveType === "QUARTER_DAY" ? endTime || null : null,
         days,
+        effectiveDays: effectiveDaysResult.effectiveDays,
         reason: reason || null,
         status: "PENDING",
       },

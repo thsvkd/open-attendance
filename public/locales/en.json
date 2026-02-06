@@ -109,7 +109,7 @@
     "days": "days",
     "type": "Type",
     "dates": "Dates",
-    "duration": "Duration",
+    "duration": "Leave Used",
     "status": "Status",
     "reason": "Reason",
     "reasonPlaceholder": "Reason for annual leave",
@@ -153,7 +153,16 @@
     "twoHoursFixed": "2 hours fixed",
     "twoHoursAutoAdjust": "Changing the start or end time will automatically adjust to 2-hour intervals.",
     "overlapError": "This leave request overlaps with an existing {status} request from {start} to {end}.",
-    "insufficientBalance": "Insufficient leave balance. You have {remaining} days remaining."
+    "insufficientBalance": "Insufficient leave balance. You have {remaining} days remaining.",
+    "joinDateNotSet": "Join date not set. Annual leave requests are not available until your administrator sets your join date.",
+    "calculationResult": "Leave Calculation",
+    "totalPeriod": "Total Period",
+    "weekendDays": "Weekends",
+    "holidayDays": "Public Holidays",
+    "effectiveDays": "Actual Leave Used",
+    "allNonWorkingDays": "All selected days fall on weekends or holidays",
+    "insufficientBalancePreview": "Insufficient leave balance",
+    "calendarDays": "Calendar days"
   },
   "attendance": {
     "title": "My Attendance",
@@ -173,6 +182,7 @@
   },
   "profile": {
     "title": "Profile Management",
+    "description": "Update your personal information and password",
     "name": "Name",
     "email": "Email",
     "password": "Password",
@@ -181,6 +191,7 @@
     "confirmNewPassword": "Confirm New Password",
     "role": "Role",
     "joinDate": "Join Date",
+    "joinDateNotSet": "Join date not set",
     "update": "Update Profile",
     "success": "Profile updated successfully.",
     "error": "An error occurred while updating.",
@@ -193,8 +204,27 @@
     "title": "Admin Panel",
     "description": "Manage employees and leave requests.",
     "tabs": {
+      "attendance": "Attendance Records",
       "leaves": "Leave Requests",
-      "members": "Employee Management"
+      "members": "Employee Management",
+      "settings": "Company Settings"
+    },
+    "attendance": {
+      "description": "Manage employee attendance records",
+      "date": "Date",
+      "checkIn": "Check In",
+      "checkOut": "Check Out",
+      "status": "Status",
+      "noRecords": "No attendance records found",
+      "statuses": {
+        "PRESENT": "Present",
+        "ABSENT": "Absent",
+        "LEAVE": "Leave",
+        "HOLIDAY": "Holiday"
+      },
+      "delete": "Delete",
+      "deleteSuccess": "Attendance record deleted successfully.",
+      "deleteFailed": "Failed to delete attendance record."
     },
     "leaves": {
       "title": "Leave Request History",
@@ -204,7 +234,10 @@
       "reject": "Reject",
       "approveSuccess": "Approved successfully.",
       "rejectSuccess": "Rejected successfully.",
-      "actionFailed": "Action failed."
+      "actionFailed": "Action failed.",
+      "delete": "Delete",
+      "deleteSuccess": "Leave record deleted successfully.",
+      "deleteFailed": "Failed to delete leave record."
     },
     "members": {
       "title": "Employee List",
@@ -217,6 +250,7 @@
       "addFailed": "Failed to add member.",
       "updateSuccess": "Updated successfully.",
       "updateFailed": "Failed to update.",
+      "joinDateNotSet": "Join date not set",
       "form": {
         "details": "Enter employee details below.",
         "name": "Name",
@@ -234,6 +268,16 @@
       "employee": "Employee",
       "role": "Role",
       "joinedAt": "Joined At"
+    },
+    "settings": {
+      "description": "Manage company-wide settings",
+      "country": "Country for holiday calculations",
+      "countryDescription": "Select the country to apply when calculating annual leave usage. Public holidays of the selected country will be automatically excluded.",
+      "saved": "Settings saved.",
+      "saveFailed": "Failed to save settings.",
+      "saving": "Saving...",
+      "save": "Save",
+      "note": "These settings apply company-wide. The public holidays of the selected country will be reflected in annual leave calculations for all employees."
     }
   },
   "settings": {
@@ -247,6 +291,8 @@
     "location": {
       "title": "Company Location",
       "description": "Set your company location for location-based attendance",
+      "adminOnlyTitle": "Admin Only",
+      "adminOnlyDescription": "Company location can only be set and modified by users with admin (ADMIN) permissions. Please contact your administrator.",
       "searchPlaceholder": "Search for an address...",
       "currentLocation": "Use current location",
       "latitude": "Latitude",
