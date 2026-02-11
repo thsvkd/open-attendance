@@ -89,7 +89,7 @@ const fullEnv = {
 
 // Run init-db.js first
 console.log("\nInitializing database...");
-const initDbProcess = spawn("node", ["scripts/init-db.js"], {
+const initDbProcess = spawn("node", ["scripts/init-db.cjs"], {
   cwd: path.join(__dirname, ".."),
   env: fullEnv,
   stdio: "inherit",
