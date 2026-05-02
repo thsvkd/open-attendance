@@ -33,6 +33,52 @@ describe("api-utils", () => {
       expect(response).toBeInstanceOf(NextResponse);
       expect(response.status).toBe(500);
     });
+
+    it("should return a JSON body with error/message fields when called without args", async () => {
+      const response = internalErrorResponse();
+      const body = await response.json();
+
+      expect(typeof body.error).toBe("string");
+      expect(typeof body.message).toBe("string");
+    });
+
+    it("should include the underlying error message and stack in development", async () => {
+      const original = process.env.NODE_ENV;
+      // @ts-expect-error - test override
+      process.env.NODE_ENV = "development";
+
+      try {
+        const err = new Error("boom");
+        const response = internalErrorResponse(err);
+        const body = await response.json();
+
+        expect(body.message).toBe("boom");
+        expect(body.error).toBe("boom");
+        expect(body.name).toBe("Error");
+        expect(typeof body.stack).toBe("string");
+      } finally {
+        // @ts-expect-error - test override
+        process.env.NODE_ENV = original;
+      }
+    });
+
+    it("should hide details in production", async () => {
+      const original = process.env.NODE_ENV;
+      // @ts-expect-error - test override
+      process.env.NODE_ENV = "production";
+
+      try {
+        const err = new Error("sensitive details");
+        const response = internalErrorResponse(err);
+        const body = await response.json();
+
+        expect(body.message).toBe("Internal Server Error");
+        expect(body.stack).toBeUndefined();
+      } finally {
+        // @ts-expect-error - test override
+        process.env.NODE_ENV = original;
+      }
+    });
   });
 
   describe("unauthorizedResponse", () => {

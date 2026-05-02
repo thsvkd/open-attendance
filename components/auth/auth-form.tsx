@@ -94,8 +94,36 @@ export function AuthForm({ variant }: AuthFormProps) {
       await axios.post("/api/register", registerData);
       toast.success(uiConfig.successMessage);
       router.push("/login");
-    } catch {
-      toast.error(t("somethingWentWrong"));
+    } catch (error) {
+      const fallback = t("somethingWentWrong");
+      let detail = fallback;
+      let serverStack: string | undefined;
+
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as
+          | { error?: string; message?: string; stack?: string; name?: string }
+          | string
+          | undefined;
+        if (typeof data === "string" && data) {
+          detail = data;
+        } else if (data && typeof data === "object") {
+          detail = data.message || data.error || error.message || fallback;
+          serverStack = data.stack;
+        } else {
+          detail = error.message || fallback;
+        }
+      } else if (error instanceof Error) {
+        detail = error.message || fallback;
+      }
+
+      console.error("[AUTH_FORM_SUBMIT_ERROR]", {
+        variant,
+        detail,
+        error,
+        serverStack,
+      });
+
+      toast.error(`${fallback}: ${detail}`);
     } finally {
       setIsLoading(false);
     }

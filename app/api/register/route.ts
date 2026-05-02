@@ -65,7 +65,10 @@ export async function POST(req: Request) {
 
     return successResponse(user);
   } catch (e) {
-    console.error("REGISTRATION_ERROR", e);
-    return internalErrorResponse();
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error(
+      `[REGISTRATION_ERROR] ${err.name}: ${err.message}\n${err.stack ?? ""}`,
+    );
+    return internalErrorResponse(err);
   }
 }

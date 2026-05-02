@@ -94,10 +94,34 @@ export function errorResponse(error: string, status: number) {
 }
 
 /**
- * Returns a 500 Internal Error response.
+ * Returns a 500 Internal Error response as JSON.
+ * In development, includes the underlying error's message and stack so the
+ * client can surface details. In production, only a generic message is sent.
  */
-export function internalErrorResponse() {
-  return new NextResponse("Internal Error", { status: 500 });
+export function internalErrorResponse(error?: unknown) {
+  const isDev = process.env.NODE_ENV !== "production";
+  const err =
+    error instanceof Error
+      ? error
+      : error !== undefined
+        ? new Error(String(error))
+        : undefined;
+
+  const message = isDev && err?.message ? err.message : "Internal Server Error";
+
+  const body: {
+    error: string;
+    message: string;
+    stack?: string;
+    name?: string;
+  } = { error: message, message };
+
+  if (isDev && err) {
+    body.name = err.name;
+    if (err.stack) body.stack = err.stack;
+  }
+
+  return NextResponse.json(body, { status: 500 });
 }
 
 /**
