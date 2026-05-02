@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { calculateAnnualLeave } from "@/lib/annual-leave-calculator";
 
 describe("calculateAnnualLeave", () => {
@@ -120,10 +120,12 @@ describe("calculateAnnualLeave", () => {
     });
 
     it("should use current date by default when not provided", () => {
+      vi.useFakeTimers({ now: new Date("2026-02-04") });
       const joinDate = new Date("2023-01-01");
       const result = calculateAnnualLeave(joinDate);
       // 2023-01-01 to 2026-02-04 is 3 years -> 15 + floor(2/2) = 16
       expect(result).toBe(16);
+      vi.useRealTimers();
     });
 
     it("should handle same day in different months correctly", () => {
