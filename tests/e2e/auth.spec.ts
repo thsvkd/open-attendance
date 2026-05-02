@@ -124,8 +124,7 @@ test.describe.serial("Phase 3: Login Test (Admin exists)", () => {
     await page.getByRole("button", { name: "Login" }).click();
 
     // Should stay on login page
-    await page.waitForTimeout(2000);
-    await expect(page).toHaveURL(/.*login.*/);
+    await expect(page).toHaveURL(/.*login.*/, { timeout: 5000 });
   });
 
   test("Login should succeed with valid credentials and redirect to dashboard", async ({
@@ -195,8 +194,7 @@ test.describe.serial("Phase 4: Registration Test (Admin exists)", () => {
     await page.getByRole("button", { name: "Register" }).click();
 
     // Should stay on register page
-    await page.waitForTimeout(2000);
-    await expect(page).toHaveURL(/.*register.*/);
+    await expect(page).toHaveURL(/.*register.*/, { timeout: 5000 });
   });
 });
 
@@ -205,9 +203,6 @@ test.describe.serial("Phase 5: Protected Routes", () => {
   test("Unauthenticated user should not access dashboard", async ({ page }) => {
     await page.goto("/dashboard");
 
-    await page.waitForURL("**/login**", { timeout: 10000 }).catch(() => {});
-
-    const currentUrl = page.url();
-    expect(currentUrl).toContain("/login");
+    await expect(page).toHaveURL(/.*login.*/, { timeout: 10000 });
   });
 });
