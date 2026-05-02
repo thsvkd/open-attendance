@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
       // On initial sign-in, user object is available
       if (user && typeof user === "object") {
         const userRecord = user as unknown as Record<string, unknown>;
-        const userId = (userRecord.id || userRecord.id) as string;
+        const userId = userRecord.id as string;
         if (!userId) {
           console.error(
             "User object missing id field during JWT creation",
@@ -102,26 +102,34 @@ export const authOptions: NextAuthOptions = {
         token.name = (userRecord.name as string) || "";
         token.email = (userRecord.email as string) || "";
         token.role = (userRecord.role as string) || "USER";
+        token.lastRefreshed = Date.now();
 
         return token;
       }
 
-      // On subsequent requests, refresh user data from database using ID
-      // This ensures email changes are properly reflected
+      // On subsequent requests, refresh user data from database periodically
+      // Only query DB every 5 minutes to avoid per-request overhead
       if (token && token.id && typeof token.id === "string") {
-        const dbUser = await db.user.findUnique({
-          where: {
-            id: token.id,
-          },
-        });
+        const lastRefreshed = (token.lastRefreshed as number) || 0;
+        const now = Date.now();
+        const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-        if (dbUser) {
-          return {
-            id: String(dbUser.id),
-            name: dbUser.name || "",
-            email: dbUser.email,
-            role: dbUser.role,
-          };
+        if (now - lastRefreshed > REFRESH_INTERVAL_MS) {
+          const dbUser = await db.user.findUnique({
+            where: {
+              id: token.id,
+            },
+          });
+
+          if (dbUser) {
+            return {
+              id: String(dbUser.id),
+              name: dbUser.name || "",
+              email: dbUser.email,
+              role: dbUser.role,
+              lastRefreshed: now,
+            };
+          }
         }
       }
 
