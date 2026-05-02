@@ -67,12 +67,12 @@ export default function LeavesPage() {
     }
 
     setSubmitting(true);
+    const formData = new FormData(e.currentTarget);
     const data = {
       type: leaveType,
       startDate: format(startDate, "yyyy-MM-dd"),
       endDate: format(endDate, "yyyy-MM-dd"),
-      reason:
-        (document.getElementById("reason") as HTMLInputElement)?.value || "",
+      reason: (formData.get("reason") as string) || "",
     };
 
     try {

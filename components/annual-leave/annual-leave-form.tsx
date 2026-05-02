@@ -170,8 +170,7 @@ export function AnnualLeaveForm({
       leaveType: actualLeaveType,
       startTime: leaveTypeSelection === "QUARTER_DAY" ? startTime : undefined,
       endTime: leaveTypeSelection === "QUARTER_DAY" ? endTime : undefined,
-      reason:
-        (document.getElementById("reason") as HTMLInputElement)?.value || "",
+      reason: (new FormData(e.currentTarget).get("reason") as string) || "",
     };
 
     try {
