@@ -9,11 +9,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export function LanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("common");
+  const currentLocale = useLocale();
 
   const switchLanguage = (locale: string) => {
     startTransition(() => {
@@ -21,15 +22,6 @@ export function LanguageSwitcher() {
       window.location.reload();
     });
   };
-
-  // Getting current locale from cookie
-  const currentLocale =
-    typeof document !== "undefined"
-      ? document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("NEXT_LOCALE="))
-          ?.split("=")[1] || "en"
-      : "en";
 
   return (
     <DropdownMenu>
