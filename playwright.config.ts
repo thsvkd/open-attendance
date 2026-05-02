@@ -27,7 +27,7 @@ export default defineConfig({
         ["./playwright-reporter.js", {}],
         ["html", { open: "never" }],
       ],
-  timeout: process.env.CI ? 30 * 1000 : 30 * 1000,
+  timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
