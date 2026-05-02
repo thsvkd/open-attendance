@@ -31,6 +31,7 @@ interface CacheEntry {
  */
 const holidayCache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_CACHE_SIZE = 20;
 
 /**
  * Fetch public holidays for a specific country and year from Nager.Date API
@@ -45,6 +46,21 @@ export async function fetchHolidays(
   year: number,
 ): Promise<Holiday[]> {
   const cacheKey = `${countryCode}-${year}`;
+
+  // Evict expired entries when cache is full
+  if (holidayCache.size >= MAX_CACHE_SIZE) {
+    const now = Date.now();
+    for (const [key, entry] of holidayCache) {
+      if (now - entry.timestamp >= CACHE_TTL_MS) {
+        holidayCache.delete(key);
+      }
+    }
+    // If still full after eviction, remove oldest entry
+    if (holidayCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = holidayCache.keys().next().value;
+      if (oldestKey) holidayCache.delete(oldestKey);
+    }
+  }
 
   // Check cache and validate TTL
   const cachedEntry = holidayCache.get(cacheKey);
