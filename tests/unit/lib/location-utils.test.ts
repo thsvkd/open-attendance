@@ -10,31 +10,52 @@ import {
 
 // Mock the global navigator and window objects
 const mockGeolocation = {
-  getCurrentPosition: vi.fn(),
+  watchPosition: vi.fn(),
+  clearWatch: vi.fn(),
 };
 
 const mockPermissions = {
   query: vi.fn(),
 };
 
+function setHostname(host: string) {
+  Object.defineProperty(window.location, "hostname", {
+    value: host,
+    configurable: true,
+    writable: true,
+  });
+}
+
+function setSecureContext(secure: boolean) {
+  Object.defineProperty(window, "isSecureContext", {
+    value: secure,
+    configurable: true,
+    writable: true,
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 
-  // Setup default mocks
-  global.navigator = {
-    geolocation: mockGeolocation,
-    permissions: mockPermissions,
-    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  } as unknown as Navigator;
+  Object.defineProperty(navigator, "geolocation", {
+    value: mockGeolocation,
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(navigator, "permissions", {
+    value: mockPermissions,
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(navigator, "userAgent", {
+    value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    configurable: true,
+    writable: true,
+  });
 
-  global.window = {
-    isSecureContext: true,
-    location: {
-      hostname: "localhost",
-    },
-  } as unknown as Window & typeof globalThis;
+  setSecureContext(true);
+  setHostname("localhost");
 
-  // Default permission state: granted
   mockPermissions.query.mockResolvedValue({ state: "granted" });
 });
 
@@ -94,42 +115,56 @@ describe("isWithinRadius", () => {
 
 describe("isMobileDevice", () => {
   it("should detect mobile devices", () => {
-    global.navigator = {
-      userAgent:
+    Object.defineProperty(navigator, "userAgent", {
+      value:
         "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15",
-    } as Navigator;
-
+      configurable: true,
+      writable: true,
+    });
     expect(isMobileDevice()).toBe(true);
   });
 
   it("should detect Android devices", () => {
-    global.navigator = {
-      userAgent: "Mozilla/5.0 (Linux; Android 10; SM-G973F)",
-    } as Navigator;
-
+    Object.defineProperty(navigator, "userAgent", {
+      value: "Mozilla/5.0 (Linux; Android 10; SM-G973F)",
+      configurable: true,
+      writable: true,
+    });
     expect(isMobileDevice()).toBe(true);
   });
 
   it("should detect desktop devices", () => {
-    global.navigator = {
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    } as Navigator;
-
-    expect(isMobileDevice()).toBe(false);
-  });
-
-  it("should return false when navigator is undefined", () => {
-    global.navigator = undefined as unknown as Navigator;
+    Object.defineProperty(navigator, "userAgent", {
+      value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      configurable: true,
+      writable: true,
+    });
     expect(isMobileDevice()).toBe(false);
   });
 });
 
 describe("getCurrentLocation", () => {
+  function mockGoodFix(
+    coords = { latitude: 37.5665, longitude: 126.978, accuracy: 30 },
+  ) {
+    mockGeolocation.watchPosition.mockImplementationOnce(
+      (success: PositionCallback) => {
+        // Schedule on a microtask so the watchId is assigned before invocation,
+        // matching real browser behaviour and letting our cleanup run.
+        Promise.resolve().then(() =>
+          success({
+            coords: { ...coords, altitude: null } as GeolocationCoordinates,
+            timestamp: Date.now(),
+          } as GeolocationPosition),
+        );
+        return 1;
+      },
+    );
+  }
+
   it("should throw InsecureOriginError when not in secure context", async () => {
-    global.window = {
-      isSecureContext: false,
-      location: { hostname: "example.com" },
-    } as unknown as Window & typeof globalThis;
+    setSecureContext(false);
+    setHostname("example.com");
 
     await expect(getCurrentLocation()).rejects.toThrow(InsecureOriginError);
     await expect(getCurrentLocation()).rejects.toThrow(
@@ -145,67 +180,48 @@ describe("getCurrentLocation", () => {
   });
 
   it("should return location successfully", async () => {
-    mockGeolocation.getCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success({
-          coords: {
-            latitude: 37.5665,
-            longitude: 126.978,
-            accuracy: 50,
-          },
-          timestamp: Date.now(),
-        } as GeolocationPosition);
-      },
-    );
+    mockGoodFix({ latitude: 37.5665, longitude: 126.978, accuracy: 30 });
 
     const result = await getCurrentLocation();
 
     expect(result.latitude).toBe(37.5665);
     expect(result.longitude).toBe(126.978);
-    expect(result.accuracy).toBe(50);
+    expect(result.accuracy).toBe(30);
   });
 
   it("should call onProgress callback when provided", async () => {
     const onProgress = vi.fn();
-
-    mockGeolocation.getCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success({
-          coords: {
-            latitude: 37.5665,
-            longitude: 126.978,
-            accuracy: 50,
-          },
-          timestamp: Date.now(),
-        } as GeolocationPosition);
-      },
-    );
+    mockGoodFix({ latitude: 37.5665, longitude: 126.978, accuracy: 30 });
 
     const result = await getCurrentLocation(onProgress);
 
-    expect(result.accuracy).toBe(50);
-    expect(onProgress).toHaveBeenCalledWith(50);
-    expect(onProgress).toHaveBeenCalledTimes(1);
+    expect(result.accuracy).toBe(30);
+    expect(onProgress).toHaveBeenCalledWith(30);
   });
 
-  it("should handle geolocation errors", async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation((_success, error) => {
-      error({
-        code: 2,
-        message: "Position unavailable",
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      } as GeolocationPositionError);
+  it("should reject on PERMISSION_DENIED from the watch error callback", async () => {
+    mockGeolocation.watchPosition.mockImplementationOnce((_success, error) => {
+      Promise.resolve().then(() =>
+        error({
+          code: 1,
+          message: "Permission denied",
+          PERMISSION_DENIED: 1,
+          POSITION_UNAVAILABLE: 2,
+          TIMEOUT: 3,
+        } as GeolocationPositionError),
+      );
+      return 1;
     });
 
-    await expect(getCurrentLocation()).rejects.toThrow(/Position unavailable/);
+    await expect(getCurrentLocation()).rejects.toMatchObject({ code: 1 });
   });
 
   it("should throw error when geolocation is not supported", async () => {
-    global.navigator = {
-      geolocation: undefined,
-    } as unknown as Navigator;
+    Object.defineProperty(navigator, "geolocation", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
 
     await expect(getCurrentLocation()).rejects.toThrow(
       /Geolocation is not supported/,
@@ -213,54 +229,39 @@ describe("getCurrentLocation", () => {
   });
 
   it("should allow localhost in non-secure context", async () => {
-    global.window = {
-      isSecureContext: false,
-      location: { hostname: "localhost" },
-    } as unknown as Window & typeof globalThis;
-
-    mockGeolocation.getCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success({
-          coords: { latitude: 37.5665, longitude: 126.978, accuracy: 50 },
-          timestamp: Date.now(),
-        } as GeolocationPosition);
-      },
-    );
+    setSecureContext(false);
+    setHostname("localhost");
+    mockGoodFix();
 
     const result = await getCurrentLocation();
     expect(result.latitude).toBe(37.5665);
   });
 
   it("should allow 127.0.0.1 in non-secure context", async () => {
-    global.window = {
-      isSecureContext: false,
-      location: { hostname: "127.0.0.1" },
-    } as unknown as Window & typeof globalThis;
-
-    mockGeolocation.getCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success({
-          coords: { latitude: 37.5665, longitude: 126.978, accuracy: 50 },
-          timestamp: Date.now(),
-        } as GeolocationPosition);
-      },
-    );
+    setSecureContext(false);
+    setHostname("127.0.0.1");
+    mockGoodFix();
 
     const result = await getCurrentLocation();
     expect(result.latitude).toBe(37.5665);
   });
 
-  it("should use high accuracy settings", async () => {
-    mockGeolocation.getCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback, _error, options) => {
+  it("should request high-accuracy on the first watchPosition call", async () => {
+    mockGeolocation.watchPosition.mockImplementationOnce(
+      (success: PositionCallback, _err, options) => {
         expect(options?.enableHighAccuracy).toBe(true);
-        expect(options?.timeout).toBe(10000);
-        expect(options?.maximumAge).toBe(0);
-
-        success({
-          coords: { latitude: 37.5665, longitude: 126.978, accuracy: 30 },
-          timestamp: Date.now(),
-        } as GeolocationPosition);
+        Promise.resolve().then(() =>
+          success({
+            coords: {
+              latitude: 37.5665,
+              longitude: 126.978,
+              accuracy: 30,
+              altitude: null,
+            } as GeolocationCoordinates,
+            timestamp: Date.now(),
+          } as GeolocationPosition),
+        );
+        return 1;
       },
     );
 

@@ -28,8 +28,13 @@ export function calculateDistance(
 
 /**
  * Get the current device location using the Geolocation API
- * @param onProgress - Optional callback that receives accuracy when location is obtained
- * @returns Promise with latitude, longitude and accuracy
+ *
+ * Uses watchPosition with progressive accuracy: keeps the best fix as the
+ * GPS warms up, settles when accuracy ≤ 50m or when the soft (8s) /
+ * hard (15s) deadlines elapse.
+ *
+ * @param onProgress - Optional callback fired on every accuracy update
+ * @returns Promise with latitude, longitude and accuracy in meters
  * @throws {InsecureOriginError} When not using HTTPS or localhost
  * @throws {PermissionDeniedError} When user denies location permission
  * @throws {GeolocationPositionError} When location cannot be obtained
@@ -58,26 +63,95 @@ export async function getCurrentLocation(
     );
   }
 
+  const GOOD_ENOUGH_M = 50;
+  const ACCEPTABLE_M = 100;
+  const SOFT_TIMEOUT_MS = 8000;
+  const HARD_TIMEOUT_MS = 15000;
+  const CACHE_MAX_AGE_MS = 30_000;
+
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const result = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        };
-        if (onProgress) onProgress(result.accuracy);
-        resolve(result);
-      },
-      (error) => {
-        reject(error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    );
+    let best: { latitude: number; longitude: number; accuracy: number } | null =
+      null;
+    let watchId: number | null = null;
+    let softTimer: ReturnType<typeof setTimeout> | null = null;
+    let hardTimer: ReturnType<typeof setTimeout> | null = null;
+    let retried = false;
+    let settled = false;
+
+    const cleanup = () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (softTimer) clearTimeout(softTimer);
+      if (hardTimer) clearTimeout(hardTimer);
+    };
+
+    const finishOk = (fix: {
+      latitude: number;
+      longitude: number;
+      accuracy: number;
+    }) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(fix);
+    };
+
+    const finishErr = (err: unknown) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(err);
+    };
+
+    const start = (highAccuracy: boolean) => {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const fix = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          };
+          if (onProgress) onProgress(fix.accuracy);
+          if (!best || fix.accuracy < best.accuracy) best = fix;
+          if (fix.accuracy <= GOOD_ENOUGH_M) finishOk(best);
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            finishErr(error);
+            return;
+          }
+          if (highAccuracy && !retried) {
+            retried = true;
+            start(false);
+            return;
+          }
+          if (best) {
+            finishOk(best);
+            return;
+          }
+          finishErr(error);
+        },
+        {
+          enableHighAccuracy: highAccuracy,
+          maximumAge: CACHE_MAX_AGE_MS,
+          timeout: highAccuracy ? HARD_TIMEOUT_MS : SOFT_TIMEOUT_MS,
+        },
+      );
+    };
+
+    softTimer = setTimeout(() => {
+      if (best && best.accuracy <= ACCEPTABLE_M) finishOk(best);
+    }, SOFT_TIMEOUT_MS);
+
+    hardTimer = setTimeout(() => {
+      if (best) finishOk(best);
+      else finishErr(new Error("Location request timed out"));
+    }, HARD_TIMEOUT_MS);
+
+    start(true);
   });
 }
 
@@ -158,8 +232,7 @@ async function getGeolocationPermissionState(): Promise<
       name: "geolocation",
     } as PermissionDescriptor);
     return status.state;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {
+  } catch {
     return "unknown";
   }
 }

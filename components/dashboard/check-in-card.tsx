@@ -104,7 +104,7 @@ export function CheckInCard({
     validation: locationValidation,
     validating,
     refresh: checkLocation,
-    getLocationData,
+    getFreshLocation,
   } = useLocation({
     enabled: isLocationConfigured,
     validateOnServer: isLocationConfigured,
@@ -117,12 +117,10 @@ export function CheckInCard({
       switch (error) {
         case "PERMISSION_DENIED":
           return t("locationPermissionDenied");
-        case "POSITION_UNAVAILABLE":
-          return t("failedToGetLocation");
-        case "TIMEOUT":
-          return t("failedToGetLocation");
         case "INSECURE_ORIGIN":
           return t("locationRequiresHttps");
+        case "POSITION_UNAVAILABLE":
+        case "TIMEOUT":
         default:
           return t("failedToGetLocation");
       }
@@ -189,20 +187,19 @@ export function CheckInCard({
   const performCheckIn = async () => {
     dispatch({ type: "SET_ACTION_LOADING", payload: true });
     try {
-      const locationData = getLocationData();
-      if (!locationData) {
+      // Ensure we send a fresh fix (≤60s old) — re-fetches if stale.
+      const fix = await getFreshLocation();
+      if (!fix) {
         toast.error(t("failedToGetLocation"));
         return;
       }
 
-      // Parallel execution: check-in and location refresh
-      await Promise.all([
-        axios.post("/api/attendance/check-in", locationData),
-        checkLocation(),
-      ]);
+      await axios.post("/api/attendance/check-in", {
+        latitude: fix.latitude,
+        longitude: fix.longitude,
+      });
 
       toast.success(t("checkInSuccess"));
-      // Refresh attendance after successful check-in
       await fetchAttendance();
     } catch (error: unknown) {
       console.error(
@@ -221,20 +218,18 @@ export function CheckInCard({
   const performCheckOut = async () => {
     dispatch({ type: "SET_ACTION_LOADING", payload: true });
     try {
-      const locationData = getLocationData();
-      if (!locationData) {
+      const fix = await getFreshLocation();
+      if (!fix) {
         toast.error(t("failedToGetLocation"));
         return;
       }
 
-      // Parallel execution: check-out and location refresh
-      await Promise.all([
-        axios.post("/api/attendance/check-out", locationData),
-        checkLocation(),
-      ]);
+      await axios.post("/api/attendance/check-out", {
+        latitude: fix.latitude,
+        longitude: fix.longitude,
+      });
 
       toast.success(t("checkOutSuccess"));
-      // Refresh attendance after successful check-out
       await fetchAttendance();
     } catch (error: unknown) {
       console.error(
@@ -304,7 +299,7 @@ export function CheckInCard({
       pollingIntervalRef.current = interval;
     } catch (error) {
       console.error("QR session error:", error);
-      toast.error("Failed to create verification session");
+      toast.error(t("failedToCreateSession"));
     } finally {
       dispatch({ type: "SET_ACTION_LOADING", payload: false });
     }
@@ -370,9 +365,7 @@ export function CheckInCard({
                 (locationValidation && !locationValidation.isWithinRadius) ||
                 !isLocationConfigured
                   ? "destructive"
-                  : locationWarning
-                    ? "default"
-                    : "default"
+                  : "default"
               }
             >
               <div className="flex items-center gap-2 w-full">
