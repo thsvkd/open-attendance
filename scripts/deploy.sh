@@ -62,6 +62,18 @@ if [ -z "$URL" ]; then
 	exit 1
 fi
 
+# ngrok --url requires a public reserved domain (e.g. xxx.ngrok-free.dev),
+# so reject local hostnames that commonly leak in via NEXTAUTH_URL.
+HOST_ONLY="${URL%%/*}"
+HOST_ONLY="${HOST_ONLY%%:*}"
+case "$HOST_ONLY" in
+	localhost|127.*|0.0.0.0|::1|[::1])
+		echo "Error: URL '$URL' is a local address; ngrok needs a public reserved domain." >&2
+		echo "Set URL or NGROK_URL in $ENV_FILE to your ngrok domain (e.g. xxx.ngrok-free.dev)." >&2
+		exit 1
+		;;
+esac
+
 if [ -z "$PORT" ]; then
 	echo "Error: PORT not set. Set PORT in $ENV_FILE or export PORT env var." >&2
 	usage
