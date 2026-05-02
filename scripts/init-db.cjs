@@ -4,8 +4,8 @@
  * Database initialization script
  *
  * Usage:
- *   node scripts/init-db.js          - Initialize development/production database
- *   node scripts/init-db.js --test   - Initialize test database for E2E tests
+ *   node scripts/init-db.cjs          - Initialize development/production database
+ *   node scripts/init-db.cjs --test   - Initialize test database for E2E tests
  *
  * Why plain JS:
  * - Runs before any TS tooling is ready

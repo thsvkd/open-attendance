@@ -6,7 +6,7 @@
  * This script MUST remain as JavaScript because:
  * - Needs to spawn Next.js server process with proper environment variables
  * - Handles output filtering for cleaner logs
- * - Must integrate with init-db.js for database initialization
+ * - Must integrate with init-db.cjs for database initialization
  * - Complex signal handling for graceful shutdown
  * - Cross-platform process management
  *
@@ -87,7 +87,7 @@ const fullEnv = {
   ...process.env,
 };
 
-// Run init-db.js first
+// Run init-db.cjs first
 console.log("\nInitializing database...");
 const initDbProcess = spawn("node", ["scripts/init-db.cjs"], {
   cwd: path.join(__dirname, ".."),

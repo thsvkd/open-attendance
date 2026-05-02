@@ -10,6 +10,11 @@
 
 set -e
 
+# Strip VS Code / IDE debugger injection from NODE_OPTIONS that breaks
+# `next build` (the bootloader.js paths are not always present).
+# Users can still pass their own NODE_OPTIONS by exporting it after this.
+unset NODE_OPTIONS VSCODE_INSPECTOR_OPTIONS
+
 # Load utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
