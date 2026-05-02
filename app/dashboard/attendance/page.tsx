@@ -14,8 +14,9 @@ export default async function AttendancePage() {
   }
 
   // Ensure user exists in database before querying attendance
+  let userId = session.user.id;
   const user = await db.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userId },
     select: { id: true },
   });
 
@@ -32,8 +33,7 @@ export default async function AttendancePage() {
           "User profile not found. Please contact your administrator.",
         );
       }
-      // Continue with the correct userId
-      session.user.id = userByEmail.id;
+      userId = userByEmail.id;
     } else {
       throw new Error(
         "User profile not found. Please contact your administrator.",
@@ -43,7 +43,7 @@ export default async function AttendancePage() {
 
   // Fetch attendance history server-side
   const rawHistory = await db.attendance.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { date: "desc" },
     take: 30,
   });
