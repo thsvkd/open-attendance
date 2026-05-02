@@ -50,6 +50,8 @@ export function AdminLeavesTab({ leaves, onRefresh }: AdminLeavesTabProps) {
   };
 
   const onDeleteLeave = async (id: string) => {
+    if (!window.confirm(t("leaves.deleteConfirm") || "정말 삭제하시겠습니까?"))
+      return;
     try {
       await axios.delete(`/api/admin/leaves/${id}`);
       toast.success(t("leaves.deleteSuccess") || "휴가 기록이 삭제되었습니다.");

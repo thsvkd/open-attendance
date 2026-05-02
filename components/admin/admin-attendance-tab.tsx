@@ -37,6 +37,10 @@ export function AdminAttendanceTab({
   const tc = useTranslations("common");
 
   const onDeleteAttendance = async (id: string) => {
+    if (
+      !window.confirm(t("attendance.deleteConfirm") || "정말 삭제하시겠습니까?")
+    )
+      return;
     try {
       await axios.delete("/api/admin/attendance", { data: { id } });
       toast.success(
