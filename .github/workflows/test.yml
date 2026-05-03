@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint # Lint가 성공해야 테스트 시작
     env:
-      DATABASE_URL: file:./test.db
+      DATABASE_URL: file:${{ github.workspace }}/prisma/test.db
       NEXTAUTH_SECRET: test-secret-for-ci
     steps:
       - uses: actions/checkout@v6
@@ -71,7 +71,7 @@ jobs:
     needs: unit-and-integration-tests # 유닛 테스트 통과 후 실행 (자원 절약)
     timeout-minutes: 30 # 기존 60분에서 현실적으로 단축
     env:
-      DATABASE_URL: file:./test.db
+      DATABASE_URL: file:${{ github.workspace }}/prisma/test.db
       NEXTAUTH_SECRET: test-secret-for-ci
       NEXTAUTH_URL: http://localhost:3001
       E2E_PORT: 3001
