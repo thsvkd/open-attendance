@@ -94,7 +94,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
       - name: Initialize test database
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push
       - name: Seed test database
         run: npx tsx scripts/seed-test-db.ts
       - name: Build Next.js
